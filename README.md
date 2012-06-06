@@ -1,4 +1,18 @@
 python-libdeje
 ==============
 
-A DEJE library for Python, which allows democratically managed and secure distributed data.
+_DEJE, n. Democratically Enforced JSON Environment_
+
+DEJE is an EJTP protocol for tightly managed, verified, and timelined JSON
+data. You can use it for any distributed data system that needs strong safety
+guarantees.
+
+DEJE includes Lua-based verification functions that run in a hardened Lua
+environment ([hardlupa](https://github.com/campadrenalin/HardLupa)) and for
+this reason, the library is highly portable to other languages. If it can run
+a Lua runtime, and talk to the network, you can build a DEJE lib in that
+language. This means platform compatibility across language and OS lines.
+
+The first project that will be built with this as a dependency will be djdns,
+a distributed DNS system that hosts a virtual DNS server on localhost based on
+data in a set of heirarchical community-managed DNS documents.
