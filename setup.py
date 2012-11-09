@@ -15,5 +15,6 @@ setup(
 	packages = [
 		'deje',
 		'deje.interpreters',
+		'deje.handlers',
 	],
 )

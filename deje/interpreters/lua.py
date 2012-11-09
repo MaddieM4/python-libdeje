@@ -17,12 +17,33 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 import lupa
 
-runtime = lupa.LuaRuntime()
+bootstrap = '''
+deje = {}
+function load_deje(module)
+    deje = module
+end
+return load_deje
+'''
 
 class LuaInterpreter(object):
     def __init__(self, resource):
+        '''
+            Lua-based interpreter for handler files.
+        '''
         self.resource = resource
+        self.runtime = lupa.LuaRuntime()
+
+        # Provide the deje module
+        bootstrapfunc = self.runtime.execute(bootstrap)
+        bootstrapfunc({
+            'get_resource': lambda path: self.document.get_resource(path),
+            'get_scratch':  lambda auth: self.document._scratchspace[auth],
+            'debug': self.debug,
+        })
+        self.runtime.execute('load_deje = nil')
+
         self.reload()
+        self.call("on_load")
 
     def on_resource_update(self):
         self.call("on_resource_update")
@@ -32,11 +53,15 @@ class LuaInterpreter(object):
         self.call("on_scratch_update")
 
     def call(self, event, *args):
-        if event in self.lua_callbacks:
-            return self.lua_callbacks[event](*args)
+        callback = self.runtime.eval(event)
+        if callback:
+            return callback(*args)
 
     def reload(self):
-        self.lua_callbacks = runtime.execute(self.resource.content)
+        self.runtime.execute(self.resource.content)
+
+    def debug(self, response):
+        print response
 
     @property
     def document(self):

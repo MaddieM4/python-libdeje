@@ -16,7 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 class Resource(object):
-    def __init__(self, path, content="", comment="", type="application/x-octet-stream", source=None):
+    def __init__(self, path="/", content="", comment="", type="application/x-octet-stream", source=None):
         if source:
             self.deserialize(source)
         else:

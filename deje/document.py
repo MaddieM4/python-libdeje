@@ -50,6 +50,14 @@ class Document(object):
         self._scratchspace[author] = content
         self._animus.on_scratch_update()
 
+    # Animus
+
+    def activate(self):
+        self._animus.activate()
+
+    def deactivate(self):
+        self._animus.deactivate()
+
     # Handler
 
     @property
