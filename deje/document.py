@@ -29,7 +29,7 @@ class Document(object):
     # High-level resource manipulation
 
     def add_resource(self, resource):
-        self._animus.on_resource_update()
+        self._animus.on_resource_update(resource.path, 'add')
         self._resources[resource.path] = resource
         resource.document = self
 
@@ -37,7 +37,7 @@ class Document(object):
         return self._resources[path]
 
     def del_resource(self, path):
-        self._animus.on_resource_update()
+        self._animus.on_resource_update(path, 'delete')
         del self._resources[path]
 
     @property
@@ -48,7 +48,7 @@ class Document(object):
 
     def update_scratch(self, author, content):
         self._scratchspace[author] = content
-        self._animus.on_scratch_update()
+        self._animus.on_scratch_update(author)
 
     # Animus
 
@@ -57,6 +57,10 @@ class Document(object):
 
     def deactivate(self):
         self._animus.deactivate()
+
+    @property
+    def animus(self):
+        return self._animus
 
     # Handler
 

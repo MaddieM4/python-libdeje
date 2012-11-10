@@ -26,6 +26,64 @@ class Resource(object):
             self.comment = comment
         self.document = None
 
+    # Getters and setters
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, newpath):
+        if type(newpath) in (str, unicode):
+            if hasattr(self, '_path'):
+                oldpath = self.path
+                self._path = newpath
+                self.trigger_change('path', oldpath=oldpath)
+            else:
+                self._path = newpath
+        else:
+            raise TypeError("Resource.path must be str or unicode, got %r", type(newpath))
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, newtype):
+        if type(newtype) in (str, unicode):
+            # TODO: Verify MIME validity
+            self._type = newtype
+            self.trigger_change('type')
+        else:
+            raise TypeError("Resource.type must be str or unicode, got %r", type(newtype))
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, newcontent):
+        self._content = newcontent
+        self.trigger_change('content')
+
+    @property
+    def comment(self):
+        return self._comment
+
+    @comment.setter
+    def comment(self, newcomment):
+        if type(newcomment) in (str, unicode):
+            self._comment = newcomment
+            self.trigger_change('comment')
+        else:
+            raise TypeError("Resource.comment must be str or unicode, got %r", type(newcomment))
+
+    def trigger_change(self, propname, oldpath=None):
+        if hasattr(self, 'document') and self.document:
+            self.document.animus.on_resource_update(self.path, propname, oldpath or self.path)
+
+    # Methods
+
     def interpreter(self):
         "Produce an interpreter object based on resource type."
         if self.type == "text/javascript":

@@ -24,15 +24,15 @@ class Animus(object):
 
     # Resource callbacks
 
-    def on_resource_update(self):
+    def on_resource_update(self, path, propname, oldpath=None):
         if self.activate():
-            self.interpreter.on_resource_update()
+            self.interpreter.on_resource_update(path, propname, oldpath)
 
     # Scratchpad
 
-    def on_scratch_update(self):
+    def on_scratch_update(self, author):
         if self.activate():
-            self.interpreter.on_scratch_update()
+            self.interpreter.on_scratch_update(author)
 
     @property
     def scratchspace(self):
