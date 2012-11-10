@@ -41,6 +41,11 @@ def echo_chamber():
     >>> exampletxt.path = "/fridge/turtles.txt"
     on_resource_update /fridge/turtles.txt path
     /example.txt was moved to /fridge/turtles.txt
+
+    >>> doc.animus.interpreter.call('try_set_scratch') # Custom callback
+    on_scratch_update joe
+    >>> doc.get_scratch('joe')
+    u'lemons'
     '''
     return '''
         function on_load()
@@ -56,6 +61,10 @@ def echo_chamber():
 
         function on_scratch_update(author)
             deje.debug('on_scratch_update ' .. author)
+        end
+
+        function try_set_scratch()
+            deje.set_scratch('joe', 'lemons')
         end
     '''
 

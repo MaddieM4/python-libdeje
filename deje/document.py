@@ -50,6 +50,12 @@ class Document(object):
         self._scratchspace[author] = content
         self._animus.on_scratch_update(author)
 
+    def get_scratch(self, author):
+        if author:
+            return self._scratchspace[author]
+        else:
+            return self._scratchspace
+
     # Animus
 
     def activate(self):
