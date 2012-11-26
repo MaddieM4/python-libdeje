@@ -18,10 +18,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import animus
 
 class Document(object):
-    def __init__(self, handler_path="/handler.lua", resources=[], scratchspace={}):
+    def __init__(self, handler_path="/handler.lua", resources=[]):
         self._handler = handler_path
         self._resources = {}
-        self._scratchspace = dict(scratchspace)
         self._animus = animus.Animus(self)
         for res in resources:
             self.add_resource(res)
@@ -43,18 +42,6 @@ class Document(object):
     @property
     def resources(self):
         return self._resources
-
-    # Scratchspace
-
-    def update_scratch(self, author, content):
-        self._scratchspace[author] = content
-        self._animus.on_scratch_update(author)
-
-    def get_scratch(self, author):
-        if author:
-            return self._scratchspace[author]
-        else:
-            return self._scratchspace
 
     # Animus
 

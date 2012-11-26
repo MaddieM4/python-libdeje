@@ -28,16 +28,6 @@ class Animus(object):
         if self.activate():
             self.interpreter.on_resource_update(path, propname, oldpath)
 
-    # Scratchpad
-
-    def on_scratch_update(self, author):
-        if self.activate():
-            self.interpreter.on_scratch_update(author)
-
-    @property
-    def scratchspace(self):
-        return self.document._scratchspace
-
     # Handler
 
     @property
