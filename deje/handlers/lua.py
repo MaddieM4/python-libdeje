@@ -25,6 +25,8 @@ def echo_chamber():
 
     >>> doc = test_bootstrap(echo_chamber())
 
+    Test on_resource_update
+
     >>> exampletxt = resource.Resource('/example.txt', 'blerg', type='text/plain')
     >>> doc.add_resource(exampletxt)
     on_resource_update /example.txt add
@@ -38,6 +40,14 @@ def echo_chamber():
     on_resource_update /fridge/turtles.txt path
     /example.txt was moved to /fridge/turtles.txt
 
+    Test checkpointing
+
+    >>> doc.animus.interpreter.call("trigger_checkpoint", "example")
+    Tested checkpoint u'example' and got result True
+    Checkpoint 'example' achieved.
+    >>> doc.animus.interpreter.call("trigger_checkpoint", "no dice")
+    Tested checkpoint u'no dice' and got result False
+
     '''
     return '''
         function on_resource_update(path, propname, oldpath)
@@ -45,6 +55,22 @@ def echo_chamber():
             if propname == 'path' then
                 deje.debug(oldpath .. " was moved to " .. path)
             end
+        end
+
+        function trigger_checkpoint(value)
+            deje.checkpoint(value)
+        end
+
+        function checkpoint_test(cp)
+            if cp == "example" then
+                return true
+            else
+                return false
+            end
+        end
+
+        function on_checkpoint_achieve(cp)
+            deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
         end
     '''
 

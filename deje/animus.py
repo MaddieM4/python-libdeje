@@ -22,11 +22,19 @@ class Animus(object):
         if auto_activate:
             self.activate()
 
-    # Resource callbacks
+    # Callbacks
 
     def on_resource_update(self, path, propname, oldpath=None):
         if self.activate():
             self.interpreter.on_resource_update(path, propname, oldpath)
+
+    def on_checkpoint_achieve(self, cp):
+        if self.activate():
+            self.interpreter.on_checkpoint_achieve(cp)
+
+    def checkpoint_test(self, cp):
+        if self.activate():
+            return self.interpreter.checkpoint_test(cp)
 
     # Handler
 

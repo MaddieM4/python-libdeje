@@ -55,6 +55,15 @@ class Document(object):
     def animus(self):
         return self._animus
 
+    # Checkpoint stuff
+
+    def checkpoint(self, cp):
+        "Create a checkpoint from arbitrary object 'cp'"
+        valid = self.animus.checkpoint_test(cp) # TODO: store results
+        print "Tested checkpoint %r and got result %r" % (cp, valid)
+        if valid:
+            self.animus.on_checkpoint_achieve(cp)
+
     # Handler
 
     @property

@@ -42,9 +42,19 @@ class LuaInterpreter(object):
 
         self.reload()
 
+    # Callbacks
+
     def on_resource_update(self, path, propname, oldpath=None):
         self.call("on_resource_update", path, propname, oldpath)
         self.reload()
+
+    def on_checkpoint_achieve(self, cp):
+        self.call("on_checkpoint_achieve", cp)
+
+    def checkpoint_test(self, cp):
+        return self.call("checkpoint_test", cp)
+
+    # Misc
 
     def call(self, event, *args):
         callback = self.runtime.eval(event)
