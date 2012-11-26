@@ -44,6 +44,14 @@ class Animus(object):
         if self.activate():
             return self.interpreter.quorum_thresholds()
 
+    def request_protocols(self):
+        if self.activate():
+            return self.interpreter.request_protocols()
+
+    def host_request(self, callback, args):
+        if self.activate():
+            return self.interpreter.host_request(callback, args)
+
     # Handler
 
     @property

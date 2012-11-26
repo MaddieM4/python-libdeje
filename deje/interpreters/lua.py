@@ -60,6 +60,12 @@ class LuaInterpreter(object):
     def quorum_thresholds(self):
         return dict(self.call("quorum_thresholds"))
 
+    def request_protocols(self):
+        return list(self.call("request_protocols").values())
+
+    def host_request(self, callback, params):
+        return self.call("on_host_request", callback, params)
+
     # Misc
 
     def call(self, event, *args):

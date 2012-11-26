@@ -54,22 +54,18 @@ def echo_chamber():
     [u'anonymous']
     >>> doc.get_thresholds() == { 'read': 1, 'write': 1 }
     True
-    '''
-    '''
 
     Test request protocol mechanism
 
-    >>> doc.get_request_protocols
-    ["echo-chamber-1"]
-    >>> result = None
+    >>> doc.get_request_protocols()
+    [u'echo-chamber-1']
     >>> def pull_to_result(x):
-    ...     result = x
+    ...     print x
     >>> doc.request(
     ...     pull_to_result,
     ...     "hello-world",
     ... )
-    >>> result
-    "Request protocol mechanism says hello."
+    Request protocol mechanism says hello.
 
     '''
     return '''
@@ -102,6 +98,17 @@ def echo_chamber():
 
         function quorum_thresholds()
             return {read=1, write=1}
+        end
+
+        function request_protocols()
+            return { "echo-chamber-1" }
+        end
+
+        function on_host_request(callback, params)
+            local rtype = params[0]
+            if rtype == "hello-world" then
+                callback("Request protocol mechanism says hello.")
+            end
         end
     '''
 

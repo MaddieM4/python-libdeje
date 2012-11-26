@@ -55,6 +55,11 @@ class Document(object):
     def animus(self):
         return self._animus
 
+    # Host requests
+
+    def request(self, callback, *args):
+        return self.animus.host_request(callback, args)
+
     # Checkpoint stuff
 
     def checkpoint(self, cp):
@@ -71,6 +76,9 @@ class Document(object):
 
     def get_thresholds(self):
         return self.animus.quorum_thresholds()
+
+    def get_request_protocols(self):
+        return self.animus.request_protocols()
 
     # Handler
 
