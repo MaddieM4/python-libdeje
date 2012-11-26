@@ -48,6 +48,29 @@ def echo_chamber():
     >>> doc.animus.interpreter.call("trigger_checkpoint", "no dice")
     Tested checkpoint u'no dice' and got result False
 
+    Test document properties
+
+    >>> doc.get_participants()
+    [u'anonymous']
+    >>> doc.get_thresholds() == { 'read': 1, 'write': 1 }
+    True
+    '''
+    '''
+
+    Test request protocol mechanism
+
+    >>> doc.get_request_protocols
+    ["echo-chamber-1"]
+    >>> result = None
+    >>> def pull_to_result(x):
+    ...     result = x
+    >>> doc.request(
+    ...     pull_to_result,
+    ...     "hello-world",
+    ... )
+    >>> result
+    "Request protocol mechanism says hello."
+
     '''
     return '''
         function on_resource_update(path, propname, oldpath)
@@ -71,6 +94,14 @@ def echo_chamber():
 
         function on_checkpoint_achieve(cp)
             deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
+        end
+
+        function quorum_participants()
+            return { deje.get_ident() }
+        end
+
+        function quorum_thresholds()
+            return {read=1, write=1}
         end
     '''
 

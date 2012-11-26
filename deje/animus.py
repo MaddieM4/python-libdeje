@@ -36,6 +36,14 @@ class Animus(object):
         if self.activate():
             return self.interpreter.checkpoint_test(cp)
 
+    def quorum_participants(self):
+        if self.activate():
+            return self.interpreter.quorum_participants()
+
+    def quorum_thresholds(self):
+        if self.activate():
+            return self.interpreter.quorum_thresholds()
+
     # Handler
 
     @property

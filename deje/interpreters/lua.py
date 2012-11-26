@@ -54,6 +54,12 @@ class LuaInterpreter(object):
     def checkpoint_test(self, cp):
         return self.call("checkpoint_test", cp)
 
+    def quorum_participants(self):
+        return list(self.call("quorum_participants").values())
+
+    def quorum_thresholds(self):
+        return dict(self.call("quorum_thresholds"))
+
     # Misc
 
     def call(self, event, *args):

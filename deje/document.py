@@ -64,6 +64,14 @@ class Document(object):
         if valid:
             self.animus.on_checkpoint_achieve(cp)
 
+    # Handler-derived properties
+
+    def get_participants(self):
+        return self.animus.quorum_participants()
+
+    def get_thresholds(self):
+        return self.animus.quorum_thresholds()
+
     # Handler
 
     @property
