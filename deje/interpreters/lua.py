@@ -41,14 +41,10 @@ class LuaInterpreter(object):
         self.runtime.execute('load_deje = nil')
 
         self.reload()
-        self.call("on_load")
 
     def on_resource_update(self, path, propname, oldpath=None):
         self.call("on_resource_update", path, propname, oldpath)
         self.reload()
-
-    def on_scratch_update(self, author):
-        self.call("on_scratch_update", author)
 
     def call(self, event, *args):
         callback = self.runtime.eval(event)

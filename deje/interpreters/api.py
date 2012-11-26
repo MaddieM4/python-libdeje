@@ -17,9 +17,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 exported_functions = (
     'get_resource',
-    'get_scratch',
-    'set_scratch',
     'get_ident',
+    'checkpoint',
     'debug',
 )
 
@@ -37,14 +36,11 @@ class API(object):
     def get_resource(self, path):
         return self.document.get_resource(path)
 
-    def get_scratch(self, author):
-        return self.document.get_scratch(author)
-
-    def set_scratch(self, author, value):
-        self.queue.append(lambda: self.document.update_scratch(author, value))
-
     def get_ident(self):
         return "anonymous"
+
+    def checkpoint(self, cp):
+        self.queue.append(lambda: self.document.checkpoint(cp))
 
     def debug(self, *args):
         for arg in args:
