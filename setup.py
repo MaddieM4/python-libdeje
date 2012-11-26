@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
 	name = 'deje',
-	version = '0.0.1',
+	version = '0.0.2',
 	description = 'Democratically Enforced JSON Environment library',
 	author = 'Philip Horger',
 	author_email = 'philip.horger@gmail.com',

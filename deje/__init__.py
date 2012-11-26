@@ -22,3 +22,5 @@ __all__ = [
     'interpreters',
     'resource',
 ]
+
+__version__ = "0.0.2"
