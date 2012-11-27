@@ -16,12 +16,15 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import animus
+from checkpoint import Checkpoint
 
 class Document(object):
     def __init__(self, handler_path="/handler.lua", resources=[]):
         self._handler = handler_path
         self._resources = {}
+        self._checkpoints = {}
         self._animus = animus.Animus(self)
+        self._blockchain = []
         for res in resources:
             self.add_resource(res)
 
@@ -64,10 +67,11 @@ class Document(object):
 
     def checkpoint(self, cp):
         "Create a checkpoint from arbitrary object 'cp'"
-        valid = self.animus.checkpoint_test(cp) # TODO: store results
+        checkpoint = Checkpoint(cp, self.version, "anonymous")
+        valid = checkpoint.test(self) # TODO: store results
         print "Tested checkpoint %r and got result %r" % (cp, valid)
         if valid:
-            self.animus.on_checkpoint_achieve(cp)
+            checkpoint.enact(self)
 
     # Handler-derived properties
 
@@ -91,3 +95,9 @@ class Document(object):
 
     def set_handler(self, path):
         self._handler = path
+
+    # Other accessors
+
+    @property
+    def version(self):
+        return len(self._blockchain)

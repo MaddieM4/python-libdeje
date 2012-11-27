@@ -80,7 +80,7 @@ def echo_chamber():
             deje.checkpoint(value)
         end
 
-        function checkpoint_test(cp)
+        function checkpoint_test(cp, author)
             if cp == "example" then
                 return true
             else
@@ -88,7 +88,7 @@ def echo_chamber():
             end
         end
 
-        function on_checkpoint_achieve(cp)
+        function on_checkpoint_achieve(cp, author)
             deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
         end
 

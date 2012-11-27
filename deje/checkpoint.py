@@ -18,7 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from ejtp.util.hasher import checksum
 import datetime
 
-DEFAULT_DATETIME = datetime.timedelta(minutes = 5)
+DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
 class Checkpoint(object):
     def __init__(self, content, version, author = None, signatures = {}):
