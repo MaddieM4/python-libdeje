@@ -34,8 +34,33 @@ class Checkpoint(object):
         return document.animus.checkpoint_test(self.content, self.author)
 
     def hash(self):
-        return checksum([self.content, self.author])
+        '''
+        >>> Checkpoint({'x':'y'}, 4, 'mick-and-bandit').hash()
+        '960341d14e3531a50770bd6529a422d2b4997ae9'
+        '''
+        return checksum([self.content, self.version, self.author])
 
-    def sign(self, identity, duration = DEFAULT_DURATION):
+    def make_signature(self, identity, duration = DEFAULT_DURATION):
         expires = (datetime.datetime.utcnow() + duration).isoformat(' ')
         return expires + "\x00" + identity.sign(expires + self.hash())
+
+    def verify_signature(self, identity, signature):
+        try:
+            expires, subsig = signature.split("\x00")
+        except:
+            return false
+        plaintext = expires + self.hash()
+        return identity.verify_signature(subsig, plaintext)
+
+    def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
+        if type(identity) in (str, unicode):
+            if not signature:
+                raise ValueError("No signature provided, and could not derive from identity %r" % signature)
+            identity_name = identity
+        else:
+            if signature:
+                self.verify_signature(identity, signature) or raise ValueError("Invalid signature")
+            else:
+                signature = self.make_signature(identity, duration)
+            identity_name = identity.name
+        self.signatures[identity_name] = signature
