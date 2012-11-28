@@ -19,6 +19,7 @@ __all__ = [
     'animus',
     'document',
     'handlers',
+    'identity',
     'interpreters',
     'resource',
 ]
