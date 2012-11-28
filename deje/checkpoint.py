@@ -54,12 +54,15 @@ class Checkpoint(object):
 
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if type(identity) in (str, unicode):
+            # String identity
             if not signature:
                 raise ValueError("No signature provided, and could not derive from identity %r" % signature)
             identity_name = identity
         else:
+            # Identity object
             if signature:
-                self.verify_signature(identity, signature) or raise ValueError("Invalid signature")
+                if not self.verify_signature(identity, signature):
+                    raise ValueError("Invalid signature")
             else:
                 signature = self.make_signature(identity, duration)
             identity_name = identity.name
