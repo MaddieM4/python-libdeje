@@ -55,13 +55,22 @@ class LuaInterpreter(object):
         return self.call("checkpoint_test", cp, author)
 
     def quorum_participants(self):
-        return list(self.call("quorum_participants").values())
+        if not self.cache['quorum_participants']:
+            self.cache['quorum_participants'] = \
+                list(self.call("quorum_participants").values())
+        return self.cache['quorum_participants']
 
     def quorum_thresholds(self):
-        return dict(self.call("quorum_thresholds"))
+        if not self.cache['quorum_thresholds']:
+            self.cache['quorum_thresholds'] = \
+                dict(self.call("quorum_thresholds"))
+        return self.cache['quorum_thresholds']
 
     def request_protocols(self):
-        return list(self.call("request_protocols").values())
+        if not self.cache['request_protocols']:
+            self.cache['request_protocols'] = \
+                list(self.call("request_protocols").values())
+        return self.cache['request_protocols']
 
     def host_request(self, callback, params):
         return self.call("on_host_request", callback, params)
@@ -73,12 +82,21 @@ class LuaInterpreter(object):
         if callback and callable(callback):
             result = callback(*args)
             self.api.process_queue()
+            self.reset_cache()
             return result
         else:
             raise TypeError("Cannot call object %r", callback)
 
     def reload(self):
+        self.reset_cache()
         self.runtime.execute(self.resource.content)
+
+    def reset_cache(self):
+        self.cache = {
+            'quorum_participants': False,
+            'quorum_thresholds': False,
+            'request_protocols': False,
+        }
 
     def debug(self, response):
         print response

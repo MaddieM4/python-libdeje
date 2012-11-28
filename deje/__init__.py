@@ -20,6 +20,7 @@ __all__ = [
     'checkpoint',
     'document',
     'handlers',
+    'identity',
     'interpreters',
     'resource',
 ]
