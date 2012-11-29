@@ -19,8 +19,9 @@ import animus
 from checkpoint import Checkpoint
 
 class Document(object):
-    def __init__(self, handler_path="/handler.lua", resources=[]):
+    def __init__(self, handler_path="/handler.lua", resources=[], owner = None):
         self._handler = handler_path
+        self._owner = owner
         self._resources = {}
         self._checkpoints = {}
         self._animus = animus.Animus(self)
@@ -68,10 +69,14 @@ class Document(object):
     def checkpoint(self, cp):
         "Create a checkpoint from arbitrary object 'cp'"
         checkpoint = Checkpoint(cp, self.version, "anonymous")
-        valid = checkpoint.test(self) # TODO: store results
+        valid = checkpoint.test(self)
         print "Tested checkpoint %r and got result %r" % (cp, valid)
         if valid:
-            checkpoint.enact(self)
+            if self.owner:
+                checkpoint.sign(self.identity)
+                self.owner.attempt_checkpoint(self, checkpoint)
+            else:
+                checkpoint.enact(self)
 
     # Handler-derived properties
 
@@ -99,5 +104,20 @@ class Document(object):
     # Other accessors
 
     @property
+    def owner(self):
+        return self._owner
+
+    @property
+    def identity(self):
+        if self.owner:
+            return self.owner.identity
+        else:
+            return "anonymous"
+
+    @property
     def version(self):
         return len(self._blockchain)
+
+def mock_doc():
+    import handlers.lua
+    return handlers.lua.test_bootstrap(handlers.lua.echo_chamber())

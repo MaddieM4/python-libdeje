@@ -35,6 +35,13 @@ class Checkpoint(object):
     def test(self, document):
         return document.animus.checkpoint_test(self.content, self.author)
 
+    def has_quorum(self, document):
+        write_threshold = document.get_thresholds()['write']
+        if len(self.signatures.keys()) >= write_threshold:
+            return True
+        else:
+            return False
+
     def hash(self):
         '''
         >>> Checkpoint(*EXAMPLE_CHECKPOINT).hash()

@@ -53,3 +53,20 @@ class Identity(object):
         if type(self._encryptor) in (list, tuple):
             self._encryptor = ejtp.crypto.make(self._encryptor)
         return self._encryptor
+
+class EncryptorCache(object):
+    def __init__(self, source={}):
+        self.cache = {}
+        self.cache.update(source)
+
+    def __getitem__(self, location):
+        return self.cache[location].encryptor
+
+    def __setitem__(self, location, value):
+        self.cache[location] = value
+
+    def __delitem__(self, location):
+        del self.cache[location]
+
+    def update_ident(self, ident):
+        self[ident.location] = ident
