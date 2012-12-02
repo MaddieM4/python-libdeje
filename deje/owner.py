@@ -24,6 +24,24 @@ class Owner(object):
     Manages documents, identities, and an EJTP client.
     '''
     def __init__(self, self_ident, router=None, make_jack=True):
+        '''
+
+        Make sure self_idents with no location fail
+        >>> from deje import testing
+        >>> badident = testing.identity()
+        >>> badident.location = None
+        >>> Owner(badident, None, False)
+        Traceback (most recent call last):
+        AttributeError: Identity location not set
+
+        Do setup for testing a good owner.
+        >>> owner = testing.owner()
+        >>> doc = testing.document(handler_lua_template="echo_chamber")
+        >>> doc.handler
+        <deje.resource.Resource object at 0xb6e7f6cc>
+        >>> owner.own_document(doc)
+
+        '''
         self.identities = identity.EncryptorCache()
         self.identities.update_ident(self_ident)
         self.identity = self_ident
@@ -47,8 +65,3 @@ class Owner(object):
     def complete_checkpoint(self, document, checkpoint):
         checkpoint.enact(document)
         # TODO: Send stuff over the network
-
-def mock_owner():
-    doc = document.mock_doc()
-    ident = Identity()
-    owner = Owner(make_jack = False)

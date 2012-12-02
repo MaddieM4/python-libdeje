@@ -16,9 +16,10 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import ejtp.crypto
+import json
 
 class Identity(object):
-    def __init__(self, name, encryptor):
+    def __init__(self, name, encryptor, location = None):
         '''
         >>> ident = Identity("joe", ['rotate', 8])
         >>> ident.name
@@ -37,6 +38,7 @@ class Identity(object):
         '''
         self._name = name
         self._encryptor = encryptor
+        self._location = location
 
     def sign(self, plaintext):
         return self.encryptor.sign(plaintext)
@@ -54,18 +56,32 @@ class Identity(object):
             self._encryptor = ejtp.crypto.make(self._encryptor)
         return self._encryptor
 
+    @property
+    def location(self):
+        if self._location:
+            return self._location
+        else:
+            raise AttributeError("Identity location not set")
+
+    @location.setter
+    def location(self, value):
+        self._location = value
+
 class EncryptorCache(object):
     def __init__(self, source={}):
         self.cache = {}
         self.cache.update(source)
 
     def __getitem__(self, location):
+        location = json.dumps(location)
         return self.cache[location].encryptor
 
     def __setitem__(self, location, value):
+        location = json.dumps(location)
         self.cache[location] = value
 
     def __delitem__(self, location):
+        location = json.dumps(location)
         del self.cache[location]
 
     def update_ident(self, ident):
