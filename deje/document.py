@@ -117,7 +117,3 @@ class Document(object):
     @property
     def version(self):
         return len(self._blockchain)
-
-def mock_doc():
-    import handlers.lua
-    return handlers.lua.test_bootstrap(handlers.lua.echo_chamber())

@@ -23,7 +23,8 @@ def echo_chamber():
     '''
     Diagnostic, prints stuff on events.
 
-    >>> doc = test_bootstrap(echo_chamber())
+    >>> from deje import testing
+    >>> doc = testing.handler_lua_echo_chamber()
 
     Test on_resource_update
 
@@ -111,9 +112,3 @@ def echo_chamber():
             end
         end
     '''
-
-def test_bootstrap(content):
-    doc = document.Document()
-    handler = resource.Resource('/handler.lua', content, 'The primary handler', 'text/lua')
-    doc.add_resource(handler)
-    return doc
