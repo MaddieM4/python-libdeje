@@ -24,7 +24,7 @@ def echo_chamber():
     Diagnostic, prints stuff on events.
 
     >>> from deje import testing
-    >>> doc = testing.handler_lua_echo_chamber()
+    >>> doc = testing.handler_lua(echo_chamber())
 
     Test on_resource_update
 
