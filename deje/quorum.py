@@ -96,10 +96,22 @@ class Quorum(object):
 
     @property
     def thresholds(self):
+        '''
+        >>> import testing
+        >>> quorum = testing.quorum()
+        >>> quorum.thresholds == { 'read':1, 'write':1 }
+        True
+        '''
         return self.document.get_thresholds()
 
     @property
     def threshold(self):
+        '''
+        >>> import testing
+        >>> quorum = testing.quorum()
+        >>> quorum.threshold
+        1
+        '''
         return self.thresholds[self.threshtype]
 
     @property
