@@ -37,8 +37,8 @@ class Owner(object):
         Do setup for testing a good owner.
         >>> owner = testing.owner()
         >>> doc = testing.document(handler_lua_template="echo_chamber")
-        >>> doc.handler
-        <deje.resource.Resource object at 0xb6e7f6cc>
+        >>> doc.handler #doctest: +ELLIPSIS
+        <deje.resource.Resource object at ...>
         >>> owner.own_document(doc)
 
         '''

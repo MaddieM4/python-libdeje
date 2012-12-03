@@ -18,33 +18,29 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import quorum
 
 class Checkpoint(object):
-    def __init__(self, document, content, version, author = None, signatures = {}):
+    def __init__(self, document, content, version = None, author = None, signatures = {}):
         '''
         >>> import testing
         >>> cp = testing.checkpoint()
         >>> ident = testing.identity()
-        >>> sig = cp.make_signature(ident)
-        >>> cp.verify_signature(ident, sig)
+
+        >>> cp.quorum.sign(ident)
+        >>> cp.quorum.sig_valid(ident.name)
         True
-        >>> cp.make_signature("some string")
+        >>> cp.quorum.sign("some string")
         Traceback (most recent call last):
         ValueError: Identity lookups not available at this time.
-        >>> cp.verify_signature("some string", sig)
+        >>> cp.quorum.sig_valid("some string")
         Traceback (most recent call last):
-        ValueError: Identity lookups not available at this time.
-        >>> cp.sign(ident)
-        >>> cp.verify_signature(ident, cp.signatures[ident.name])
-        True
-        >>> cp.sign("anonymous")
-        Traceback (most recent call last):
-        ValueError: No signature provided, and could not derive from identity 'anonymous'
+        KeyError: 'some string'
         '''
         self.document = document
         self.content  = content
-        self.version  = int(version)
+        self.version  = int(version or document.version)
         self.author   = author
         self.quorum   = quorum.Quorum(
                             self.document, 
+                            version,
                             [self.content, self.version, self.author],
                             signatures = signatures,
                         )

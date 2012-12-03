@@ -21,15 +21,16 @@ import datetime
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
 class Quorum(object):
-    def __init__(self, document, content, threshold = "write", signatures = {}):
-        self.content    = content
+    def __init__(self, document, version, content, threshold = "write", signatures = {}):
         self.document   = document
+        self.version    = version
+        self.content    = content
         self.threshtype = threshold
         self.signatures = dict({})
 
     def sig_valid(self, author):
         identity, signature = self.signatures[author]
-        return validate_signature(ident, self.hash, signature)
+        return validate_signature(identity, self.hash, signature)
 
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if not signature:
@@ -43,6 +44,10 @@ class Quorum(object):
     @property
     def done(self):
         return self.completion >= self.threshold
+
+    @property
+    def outdated(self):
+        return self.document.version > self.version
 
     @property
     def participants(self):
