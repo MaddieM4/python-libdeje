@@ -58,10 +58,40 @@ class Quorum(object):
 
     @property
     def outdated(self):
+        '''
+        >>> import testing;
+        >>> cp = testing.checkpoint( testing.document(handler_lua_template="echo_chamber") )
+        >>> ident = testing.identity()
+        >>> quorum = cp.quorum
+
+        >>> quorum.document.version
+        0
+        >>> quorum.version
+        0
+        >>> quorum.outdated
+        False
+        >>> quorum.sign(ident)
+        >>> quorum.outdated
+        False
+        >>> cp.enact()
+        Checkpoint '{'x': 'y'}' achieved.
+        >>> quorum.document.version
+        1
+        >>> quorum.version
+        0
+        >>> quorum.outdated
+        True
+        '''
         return self.document.version > self.version
 
     @property
     def participants(self):
+        '''
+        >>> import testing
+        >>> quorum = testing.quorum()
+        >>> quorum.participants
+        [u'anonymous']
+        '''
         return self.document.get_participants()
 
     @property

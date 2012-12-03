@@ -23,6 +23,8 @@ class Checkpoint(object):
         >>> import testing
         >>> cp = testing.checkpoint()
         >>> ident = testing.identity()
+        >>> cp.version
+        0
 
         >>> cp.quorum.sign(ident)
         >>> cp.quorum.sig_valid(ident.name)
@@ -45,6 +47,7 @@ class Checkpoint(object):
                             signatures = signatures,
                         )
     def enact(self):
+        self.document._blockchain.append(self)
         self.document.animus.on_checkpoint_achieve(self.content, self.author)
 
     def test(self):
@@ -54,6 +57,6 @@ class Checkpoint(object):
         '''
         >>> import testing
         >>> testing.checkpoint().hash()
-        '960341d14e3531a50770bd6529a422d2b4997ae9'
+        'a6aa316b4b784fda1a38b53730d1a7698c3c1a33'
         '''
         return self.quorum.hash

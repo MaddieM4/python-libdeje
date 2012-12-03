@@ -23,7 +23,7 @@ def checkpoint(doc = None):
     from checkpoint import Checkpoint
     if not doc:
         doc = document()
-    return Checkpoint(doc, {'x':'y'}, 4, 'mick-and-bandit')
+    return Checkpoint(doc, {'x':'y'}, 0, 'mick-and-bandit')
 
 def handler_lua(source):
     return document(handler_lua = source)
