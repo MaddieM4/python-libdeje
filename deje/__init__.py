@@ -23,6 +23,7 @@ __all__ = [
     'identity',
     'interpreters',
     'owner',
+    'quorum',
     'resource',
 ]
 
