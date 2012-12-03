@@ -15,17 +15,18 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-__all__ = [
-    'animus',
-    'checkpoint',
-    'document',
-    'handlers',
-    'identity',
-    'interpreters',
-    'owner',
-    'quorum',
-    'read',
-    'resource',
-]
+import quorum
 
-__version__ = "0.0.2"
+class ReadRequest(object):
+    def __init__(self, document, reply_to):
+        self.document = document
+        self.reply_to = reply_to
+        self.quorum   = quorum.Quorum(
+                            self.document,
+                            None,
+                            self.reply_to,
+                            "read",
+                        )
+
+    def hash(self):
+        return self.quorum.hash

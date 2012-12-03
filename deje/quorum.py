@@ -82,7 +82,9 @@ class Quorum(object):
         >>> quorum.outdated
         True
         '''
-        return self.document.version > self.version
+        # Version is not relevant for read requests
+        if self.version != None:
+            return self.document.version > self.version
 
     @property
     def participants(self):
