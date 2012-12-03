@@ -36,11 +36,11 @@ class Checkpoint(object):
         '''
         self.document = document
         self.content  = content
-        self.version  = int(version or document.version)
+        self.version  = int(version or self.document.version)
         self.author   = author
         self.quorum   = quorum.Quorum(
                             self.document, 
-                            version,
+                            self.version,
                             [self.content, self.version, self.author],
                             signatures = signatures,
                         )

@@ -40,6 +40,12 @@ def document(handler_lua = None, handler_lua_template = None):
         doc.add_resource(handler)
     return doc
 
+def quorum():
+    doc = document(handler_lua_template="echo_chamber")
+    cp  = checkpoint(doc)
+    return cp.quorum
+
+
 def owner():
     from owner import Owner
     return Owner(identity(), make_jack=False)

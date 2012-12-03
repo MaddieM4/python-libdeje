@@ -68,7 +68,7 @@ class Document(object):
 
     def checkpoint(self, cp):
         "Create a checkpoint from arbitrary object 'cp'"
-        checkpoint = Checkpoint(self, cp, self.version, "anonymous")
+        checkpoint = Checkpoint(self, cp, author = "anonymous")
         valid = checkpoint.test()
         print "Tested checkpoint %r and got result %r" % (cp, valid)
         if valid:

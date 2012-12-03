@@ -39,6 +39,17 @@ class Quorum(object):
 
     @property
     def completion(self):
+        '''
+        >>> import testing
+        >>> quorum = testing.quorum()
+        >>> ident  = testing.identity()
+
+        >>> quorum.completion
+        0
+        >>> quorum.sign(ident)
+        >>> quorum.completion
+        1
+        '''
         return len(self.valid_signatures)
 
     @property
