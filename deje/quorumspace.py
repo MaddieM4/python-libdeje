@@ -15,18 +15,25 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-__all__ = [
-    'animus',
-    'checkpoint',
-    'document',
-    'handlers',
-    'identity',
-    'interpreters',
-    'owner',
-    'quorum',
-    'quorumspace',
-    'read',
-    'resource',
-]
+import quorum
 
-__version__ = "0.0.2"
+class QuorumSpace(object):
+    def __init__(self, document):
+        self.document  = document
+        self.by_author = {}
+        self.competing = set()
+
+    def sign(self, identity, quorum, signature=None, duration = quorum.DEFAULT_DURATION):
+        if not self.is_free(identity):
+            raise 
+        quorum.sign(identity, signature, duration)
+        self.competing.add(quorum)
+        self.by_author[identity] = quorum
+
+    def is_free(identity):
+        if not self.by_author[identity]:
+            return True
+        return not self.by_author.competing
+
+# No identity can sign more than one quorum at a time.
+class QSDoubleSigning(ValueError): pass

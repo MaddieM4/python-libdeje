@@ -35,6 +35,8 @@ class Quorum(object):
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if not signature:
             signature = generate_signature(identity, self.hash, duration)
+        if not validate_signature(identity, self.hash, signature):
+            raise ValueError("Cannot sign with bad signature")
         self.signatures[identity.name] = (identity, signature)
 
     @property
@@ -51,6 +53,10 @@ class Quorum(object):
         1
         '''
         return len(self.valid_signatures)
+
+    @property
+    def competing(self):
+        return not (self.done or self.outdated)
 
     @property
     def done(self):

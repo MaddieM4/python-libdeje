@@ -23,7 +23,6 @@ class Document(object):
         self._handler = handler_path
         self._owner = owner
         self._resources = {}
-        self._checkpoints = {}
         self._animus = animus.Animus(self)
         self._blockchain = []
         for res in resources:
