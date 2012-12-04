@@ -26,7 +26,9 @@ class Quorum(object):
         self.version    = version
         self.content    = content
         self.threshtype = threshold
-        self.signatures = dict({})
+        self.signatures = {}
+        for identity in signatures:
+            self.sign(identity, signatures[identity])
 
     def sig_valid(self, author):
         identity, signature = self.signatures[author]
@@ -37,7 +39,9 @@ class Quorum(object):
             signature = generate_signature(identity, self.hash, duration)
         if not validate_signature(identity, self.hash, signature):
             raise ValueError("Cannot sign with bad signature")
-        self.signatures[identity.name] = (identity, signature)
+
+        with self.document._qs.transaction(identity, self):
+            self.signatures[identity.name] = (identity, signature)
 
     @property
     def completion(self):

@@ -23,17 +23,36 @@ class QuorumSpace(object):
         self.by_author = {}
         self.competing = set()
 
-    def sign(self, identity, quorum, signature=None, duration = quorum.DEFAULT_DURATION):
-        if not self.is_free(identity):
-            raise 
-        quorum.sign(identity, signature, duration)
+    def on_sign(self, identity, quorum):
         self.competing.add(quorum)
         self.by_author[identity] = quorum
 
-    def is_free(identity):
-        if not self.by_author[identity]:
+    def transaction(self, identity, quorum):
+        return QSTransaction(self, identity, quorum)
+
+    def is_free(self, identity):
+        if not identity in self.by_author:
             return True
         return not self.by_author.competing
+
+    def assert_free(self, identity):
+        '''
+        Raise error if slot isn't free.
+        '''
+        if not self.is_free(identity):
+            raise QSDoubleSigning(identity, self.document)
+
+class QSTransaction(object):
+    def __init__(self, qs, identity, quorum):
+        self.qs = qs
+        self.identity = identity
+        self.quorum = quorum
+
+    def __enter__(self):
+        self.qs.assert_free(self.identity)
+
+    def __exit__(self, type, value, traceback):
+        self.qs.on_sign(self.identity, self.quorum)
 
 # No identity can sign more than one quorum at a time.
 class QSDoubleSigning(ValueError): pass

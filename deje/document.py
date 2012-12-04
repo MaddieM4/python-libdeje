@@ -16,6 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import animus
+import quorumspace
 from checkpoint import Checkpoint
 
 class Document(object):
@@ -23,6 +24,7 @@ class Document(object):
         self._handler = handler_path
         self._owner = owner
         self._resources = {}
+        self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
         for res in resources:
