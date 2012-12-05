@@ -22,28 +22,45 @@ class QuorumSpace(object):
         '''
         >>> import testing
         >>> cp = testing.checkpoint( testing.document(handler_lua_template="tag_team") )
-        >>> ident = testing.identity()
+        >>> mitzi = testing.identity('mitzi')
+        >>> atlas = testing.identity('atlas')
         >>> qs = cp.document._qs
 
         Try to double-sign
-        >>> qs.is_free(ident)
+        >>> qs.is_free(mitzi)
+        True
+        >>> qs.is_free(atlas)
         True
         >>> cp.quorum.competing
         True
 
-        >>> cp.quorum.sign(ident)
-        >>> qs.is_free(ident)
+        >>> cp.quorum.sign(mitzi)
+        >>> qs.is_free(mitzi)
         False
+        >>> qs.is_free(atlas)
+        True
         >>> qs.competing #doctest: +ELLIPSIS
         set([<deje.quorum.Quorum object at ...>])
         >>> qs.by_author #doctest: +ELLIPSIS
         {<deje.identity.Identity object at ...>: <deje.quorum.Quorum object at ...>}
         >>> cp.quorum.competing
         True
+        >>> cp.quorum.done
+        False
 
-        >>> cp.quorum.sign(ident) #doctest: +ELLIPSIS
+        >>> cp.quorum.sign(mitzi) #doctest: +ELLIPSIS
         Traceback (most recent call last):
         QSDoubleSigning: (<deje.identity.Identity object at ...>, <deje.document.Document object at ...>)
+
+        >>> cp.quorum.sign(atlas)
+        >>> qs.is_free(mitzi)
+        True
+        >>> qs.is_free(atlas)
+        True
+        >>> cp.quorum.competing
+        False
+        >>> cp.quorum.done
+        True
         '''
         self.document  = document
         self.by_author = {}
