@@ -37,7 +37,11 @@ class API(object):
         return self.document.get_resource(path)
 
     def get_ident(self):
-        return "anonymous"
+        ident = self.document.identity
+        if type(ident) in (str, unicode, bytes):
+            return ident
+        else:
+            return ident.name
 
     def checkpoint(self, cp):
         self.queue.append(lambda: self.document.checkpoint(cp))

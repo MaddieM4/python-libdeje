@@ -32,7 +32,7 @@ class Quorum(object):
 
     def sig_valid(self, author):
         identity, signature = self.signatures[author]
-        return validate_signature(identity, self.hash, signature)
+        return (author in self.participants) and validate_signature(identity, self.hash, signature)
 
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if not signature:
@@ -49,6 +49,8 @@ class Quorum(object):
         >>> import testing
         >>> quorum = testing.quorum()
         >>> ident  = testing.identity()
+        >>> owner  = testing.owner()
+        >>> owner.own_document(quorum.document)
 
         >>> quorum.completion
         0

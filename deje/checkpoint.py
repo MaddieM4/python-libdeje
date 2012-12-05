@@ -21,12 +21,17 @@ class Checkpoint(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
         '''
         >>> import testing
-        >>> cp = testing.checkpoint()
+        >>> doc = testing.document(handler_lua_template="echo_chamber")
+        >>> owner = testing.owner()
+        >>> owner.own_document(doc)
+        >>> cp = testing.checkpoint(doc)
         >>> ident = testing.identity()
         >>> cp.version
         0
 
         >>> cp.quorum.sign(ident)
+        >>> cp.quorum.participants
+        [u'mitzi@lackadaisy.com']
         >>> cp.quorum.sig_valid(ident.name)
         True
         >>> cp.quorum.sign("some string")

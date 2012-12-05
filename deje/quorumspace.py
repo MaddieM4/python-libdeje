@@ -27,6 +27,8 @@ class QuorumSpace(object):
         >>> qs = cp.document._qs
 
         Try to double-sign
+        >>> cp.quorum.participants
+        [u'mitzi@lackadaisy.com', u'atlas@lackadaisy.com']
         >>> qs.is_free(mitzi)
         True
         >>> qs.is_free(atlas)

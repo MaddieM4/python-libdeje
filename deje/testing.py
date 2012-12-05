@@ -49,6 +49,6 @@ def quorum():
     cp  = checkpoint(doc)
     return cp.quorum
 
-def owner():
+def owner(ident = None):
     from owner import Owner
-    return Owner(identity(), make_jack=False)
+    return Owner(ident or identity(), make_jack=False)
