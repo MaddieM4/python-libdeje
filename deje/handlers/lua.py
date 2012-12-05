@@ -112,3 +112,25 @@ def echo_chamber():
             end
         end
     '''
+
+def tag_team():
+    '''
+    Every checkpoint requires approval from Mitzi and Atlas. Same for reads.
+    '''
+    return '''
+        function checkpoint_test(cp, author)
+            return true
+        end
+
+        function on_checkpoint_achieve(cp, author)
+            -- deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
+        end
+
+        function quorum_participants()
+            return { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com' }
+        end
+
+        function quorum_thresholds()
+            return {read=2, write=2}
+        end
+    '''

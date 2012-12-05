@@ -19,6 +19,32 @@ import quorum
 
 class QuorumSpace(object):
     def __init__(self, document):
+        '''
+        >>> import testing
+        >>> cp = testing.checkpoint( testing.document(handler_lua_template="tag_team") )
+        >>> ident = testing.identity()
+        >>> qs = cp.document._qs
+
+        Try to double-sign
+        >>> qs.is_free(ident)
+        True
+        >>> cp.quorum.competing
+        True
+
+        >>> cp.quorum.sign(ident)
+        >>> qs.is_free(ident)
+        False
+        >>> qs.competing #doctest: +ELLIPSIS
+        set([<deje.quorum.Quorum object at ...>])
+        >>> qs.by_author #doctest: +ELLIPSIS
+        {<deje.identity.Identity object at ...>: <deje.quorum.Quorum object at ...>}
+        >>> cp.quorum.competing
+        True
+
+        >>> cp.quorum.sign(ident) #doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        QSDoubleSigning: (<deje.identity.Identity object at ...>, <deje.document.Document object at ...>)
+        '''
         self.document  = document
         self.by_author = {}
         self.competing = set()
@@ -31,9 +57,9 @@ class QuorumSpace(object):
         return QSTransaction(self, identity, quorum)
 
     def is_free(self, identity):
-        if not identity in self.by_author:
+        if not identity in self.by_author.keys():
             return True
-        return not self.by_author.competing
+        return not self.by_author[identity].competing
 
     def assert_free(self, identity):
         '''
@@ -43,6 +69,15 @@ class QuorumSpace(object):
             raise QSDoubleSigning(identity, self.document)
 
 class QSTransaction(object):
+    '''
+    Allows you to use the shorthand:
+
+        with qs.transaction(identity, quorum):
+            do_stuff()
+
+    Which will abort if the slot is taken, and register the signature event
+    with the QS regardless of the success of the code in the with block.
+    '''
     def __init__(self, qs, identity, quorum):
         self.qs = qs
         self.identity = identity
