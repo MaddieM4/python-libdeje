@@ -35,7 +35,7 @@ def handler_lua(source):
 def document(handler_lua = None, handler_lua_template = None):
     from document import Document
     from resource import Resource
-    doc = Document()
+    doc = Document("testing")
     if handler_lua_template:
         import deje.handlers.lua as handlers
         handler_lua = getattr(handlers, handler_lua_template)()

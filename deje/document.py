@@ -20,7 +20,8 @@ import quorumspace
 from checkpoint import Checkpoint
 
 class Document(object):
-    def __init__(self, handler_path="/handler.lua", resources=[], owner = None):
+    def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
+        self._name = name
         self._handler = handler_path
         self._owner = owner
         self._resources = {}
@@ -103,6 +104,10 @@ class Document(object):
         self._handler = path
 
     # Other accessors
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def owner(self):

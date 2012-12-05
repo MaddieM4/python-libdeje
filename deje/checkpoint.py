@@ -58,6 +58,14 @@ class Checkpoint(object):
     def test(self):
         return self.document.animus.checkpoint_test(self.content, self.author)
 
+    def transmit(self):
+        self.owner.lock_action(self.document, {
+            'type': 'deje-checkpoint',
+            'version': self.document.version,
+            'checkpoint': self.content,
+            'author': self.author,
+        })
+
     def hash(self):
         '''
         >>> import testing
@@ -65,3 +73,7 @@ class Checkpoint(object):
         'a6aa316b4b784fda1a38b53730d1a7698c3c1a33'
         '''
         return self.quorum.hash
+
+    @property
+    def owner(self):
+        return self.document.owner

@@ -48,20 +48,71 @@ class Owner(object):
 
         self.documents  = {}
         self.client = ejtp.client.Client(router, self.identity.location, self.identities, make_jack)
+        self.client.rcv_message = self.on_ejtp
 
     def own_document(self, document):
         document._owner = self
 
+    # EJTP callbacks
+
+    def on_ejtp(self, msg, client):
+        '''
+        >>> import testing
+        >>> mitzi = testing.owner(testing.identity("mitzi"))
+        >>> atlas = testing.owner(testing.identity("atlas"))
+        >>> #anon  = testing.owner("anonymous")
+        >>> doc = testing.document(handler_lua_template="tag_team")
+        '''
+        print msg
+
+    def on_lock_succeed(self, document, content):
+        pass
+
+    # Network utility functions
+
+    def transmit(self, document, mtype, **kwargs):
+        participants = document.get_participants()
+        message = { 'type':mtype, 'docname':document.name }
+        message.update(kwargs)
+        for p in participants:
+            address = p
+            self.client.write_json(address, message)
+
+    def lock_action(self, document, content):
+        self.transmit(document, 'deje-lock-acquire', content=content)
+
+    # Network actions
+
+    def get_version(self, document, callback):
+        self.lock_action(document, {
+            'type':'deje-get-version',
+            'reply-to': self.identity,
+        })
+
+    def get_block(self, document, callback):
+        pass
+
+    def get_snapshot(self, document, callback):
+        pass
+
+    def error(self, document, recipients, code, explanation="", data={}):
+        for r in recipients:
+            self.client.write_json(r, {
+                'type':'deje-error',
+                'code':int(code),
+                'explanation':str(explanation),
+                'data':data,
+            })
+
     # Checkpoint callbacks
 
     def attempt_checkpoint(self, document, checkpoint):
+        checkpoint.transmit()
         self.update_checkpoint(document, checkpoint)
-        # TODO: Send stuff over the network
 
     def update_checkpoint(self, document, checkpoint):
-        if checkpoint.has_quorum(document):
+        if checkpoint.quorum.done:
             self.complete_checkpoint(document, checkpoint)
 
     def complete_checkpoint(self, document, checkpoint):
         checkpoint.enact(document)
-        # TODO: Send stuff over the network
