@@ -43,6 +43,22 @@ class Quorum(object):
         with self.document._qs.transaction(identity, self):
             self.signatures[identity.name] = (identity, signature)
 
+    def clear(self):
+        """
+        Clear out all signatures.
+        >>> import testing
+        >>> quorum = testing.quorum()
+        >>> ident  = testing.identity()
+
+        >>> quorum.sign(ident)
+        >>> quorum.completion
+        1
+        >>> quorum.clear()
+        >>> quorum.completion
+        0
+        """
+        self.signatures = {}
+
     @property
     def completion(self):
         '''
