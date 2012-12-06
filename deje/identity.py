@@ -15,8 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from   ejtp.address import *
 import ejtp.crypto
-import json
 
 class Identity(object):
     def __init__(self, name, encryptor, location = None):
@@ -73,16 +73,25 @@ class EncryptorCache(object):
         self.cache.update(source)
 
     def __getitem__(self, location):
-        location = json.dumps(location)
-        return self.cache[location].encryptor
+        location = str_address(location)
+        return self.cache[location].encryptor.proto()
 
     def __setitem__(self, location, value):
-        location = json.dumps(location)
+        location = str_address(location)
         self.cache[location] = value
 
     def __delitem__(self, location):
-        location = json.dumps(location)
+        location = str_address(location)
         del self.cache[location]
 
     def update_ident(self, ident):
         self[ident.location] = ident
+
+    def find_by_name(self, name):
+        for ident in self.cache.values():
+            if ident.name == name:
+                return ident
+        raise KeyError(name)
+
+    def __repr__(self):
+        return "<EncryptorCache %r>" % repr(self.cache)
