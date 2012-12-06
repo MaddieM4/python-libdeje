@@ -60,11 +60,17 @@ class Owner(object):
     def on_ejtp(self, msg, client):
         '''
         >>> import testing
+        >>> import identity
         >>> from ejtp.router import Router
         >>> r = Router()
         >>> mitzi  = Owner(testing.identity("mitzi"),  r)
         >>> atlas  = Owner(testing.identity("atlas"),  r)
         >>> victor = Owner(testing.identity("victor"), r)
+        >>> identity.sync_caches(
+        ...     mitzi.identities,
+        ...     atlas.identities,
+        ...     victor.identities,
+        ... )
         >>> anon   = Owner("anonymous", r)
         Traceback (most recent call last):
         AttributeError: 'str' object has no attribute 'location'
@@ -81,7 +87,6 @@ class Owner(object):
         ...     'content':'Mitzi says hi',
         ... })
         Tested checkpoint {...} and got result True
-        No known address for u'atlas@lackadaisy.com', skipping
         '''
         print msg
 

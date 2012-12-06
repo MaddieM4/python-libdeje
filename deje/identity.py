@@ -95,3 +95,10 @@ class EncryptorCache(object):
 
     def __repr__(self):
         return "<EncryptorCache %r>" % repr(self.cache)
+
+def sync_caches(*caches):
+    sync = {}
+    for c in caches:
+        sync.update(c.cache)
+    for c in caches:
+        c.cache.update(sync)
