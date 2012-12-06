@@ -76,10 +76,12 @@ class Owner(object):
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
 
-        >>> mdoc.checkpoint({
+        >>> mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
         ...     'content':'Mitzi says hi',
         ... })
+        Tested checkpoint {...} and got result True
+        No known address for u'atlas@lackadaisy.com', skipping
         '''
         print msg
 
@@ -93,7 +95,11 @@ class Owner(object):
         message = { 'type':mtype, 'docname':document.name }
         message.update(kwargs)
         for p in participants:
-            address = self.identities.find_by_name(p).location
+            try:
+                address = self.identities.find_by_name(p).location
+            except KeyError:
+                print "No known address for %r, skipping" % p
+                break
             self.client.write_json(address, message)
 
     def lock_action(self, document, content):
