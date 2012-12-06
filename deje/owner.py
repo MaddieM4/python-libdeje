@@ -50,7 +50,7 @@ class Owner(object):
 
         self.documents  = {}
         self.client = ejtp.client.Client(router, self.identity.location, self.identities, make_jack)
-        self.client.rcv_message = self.on_ejtp
+        self.client.rcv_callback = self.on_ejtp
 
     def own_document(self, document):
         document._owner = self
@@ -82,6 +82,22 @@ class Owner(object):
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
 
+        Test raw EJTP connectivity with a malformed message
+        >>> mitzi.identity.location
+        ['local', None, 'mitzi']
+        >>> atlas.identity.location
+        ['local', None, 'atlas']
+        >>> mitzi.client.interface == mitzi.identity.location
+        True
+        >>> r.client(mitzi.identity.location) == mitzi.client
+        True
+        >>> atlas.client.interface == atlas.identity.location
+        True
+        >>> mitzi.client.router == atlas.client.router
+        True
+        >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
+        Recieved non-{} message, dropping
+
         >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
         ...     'content':'Mitzi says hi',
@@ -90,10 +106,13 @@ class Owner(object):
         1
         >>> mdoc.competing #doctest: +ELLIPSIS
         [<deje.checkpoint.Checkpoint object at ...>]
-        >>> adoc.competing #doctest: +ELLIPSIS
-        [<deje.checkpoint.Checkpoint object at ...>]
+        >>> #adoc.competing
+        >>> #acp = adoc.competing[0]
         '''
-        print msg
+        content = msg.jsoncontent
+        if type(content) != dict:
+            print "Recieved non-{} message, dropping"
+            return
 
     def on_lock_succeed(self, document, content):
         pass
@@ -110,7 +129,8 @@ class Owner(object):
             except KeyError:
                 print "No known address for %r, skipping" % p
                 break
-            self.client.write_json(address, message)
+            if address != self.identity.location:
+                self.client.write_json(address, message)
 
     def lock_action(self, document, content):
         self.transmit(document, 'deje-lock-acquire', content=content)
