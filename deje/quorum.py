@@ -49,6 +49,8 @@ class Quorum(object):
         >>> import testing
         >>> quorum = testing.quorum()
         >>> ident  = testing.identity()
+        >>> owner  = testing.owner()
+        >>> owner.own_document(quorum.document)
 
         >>> quorum.sign(ident)
         >>> quorum.completion
