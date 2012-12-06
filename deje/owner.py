@@ -82,11 +82,11 @@ class Owner(object):
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
 
-        >>> mdoc.checkpoint({ #doctest: +ELLIPSIS
+        >>> cp = mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
         ...     'content':'Mitzi says hi',
         ... })
-        Tested checkpoint {...} and got result True
+        >>> 
         '''
         print msg
 

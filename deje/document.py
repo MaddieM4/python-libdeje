@@ -72,13 +72,15 @@ class Document(object):
         "Create a checkpoint from arbitrary object 'cp'"
         checkpoint = Checkpoint(self, cp, author = "anonymous")
         valid = checkpoint.test()
-        print "Tested checkpoint %r and got result %r" % (cp, valid)
         if valid:
             if self.owner:
                 checkpoint.quorum.sign(self.identity)
                 self.owner.attempt_checkpoint(self, checkpoint)
             else:
                 checkpoint.enact()
+            return checkpoint
+        else:
+            raise ValueError("Checkpoint %r was not valid" % cp)
 
     # Handler-derived properties
 

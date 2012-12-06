@@ -44,10 +44,10 @@ def echo_chamber():
     Test checkpointing
 
     >>> doc.animus.interpreter.call("trigger_checkpoint", "example")
-    Tested checkpoint u'example' and got result True
     Checkpoint 'example' achieved.
     >>> doc.animus.interpreter.call("trigger_checkpoint", "no dice")
-    Tested checkpoint u'no dice' and got result False
+    Traceback (most recent call last):
+    ValueError: Checkpoint u'no dice' was not valid
 
     Test document properties
 
