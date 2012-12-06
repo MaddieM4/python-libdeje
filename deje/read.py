@@ -22,11 +22,17 @@ class ReadRequest(object):
         self.document = document
         self.reply_to = reply_to
         self.quorum   = quorum.Quorum(
-                            self.document,
-                            None,
-                            self.reply_to,
+                            self,
                             "read",
                         )
+
+    @property
+    def version(self):
+        return None
+
+    @property
+    def hashcontent(self):
+        return self.reply_to
 
     def hash(self):
         return self.quorum.hash

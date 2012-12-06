@@ -21,10 +21,8 @@ import datetime
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
 class Quorum(object):
-    def __init__(self, document, version, content, threshold = "write", signatures = {}):
-        self.document   = document
-        self.version    = version
-        self.content    = content
+    def __init__(self, parent, threshold = "write", signatures = {}):
+        self.parent     = parent
         self.threshtype = threshold
         self.signatures = {}
         for identity in signatures:
@@ -60,6 +58,22 @@ class Quorum(object):
         0
         """
         self.signatures = {}
+
+    # Parent-derived properties
+
+    @property
+    def document(self):
+        return self.parent.document
+
+    @property
+    def version(self):
+        return self.parent.version
+
+    @property
+    def content(self):
+        return self.parent.hashcontent
+
+    # Handler-derived properties
 
     @property
     def completion(self):

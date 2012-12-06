@@ -82,6 +82,11 @@ class Document(object):
         else:
             raise ValueError("Checkpoint %r was not valid" % cp)
 
+    @property
+    def competing(self):
+        "All competing quorums"
+        return self._qs.get_competing_actions()
+
     # Handler-derived properties
 
     def get_participants(self):

@@ -46,9 +46,7 @@ class Checkpoint(object):
         self.version  = int(version or self.document.version)
         self.author   = author
         self.quorum   = quorum.Quorum(
-                            self.document, 
-                            self.version,
-                            [self.content, self.version, self.author],
+                            self,
                             signatures = signatures,
                         )
     def enact(self):
@@ -65,6 +63,10 @@ class Checkpoint(object):
             'checkpoint': self.content,
             'author': self.author,
         })
+
+    @property
+    def hashcontent(self):
+        return [self.content, self.version, self.author]
 
     def hash(self):
         '''

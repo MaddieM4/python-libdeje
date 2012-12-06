@@ -72,6 +72,10 @@ class QuorumSpace(object):
         self.competing.add(quorum)
         self.by_author[identity] = quorum
 
+    def get_competing_actions(self):
+        "Get all read and write actions in QS"
+        return [x.parent for x in self.competing if x.competing]
+
     def transaction(self, identity, quorum):
         return QSTransaction(self, identity, quorum)
 

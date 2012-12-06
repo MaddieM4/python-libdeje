@@ -82,11 +82,16 @@ class Owner(object):
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
 
-        >>> cp = mdoc.checkpoint({ #doctest: +ELLIPSIS
+        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
         ...     'content':'Mitzi says hi',
         ... })
-        >>> 
+        >>> mcp.quorum.completion
+        1
+        >>> mdoc.competing #doctest: +ELLIPSIS
+        [<deje.checkpoint.Checkpoint object at ...>]
+        >>> adoc.competing #doctest: +ELLIPSIS
+        [<deje.checkpoint.Checkpoint object at ...>]
         '''
         print msg
 
