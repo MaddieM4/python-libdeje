@@ -139,13 +139,14 @@ class Owner(object):
 
                 cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
         elif mtype == "deje-lock-acquired":
-            sender = self.identities[msg.addr]
+            sender = self.content['signer']
             doc = self.documents[content['docname']]
             try:
                 cp = doc._qs.by_hash[content['content-hash']].parent
             except KeyError:
                 print "Unknown checkpoint data, dropping"
             sig = content['signature']
+            print repr(sig)
             cp.quorum.sign(sender, sig)
 
     def on_lock_succeed(self, document, content):

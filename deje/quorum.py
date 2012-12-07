@@ -66,8 +66,9 @@ class Quorum(object):
         sigs = self.valid_signatures
         for s in sigs:
             kwargs = {
+                'signer' : s,
                 'content-hash' : self.hash,
-                'signature': s,
+                'signature': self.signatures[s][1].decode('raw_unicode_escape'),
             }
             self.document.owner.transmit(
                 self.document,
