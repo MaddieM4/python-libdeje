@@ -60,6 +60,22 @@ class Quorum(object):
         """
         self.signatures = {}
 
+    def transmit(self):
+        '''
+        Send a deje-lock-acquired for every valid signature
+        '''
+        sigs = self.valid_signatures
+        for s in sigs:
+            kwargs = {
+                'content-hash' : self.hash,
+                'signature': s,
+            }
+            self.document.owner.transmit(
+                self.document,
+                "deje-lock-acquired",
+                **kwargs
+            )
+
     # Parent-derived properties
 
     @property

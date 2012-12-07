@@ -117,6 +117,8 @@ class Owner(object):
         True
         >>> acp.hash() == mcp.hash()
         True
+        >>> mcp.quorum.completion
+        1
         '''
         content = msg.jsoncontent
         if type(content) != dict:
@@ -136,6 +138,15 @@ class Owner(object):
                 cp_author  = lcontent['author']
 
                 cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
+        elif mtype == "deje-lock-acquired":
+            sender = self.identities[msg.addr]
+            doc = self.documents[content['docname']]
+            try:
+                cp = doc._qs.by_hash[content['content-hash']].parent
+            except KeyError:
+                print "Unknown checkpoint data, dropping"
+            sig = content['signature']
+            cp.quorum.sign(sender, sig)
 
     def on_lock_succeed(self, document, content):
         pass
@@ -155,7 +166,7 @@ class Owner(object):
             if address != self.identity.location:
                 self.client.write_json(address, message)
 
-    def lock_action(self, document, content):
+    def lock_action(self, document, content, actiontype = None):
         self.transmit(document, 'deje-lock-acquire', content=content)
 
     # Network actions

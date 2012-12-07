@@ -63,6 +63,7 @@ class Checkpoint(object):
             'checkpoint': self.content,
             'author': self.authorname,
         })
+        self.quorum.transmit()
 
     @property
     def authorname(self):
