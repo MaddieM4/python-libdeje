@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 import ejtp.client
 import identity
+import checkpoint
 import document
 
 class Owner(object):
@@ -54,6 +55,7 @@ class Owner(object):
 
     def own_document(self, document):
         document._owner = self
+        self.documents[document.name] = document
 
     # EJTP callbacks
 
@@ -106,13 +108,28 @@ class Owner(object):
         1
         >>> mdoc.competing #doctest: +ELLIPSIS
         [<deje.checkpoint.Checkpoint object at ...>]
-        >>> #adoc.competing
-        >>> #acp = adoc.competing[0]
+        >>> adoc.competing #doctest: +ELLIPSIS
+        [<deje.checkpoint.Checkpoint object at ...>]
+        >>> acp = adoc.competing[0]
         '''
         content = msg.jsoncontent
         if type(content) != dict:
             print "Recieved non-{} message, dropping"
             return
+        if not "type" in content:
+            print "Recieved message with no type, dropping"
+            return
+        mtype = content['type']
+        if mtype == "deje-lock-acquire":
+            lcontent = content['content']
+            ltype = lcontent['type']
+            if ltype == "deje-checkpoint":
+                doc = self.documents[content['docname']]
+                cp_content = lcontent['checkpoint']
+                cp_version = lcontent['version']
+                cp_author  = lcontent['author']
+
+                cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
 
     def on_lock_succeed(self, document, content):
         pass

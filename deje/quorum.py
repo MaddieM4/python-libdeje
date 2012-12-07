@@ -25,6 +25,7 @@ class Quorum(object):
         self.parent     = parent
         self.threshtype = threshold
         self.signatures = {}
+        self.document._qs.register(self)
         for identity in signatures:
             self.sign(identity, signatures[identity])
 

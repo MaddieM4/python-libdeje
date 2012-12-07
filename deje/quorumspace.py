@@ -41,8 +41,8 @@ class QuorumSpace(object):
         False
         >>> qs.is_free(atlas)
         True
-        >>> qs.competing #doctest: +ELLIPSIS
-        set([<deje.quorum.Quorum object at ...>])
+        >>> qs.by_hash #doctest: +ELLIPSIS
+        {'a6aa316b4b784fda1a38b53730d1a7698c3c1a33': <deje.quorum.Quorum object at ...>}
         >>> qs.by_author #doctest: +ELLIPSIS
         {<deje.identity.Identity object at ...>: <deje.quorum.Quorum object at ...>}
         >>> cp.quorum.competing
@@ -66,15 +66,20 @@ class QuorumSpace(object):
         '''
         self.document  = document
         self.by_author = {}
-        self.competing = set()
+        self.by_hash = {}
 
     def on_sign(self, identity, quorum):
-        self.competing.add(quorum)
-        self.by_author[identity] = quorum
+        self.by_author[identity]  = quorum
+
+    def register(self, quorum):
+        self.by_hash[quorum.hash] = quorum
 
     def get_competing_actions(self):
         "Get all read and write actions in QS"
-        return [x.parent for x in self.competing if x.competing]
+        return [x.parent for x in self.by_hash.values() if x.competing]
+
+    def get_known_actions(self):
+        return [x.parent for x in self.by_hash.values()]
 
     def transaction(self, identity, quorum):
         return QSTransaction(self, identity, quorum)

@@ -79,3 +79,8 @@ class Checkpoint(object):
     @property
     def owner(self):
         return self.document.owner
+
+def from_hashcontent(document, hashcontent, signatures={}):
+    if type(hashcontent) != list or len(hashcontent) != 3:
+        raise TypeError("checkpoint.from_hashcontent expects a list of length 3, got %r" % hashcontent)
+    return Checkpoint(document, content, version, author, signatures)
