@@ -101,6 +101,14 @@ def echo_chamber():
             return {read=1, write=1}
         end
 
+        function can_read()
+            return true
+        end
+
+        function can_write()
+            return true
+        end
+
         function request_protocols()
             return { "echo-chamber-1" }
         end
@@ -128,6 +136,27 @@ def tag_team():
 
         function quorum_participants()
             return { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com' }
+        end
+
+        readers = { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com', 'victor@lackadaisy.com' }
+        writers = quorum_participants()
+
+        function can_read(name)
+            for i, v in pairs(readers) do
+                if v == name then
+                    return true
+                end
+            end
+            return false
+        end
+
+        function can_write(name)
+            for i, v in pairs(writers) do
+                if v == name then
+                    return true
+                end
+            end
+            return false
         end
 
         function quorum_thresholds()

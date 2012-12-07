@@ -70,6 +70,8 @@ class Document(object):
 
     def checkpoint(self, cp):
         "Create a checkpoint from arbitrary object 'cp'"
+        if not self.can_write():
+            raise ValueError("You don't have write permission")
         checkpoint = Checkpoint(self, cp, author = "anonymous")
         valid = checkpoint.test()
         if valid:
@@ -97,6 +99,14 @@ class Document(object):
 
     def get_request_protocols(self):
         return self.animus.request_protocols()
+
+    def can_read(self, ident = None):
+        ident = ident or self.identity
+        return self.animus.can_read(ident)
+
+    def can_write(self, ident = None):
+        ident = ident or self.identity
+        return self.animus.can_write(ident)
 
     # Handler
 

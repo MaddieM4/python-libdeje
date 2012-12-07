@@ -66,6 +66,16 @@ class LuaInterpreter(object):
                 dict(self.call("quorum_thresholds"))
         return self.cache['quorum_thresholds']
 
+    def can_read(self, ident):
+        if hasattr(ident, 'name'):
+            ident = ident.name
+        return bool(self.call("can_read", ident))
+
+    def can_write(self, ident):
+        if hasattr(ident, 'name'):
+            ident = ident.name
+        return bool(self.call("can_write", ident))
+
     def request_protocols(self):
         if not self.cache['request_protocols']:
             self.cache['request_protocols'] = \

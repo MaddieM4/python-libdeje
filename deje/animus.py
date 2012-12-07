@@ -44,6 +44,14 @@ class Animus(object):
         if self.activate():
             return self.interpreter.quorum_thresholds()
 
+    def can_read(self, ident):
+        if self.activate():
+            return self.interpreter.can_read(ident)
+
+    def can_write(self, ident):
+        if self.activate():
+            return self.interpreter.can_write(ident)
+
     def request_protocols(self):
         if self.activate():
             return self.interpreter.request_protocols()
