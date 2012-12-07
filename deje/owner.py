@@ -111,6 +111,12 @@ class Owner(object):
         >>> adoc.competing #doctest: +ELLIPSIS
         [<deje.checkpoint.Checkpoint object at ...>]
         >>> acp = adoc.competing[0]
+        >>> acp.hashcontent #doctest: +ELLIPSIS
+        [{...}, 0, u'mitzi@lackadaisy.com']
+        >>> acp.hashcontent == mcp.hashcontent
+        True
+        >>> acp.hash() == mcp.hash()
+        True
         '''
         content = msg.jsoncontent
         if type(content) != dict:

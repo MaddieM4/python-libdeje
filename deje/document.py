@@ -72,7 +72,7 @@ class Document(object):
         "Create a checkpoint from arbitrary object 'cp'"
         if not self.can_write():
             raise ValueError("You don't have write permission")
-        checkpoint = Checkpoint(self, cp, author = "anonymous")
+        checkpoint = Checkpoint(self, cp, author = self.identity)
         valid = checkpoint.test()
         if valid:
             if self.owner:

@@ -61,12 +61,31 @@ class Checkpoint(object):
             'type': 'deje-checkpoint',
             'version': self.document.version,
             'checkpoint': self.content,
-            'author': self.author,
+            'author': self.authorname,
         })
 
     @property
+    def authorname(self):
+        '''
+        >>> import testing
+        >>> doc = testing.document(handler_lua_template="echo_chamber")
+        >>> owner = testing.owner()
+        >>> owner.own_document(doc)
+        >>> cp = Checkpoint(doc, None, author=owner.identity)
+        
+        >>> cp.author #doctest: +ELLIPSIS
+        <deje.identity.Identity object at ...>
+
+        >>> cp.authorname
+        'mitzi@lackadaisy.com'
+        >>> doc.identity.name
+        'mitzi@lackadaisy.com'
+        '''
+        return (hasattr(self.author, "name") and self.author.name) or self.author
+        
+    @property
     def hashcontent(self):
-        return [self.content, self.version, self.author]
+        return [self.content, self.version, self.authorname]
 
     def hash(self):
         '''
