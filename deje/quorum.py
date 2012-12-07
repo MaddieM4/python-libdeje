@@ -36,8 +36,7 @@ class Quorum(object):
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if not signature:
             signature = generate_signature(identity, self.hash, duration)
-        if not validate_signature(identity, self.hash, signature):
-            raise ValueError("Cannot sign with bad signature")
+        assert_valid_signature(identity, self.hash, signature)
 
         with self.document._qs.transaction(identity, self):
             self.signatures[identity.name] = (identity, signature)
@@ -186,16 +185,25 @@ class Quorum(object):
         return checksum(self.content)
 
 def validate_signature(identity, content_hash, signature):
+    try:
+        assert_valid_signature(identity, content_hash, signature)
+        return True
+    except:
+        return False
+
+def assert_valid_signature(identity, content_hash, signature):
     if type(identity) in (str, unicode, bytes):
         raise ValueError("Identity lookups not available at this time.")
     try:
         expires, subsig = signature.split("\x00", 1)
     except:
-        # Bad signature format
-        return False
+        raise ValueError("Bad signature format - no nullbyte separator")
     expire_date = datetime.datetime.strptime(expires, "%Y-%m-%d %H:%M:%S.%f")
     plaintext = expires + content_hash
-    return (expire_date > datetime.datetime.utcnow()) and identity.verify_signature(subsig, plaintext)
+    if not expire_date > datetime.datetime.utcnow():
+        raise ValueError("Signature is expired")
+    if not identity.verify_signature(subsig, plaintext):
+        raise ValueError("Identity object thinks sig is not valid")
 
 def generate_signature(identity, content_hash, duration = DEFAULT_DURATION):
     if type(identity) in (str, unicode, bytes):
