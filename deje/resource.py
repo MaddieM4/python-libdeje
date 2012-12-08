@@ -78,6 +78,18 @@ class Resource(object):
         else:
             raise TypeError("Resource.comment must be str or unicode, got %r", type(newcomment))
 
+    def set_property(self, propname, value):
+        if propname == "path":
+            self.path = value
+        elif propname == "type":
+            self.type = value
+        elif propname == "content":
+            self.content = value
+        elif propname == "comment":
+            self.comment = value
+        else:
+            raise KeyError("Not allowed to set property %r through Resource.set_property" % propname)
+
     def trigger_change(self, propname, oldpath=None):
         if hasattr(self, 'document') and self.document:
             self.document.animus.on_resource_update(self.path, propname, oldpath or self.path)

@@ -15,12 +15,21 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from deje.resource import Resource
+
 exported_functions = (
     'get_resource',
     'get_ident',
     'checkpoint',
     'debug',
 )
+
+class SRFlag(object):
+    def __init__(self):
+        self.valid = True
+
+    def revoke(self):
+        self.valid = False
 
 class API(object):
     def __init__(self, document):
@@ -49,6 +58,29 @@ class API(object):
     def debug(self, *args):
         for arg in args:
             print arg
+
+    # set_resource
+
+    def set_resource(self):
+        """
+        Returns a set_resource function and a flag for marking it invalid when
+        you're done using the function. Prevents handler abuses.
+        """
+        sr_flag = SRFlag()
+        def callback(path, prop, value):
+            if sr_flag.valid:
+                self.queue.append(lambda: self._set_resource(path, prop, value))
+            else:
+                raise ValueError("Attempt to access set_resource in handler after invalidation")
+        return callback, sr_flag
+
+    def _set_resource(self, path, prop, value):
+        try:
+            res = self.document.get_resource(path)
+        except KeyError:
+            res = Resource(path)
+            self.document.add_resource(res)
+        res.set_property(prop, value)
 
     # Function exporter
 

@@ -89,7 +89,7 @@ def echo_chamber():
             end
         end
 
-        function on_checkpoint_achieve(cp, author)
+        function on_checkpoint_achieve(set_resource, cp, author)
             deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
         end
 
@@ -130,8 +130,11 @@ def tag_team():
             return true
         end
 
-        function on_checkpoint_achieve(cp, author)
-            -- deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
+        function on_checkpoint_achieve(set_resource, cp, author)
+            set_resource(cp.path, cp.property, cp.value)
+        end
+
+        function on_resource_update()
         end
 
         function quorum_participants()

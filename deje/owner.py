@@ -102,12 +102,17 @@ class Owner(object):
 
         >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
-        ...     'content':'Mitzi says hi',
+        ...     'property':'content',
+        ...     'value':'Mitzi says hi',
         ... })
         >>> mcp.quorum.completion
         2
         >>> mdoc.competing
         []
+        >>> mdoc.get_resource("/example").content
+        u'Mitzi says hi'
+        >>> adoc.get_resource("/example").content
+        u'Mitzi says hi'
         '''
         content = msg.jsoncontent
         if type(content) != dict:

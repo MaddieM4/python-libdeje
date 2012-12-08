@@ -49,7 +49,9 @@ class LuaInterpreter(object):
         self.reload()
 
     def on_checkpoint_achieve(self, cp, author):
-        self.call("on_checkpoint_achieve", cp, author)
+        set_resource, sr_flag = self.api.set_resource()
+        self.call("on_checkpoint_achieve", set_resource, cp, author)
+        sr_flag.revoke()
 
     def checkpoint_test(self, cp, author):
         return self.call("checkpoint_test", cp, author)
