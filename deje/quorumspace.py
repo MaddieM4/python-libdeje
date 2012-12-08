@@ -21,47 +21,58 @@ class QuorumSpace(object):
     def __init__(self, document):
         '''
         >>> import testing
-        >>> cp = testing.checkpoint( testing.document(handler_lua_template="tag_team") )
+        >>> import checkpoint
+        >>> doc = testing.document(handler_lua_template="tag_team")
+        >>> cp1 = checkpoint.Checkpoint(doc, {"hello":"world"})
+        >>> cp2 = checkpoint.Checkpoint(doc, {"turtle":"food"})
         >>> mitzi = testing.identity('mitzi')
         >>> atlas = testing.identity('atlas')
-        >>> qs = cp.document._qs
+        >>> qs = cp1.document._qs
 
         Try to double-sign
-        >>> cp.quorum.participants
+        >>> cp1.quorum.participants
         [u'mitzi@lackadaisy.com', u'atlas@lackadaisy.com']
         >>> qs.is_free(mitzi)
         True
         >>> qs.is_free(atlas)
         True
-        >>> cp.quorum.competing
+        >>> cp1.quorum.competing
         True
 
-        >>> cp.quorum.sign(mitzi)
+        >>> cp1.quorum.sign(mitzi)
         >>> qs.is_free(mitzi)
         False
         >>> qs.is_free(atlas)
         True
-        >>> qs.by_hash #doctest: +ELLIPSIS
-        {'a6aa316b4b784fda1a38b53730d1a7698c3c1a33': <deje.quorum.Quorum object at ...>}
+        >>> len(qs.by_hash)
+        2
+        >>> qs.by_hash[cp1.hash()] #doctest: +ELLIPSIS
+        <deje.quorum.Quorum object at ...>
+        >>> qs.by_hash[cp2.hash()] #doctest: +ELLIPSIS
+        <deje.quorum.Quorum object at ...>
         >>> qs.by_author #doctest: +ELLIPSIS
         {<deje.identity.Identity object at ...>: <deje.quorum.Quorum object at ...>}
-        >>> cp.quorum.competing
+        >>> cp1.quorum.competing
         True
-        >>> cp.quorum.done
+        >>> cp1.quorum.done
         False
 
-        >>> cp.quorum.sign(mitzi) #doctest: +ELLIPSIS
+        Not double signing, same person and cp
+        >>> cp1.quorum.sign(mitzi)
+
+        Double signing, same person but different cp
+        >>> cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
         Traceback (most recent call last):
         QSDoubleSigning: (<deje.identity.Identity object at ...>, <deje.document.Document object at ...>)
 
-        >>> cp.quorum.sign(atlas)
+        >>> cp1.quorum.sign(atlas)
         >>> qs.is_free(mitzi)
         True
         >>> qs.is_free(atlas)
         True
-        >>> cp.quorum.competing
+        >>> cp1.quorum.competing
         False
-        >>> cp.quorum.done
+        >>> cp1.quorum.done
         True
         '''
         self.document  = document

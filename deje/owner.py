@@ -105,20 +105,9 @@ class Owner(object):
         ...     'content':'Mitzi says hi',
         ... })
         >>> mcp.quorum.completion
-        1
-        >>> mdoc.competing #doctest: +ELLIPSIS
-        [<deje.checkpoint.Checkpoint object at ...>]
-        >>> adoc.competing #doctest: +ELLIPSIS
-        [<deje.checkpoint.Checkpoint object at ...>]
-        >>> acp = adoc.competing[0]
-        >>> acp.hashcontent #doctest: +ELLIPSIS
-        [{...}, 0, u'mitzi@lackadaisy.com']
-        >>> acp.hashcontent == mcp.hashcontent
-        True
-        >>> acp.hash() == mcp.hash()
-        True
-        >>> mcp.quorum.completion
-        1
+        2
+        >>> mdoc.competing
+        []
         '''
         content = msg.jsoncontent
         if type(content) != dict:
@@ -138,6 +127,9 @@ class Owner(object):
                 cp_author  = lcontent['author']
 
                 cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
+                if cp.test():
+                    cp.quorum.sign(self.identity)
+                    cp.quorum.transmit([self.identity.name])
         elif mtype == "deje-lock-acquired":
             sender = self.identities.find_by_name(content['signer'])
             doc = self.documents[content['docname']]
@@ -147,6 +139,7 @@ class Owner(object):
                 print "Unknown checkpoint data, dropping"
             sig = content['signature'].encode('raw_unicode_escape')
             cp.quorum.sign(sender, sig)
+            self.update_checkpoint(doc, cp)
 
     def on_lock_succeed(self, document, content):
         pass
@@ -203,4 +196,4 @@ class Owner(object):
             self.complete_checkpoint(document, checkpoint)
 
     def complete_checkpoint(self, document, checkpoint):
-        checkpoint.enact(document)
+        checkpoint.enact()

@@ -38,8 +38,7 @@ class Checkpoint(object):
         Traceback (most recent call last):
         ValueError: Identity lookups not available at this time.
         >>> cp.quorum.sig_valid("some string")
-        Traceback (most recent call last):
-        KeyError: 'some string'
+        False
         '''
         self.document = document
         self.content  = content

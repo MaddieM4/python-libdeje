@@ -30,6 +30,8 @@ class Quorum(object):
             self.sign(identity, signatures[identity])
 
     def sig_valid(self, author):
+        if author not in self.signatures:
+            return False
         identity, signature = self.signatures[author]
         return (author in self.participants) and validate_signature(identity, self.hash, signature)
 
@@ -37,6 +39,10 @@ class Quorum(object):
         if not signature:
             signature = generate_signature(identity, self.hash, duration)
         assert_valid_signature(identity, self.hash, signature)
+        # Equivalent or updated signature, don't check for collisions in QS
+        if self.sig_valid(identity.name):
+            self.signatures[identity.name] = (identity, signature)
+            return
 
         with self.document._qs.transaction(identity, self):
             self.signatures[identity.name] = (identity, signature)
@@ -59,11 +65,11 @@ class Quorum(object):
         """
         self.signatures = {}
 
-    def transmit(self):
+    def transmit(self, signatures = None):
         '''
         Send a deje-lock-acquired for every valid signature
         '''
-        sigs = self.valid_signatures
+        sigs = signatures or self.valid_signatures
         for s in sigs:
             kwargs = {
                 'signer' : s,

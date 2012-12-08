@@ -73,8 +73,10 @@ class Document(object):
         if not self.can_write():
             raise ValueError("You don't have write permission")
         checkpoint = Checkpoint(self, cp, author = self.identity)
-        valid = checkpoint.test()
-        if valid:
+        return self.external_checkpoint(checkpoint)
+
+    def external_checkpoint(self, checkpoint):
+        if checkpoint.test():
             if self.owner:
                 checkpoint.quorum.sign(self.identity)
                 self.owner.attempt_checkpoint(self, checkpoint)
@@ -82,7 +84,8 @@ class Document(object):
                 checkpoint.enact()
             return checkpoint
         else:
-            raise ValueError("Checkpoint %r was not valid" % cp)
+            raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
+        
 
     @property
     def competing(self):
