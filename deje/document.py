@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import animus
 import quorumspace
 from checkpoint import Checkpoint
+from read import ReadRequest
 
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
@@ -28,6 +29,7 @@ class Document(object):
         self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
+        self.version_global = 0
         for res in resources:
             self.add_resource(res)
 
@@ -86,6 +88,13 @@ class Document(object):
         else:
             raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
         
+    def poll_version(self):
+        if not self.can_write():
+            raise ValueError("You don't have read permission")
+        request = ReadRequest(self)
+        if self.owner:
+            self.owner.attempt_read(self, request)
+        return request
 
     @property
     def competing(self):

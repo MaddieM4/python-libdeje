@@ -81,6 +81,7 @@ class Owner(object):
         Separate identical starting points for all of them.
         >>> mdoc = testing.document(handler_lua_template="tag_team")
         >>> adoc = testing.document(handler_lua_template="tag_team")
+        >>> vdoc = testing.document(handler_lua_template="tag_team")
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
 
@@ -100,6 +101,7 @@ class Owner(object):
         >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
         Recieved non-{} message, dropping
 
+        Test a write
         >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
         ...     'path':'/example',
         ...     'property':'content',
@@ -113,6 +115,15 @@ class Owner(object):
         u'Mitzi says hi'
         >>> adoc.get_resource("/example").content
         u'Mitzi says hi'
+
+        Test a read
+        >>> vdoc.version
+        0
+        >>> vdoc.version_global
+        0
+        >>> rr = vdoc.poll_version()
+        >>> vdoc.version_global
+        1
         '''
         content = msg.jsoncontent
         if type(content) != dict:
@@ -202,3 +213,13 @@ class Owner(object):
 
     def complete_checkpoint(self, document, checkpoint):
         checkpoint.enact()
+
+    # Read callbacks
+
+    def attempt_read(self, document, request):
+        request.transmit()
+        self.update_read(self, document, request)
+
+    def update_read(self, document, request):
+        if request.quorum.done:
+            self.complete_read(document, request)

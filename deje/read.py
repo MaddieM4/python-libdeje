@@ -18,9 +18,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import quorum
 
 class ReadRequest(object):
-    def __init__(self, document, reply_to):
+    def __init__(self, document, reply_to=None):
         self.document = document
-        self.reply_to = reply_to
+        self.reply_to = reply_to or document.identity
         self.quorum   = quorum.Quorum(
                             self,
                             "read",
