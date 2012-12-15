@@ -84,6 +84,7 @@ class Owner(object):
         >>> vdoc = testing.document(handler_lua_template="tag_team")
         >>> mitzi.own_document(mdoc)
         >>> atlas.own_document(adoc)
+        >>> victor.own_document(vdoc)
 
         Test raw EJTP connectivity with a malformed message
         >>> mitzi.identity.location
@@ -117,13 +118,17 @@ class Owner(object):
         u'Mitzi says hi'
 
         Test a read
+
+        TODO:
+            * Reengineer ReadRequest/Quorum/WhateverClass for ghost-colliding reads
+            * Add Document.subscribe function
         >>> vdoc.version
         0
-        >>> vdoc.version_global
-        0
-        >>> rr = vdoc.poll_version()
-        >>> vdoc.version_global
-        1
+        >>> vdoc.can_read()
+        True
+        >>> rr = vdoc.subscribe()
+        >>> rr #doctest: +ELLIPSIS
+        <deje.read.ReadRequest object at ...>
         '''
         content = msg.jsoncontent
         if type(content) != dict:
@@ -155,7 +160,7 @@ class Owner(object):
                 print "Unknown checkpoint data, dropping"
             sig = content['signature'].encode('raw_unicode_escape')
             cp.quorum.sign(sender, sig)
-            self.update_checkpoint(doc, cp)
+            cp.update()
 
     def on_lock_succeed(self, document, content):
         pass
@@ -200,26 +205,3 @@ class Owner(object):
                 'explanation':str(explanation),
                 'data':data,
             })
-
-    # Checkpoint callbacks
-
-    def attempt_checkpoint(self, document, checkpoint):
-        checkpoint.transmit()
-        self.update_checkpoint(document, checkpoint)
-
-    def update_checkpoint(self, document, checkpoint):
-        if checkpoint.quorum.done:
-            self.complete_checkpoint(document, checkpoint)
-
-    def complete_checkpoint(self, document, checkpoint):
-        checkpoint.enact()
-
-    # Read callbacks
-
-    def attempt_read(self, document, request):
-        request.transmit()
-        self.update_read(self, document, request)
-
-    def update_read(self, document, request):
-        if request.quorum.done:
-            self.complete_read(document, request)

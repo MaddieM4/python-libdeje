@@ -52,8 +52,9 @@ class Checkpoint(object):
         self.document._blockchain.append(self)
         self.document.animus.on_checkpoint_achieve(self.content, self.author)
 
-    def test(self):
-        return self.document.animus.checkpoint_test(self.content, self.author)
+    def update(self):
+        if self.quorum.done:
+            self.enact()
 
     def transmit(self):
         self.owner.lock_action(self.document, {
@@ -63,6 +64,10 @@ class Checkpoint(object):
             'author': self.authorname,
         })
         self.quorum.transmit()
+        self.update()
+
+    def test(self):
+        return self.document.animus.checkpoint_test(self.content, self.author)
 
     @property
     def authorname(self):

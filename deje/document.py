@@ -29,7 +29,7 @@ class Document(object):
         self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
-        self.version_global = 0
+        self.subscribers = set()
         for res in resources:
             self.add_resource(res)
 
@@ -81,19 +81,19 @@ class Document(object):
         if checkpoint.test():
             if self.owner:
                 checkpoint.quorum.sign(self.identity)
-                self.owner.attempt_checkpoint(self, checkpoint)
+                checkpoint.transmit()
             else:
                 checkpoint.enact()
             return checkpoint
         else:
             raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
         
-    def poll_version(self):
-        if not self.can_write():
+    def subscribe(self):
+        if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self)
         if self.owner:
-            self.owner.attempt_read(self, request)
+            request.transmit()
         return request
 
     @property

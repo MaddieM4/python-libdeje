@@ -18,13 +18,24 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import quorum
 
 class ReadRequest(object):
-    def __init__(self, document, reply_to=None):
+    def __init__(self, document, subscriber=None):
         self.document = document
-        self.reply_to = reply_to or document.identity
+        self.subscriber = subscriber or document.identity
         self.quorum   = quorum.Quorum(
                             self,
                             "read",
                         )
+
+    def enact(self):
+        if self.quorum.sig_valid(self.document.identity):
+            self.document.subscribers.add(self.subscriber)
+
+    def update(self):
+        if self.quorum.done:
+            self.enact()
+
+    def transmit(self):
+        pass
 
     @property
     def version(self):
@@ -32,7 +43,7 @@ class ReadRequest(object):
 
     @property
     def hashcontent(self):
-        return self.reply_to
+        return self.subscriber.name
 
     def hash(self):
         return self.quorum.hash

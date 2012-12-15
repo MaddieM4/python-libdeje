@@ -39,8 +39,9 @@ class Quorum(object):
         if not signature:
             signature = generate_signature(identity, self.hash, duration)
         assert_valid_signature(identity, self.hash, signature)
-        # Equivalent or updated signature, don't check for collisions in QS
-        if self.sig_valid(identity.name):
+        # Equivalent or updated signature or non-colliding read.
+        # Don't check for collisions in QS
+        if self.sig_valid(identity.name) or self.threshtype == "read":
             self.signatures[identity.name] = (identity, signature)
             return
 
