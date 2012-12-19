@@ -44,13 +44,19 @@ class Checkpoint(object):
         self.content  = content
         self.version  = int(version or self.document.version)
         self.author   = author
+        self.enacted  = False
         self.quorum   = quorum.Quorum(
                             self,
                             signatures = signatures,
                         )
     def enact(self):
+        if self.enacted:
+            return
+        self.enacted = True
         self.document._blockchain.append(self)
         self.document.animus.on_checkpoint_achieve(self.content, self.author)
+        if self.owner:
+            self.quorum.transmit_complete()
 
     def update(self):
         if self.quorum.done:

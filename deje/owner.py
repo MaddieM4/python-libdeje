@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import ejtp.client
 import identity
 import checkpoint
+import read
 import document
 
 class Owner(object):
@@ -119,16 +120,23 @@ class Owner(object):
 
         Test a read
 
-        TODO:
-            * Reengineer ReadRequest/Quorum/WhateverClass for ghost-colliding reads
-            * Add Document.subscribe function
         >>> vdoc.version
         0
         >>> vdoc.can_read()
         True
+        >>> # One error is normal, due to transmission patterns
         >>> rr = vdoc.subscribe()
+        Unknown checkpoint data, dropping
+        >>> mdoc.competing
+        []
+        >>> adoc.competing
+        []
         >>> rr #doctest: +ELLIPSIS
         <deje.read.ReadRequest object at ...>
+        >>> mdoc.subscribers #doctest: +ELLIPSIS
+        set([<deje.identity.Identity object at ...>])
+        >>> adoc.subscribers #doctest: +ELLIPSIS
+        set([<deje.identity.Identity object at ...>])
         '''
         content = msg.jsoncontent
         if type(content) != dict:
@@ -141,16 +149,23 @@ class Owner(object):
         if mtype == "deje-lock-acquire":
             lcontent = content['content']
             ltype = lcontent['type']
+            doc = self.documents[content['docname']]
             if ltype == "deje-checkpoint":
-                doc = self.documents[content['docname']]
                 cp_content = lcontent['checkpoint']
                 cp_version = lcontent['version']
                 cp_author  = lcontent['author']
 
                 cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
-                if cp.test():
+                if doc.can_write(cp_author) and cp.test():
                     cp.quorum.sign(self.identity)
                     cp.quorum.transmit([self.identity.name])
+            if ltype == "deje-subscribe":
+                rr_subname = lcontent['subscriber']
+                subscriber = self.identities.find_by_name(rr_subname)
+                rr = read.ReadRequest(doc, subscriber)
+                if doc.can_read(subscriber):
+                    rr.sign(self.identity)
+                    rr.update()
         elif mtype == "deje-lock-acquired":
             sender = self.identities.find_by_name(content['signer'])
             doc = self.documents[content['docname']]
@@ -158,9 +173,22 @@ class Owner(object):
                 cp = doc._qs.by_hash[content['content-hash']].parent
             except KeyError:
                 print "Unknown checkpoint data, dropping"
+                return
             sig = content['signature'].encode('raw_unicode_escape')
             cp.quorum.sign(sender, sig)
             cp.update()
+        elif mtype == "deje-lock-complete":
+            doc = self.documents[content['docname']]
+            try:
+                quorum = doc._qs.by_hash[content['content-hash']]
+            except KeyError:
+                print "Unknown checkpoint data for complete, dropping (%r)" % content['content-hash']
+                return
+            for signer in content['signatures']:
+                sender = self.identities.find_by_name(signer)
+                sig = content['signatures'][signer].encode('raw_unicode_escape')
+                quorum.sign(sender, sig)
+                quorum.parent.update()
 
     def on_lock_succeed(self, document, content):
         pass
@@ -172,6 +200,7 @@ class Owner(object):
         message = { 'type':mtype, 'docname':document.name }
         message.update(kwargs)
         for p in participants:
+            # print p, mtype
             try:
                 address = self.identities.find_by_name(p).location
             except KeyError:

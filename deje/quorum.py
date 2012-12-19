@@ -26,6 +26,7 @@ class Quorum(object):
         self.threshtype = threshold
         self.signatures = {}
         self.document._qs.register(self)
+        self.transmitted_complete = False
         for identity in signatures:
             self.sign(identity, signatures[identity])
 
@@ -70,18 +71,43 @@ class Quorum(object):
         '''
         Send a deje-lock-acquired for every valid signature
         '''
-        sigs = signatures or self.valid_signatures
-        for s in sigs:
+        signers = signatures or self.valid_signatures
+        for signer in signers:
             kwargs = {
-                'signer' : s,
+                'signer' : signer,
                 'content-hash' : self.hash,
-                'signature': self.signatures[s][1].decode('raw_unicode_escape'),
+                'signature': self.transmittable_sig(signer),
             }
             self.document.owner.transmit(
                 self.document,
                 "deje-lock-acquired",
                 **kwargs
             )
+
+    def transmit_complete(self):
+        '''
+        Send a deje-lock-complete with all valid signatures
+        '''
+        if self.transmitted_complete:
+            return
+
+        self.transmitted_complete = True
+        sigs = {}
+        for signer in self.valid_signatures:
+            sigs[signer] = self.transmittable_sig(signer)
+
+        kwargs = {
+            'signatures' : sigs,
+            'content-hash' : self.hash,
+        }
+        self.document.owner.transmit(
+            self.document,
+            "deje-lock-complete",
+            **kwargs
+        )
+
+    def transmittable_sig(self, signer):
+        return self.signatures[signer][1].decode('raw_unicode_escape')
 
     # Parent-derived properties
 
@@ -153,6 +179,8 @@ class Quorum(object):
         # Version is not relevant for read requests
         if self.version != None:
             return self.document.version > self.version
+        else:
+            return False
 
     @property
     def participants(self):

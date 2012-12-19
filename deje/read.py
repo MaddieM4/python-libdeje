@@ -21,21 +21,41 @@ class ReadRequest(object):
     def __init__(self, document, subscriber=None):
         self.document = document
         self.subscriber = subscriber or document.identity
+        self.enacted  = False
         self.quorum   = quorum.Quorum(
                             self,
                             "read",
                         )
+        self.document._qs.register(self.quorum)
+
+    def sign(self, *args, **kwargs):
+        self.quorum.sign(*args, **kwargs)
+        if self.owner:
+            if self.subscriber == self.owner.identity:
+                self.transmit()
+            else:
+                self.quorum.transmit()
 
     def enact(self):
-        if self.quorum.sig_valid(self.document.identity):
+        if self.enacted:
+            return
+        self.enacted = True
+        if self.quorum.sig_valid(self.document.identity.name):
             self.document.subscribers.add(self.subscriber)
+            if self.owner:
+                self.quorum.transmit_complete()
 
     def update(self):
         if self.quorum.done:
             self.enact()
 
     def transmit(self):
-        pass
+        self.owner.lock_action(self.document, {
+            'type': 'deje-subscribe',
+            'subscriber': self.subscriber.name,
+        })
+        self.quorum.transmit()
+        self.update()
 
     @property
     def version(self):
@@ -47,3 +67,8 @@ class ReadRequest(object):
 
     def hash(self):
         return self.quorum.hash
+
+    @property
+    def owner(self):
+        return self.document.owner
+
