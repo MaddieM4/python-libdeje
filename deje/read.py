@@ -69,6 +69,10 @@ class ReadRequest(object):
         return self.quorum.hash
 
     @property
+    def author(self):
+        return self.subscriber
+
+    @property
     def owner(self):
         return self.document.owner
 

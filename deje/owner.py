@@ -195,22 +195,30 @@ class Owner(object):
 
     # Network utility functions
 
-    def transmit(self, document, mtype, **kwargs):
-        participants = document.get_participants()
+    def transmit(self, document, mtype, properties, targets = [], participants = False, subscribers = True):
+        targets = set(targets)
+        if participants:
+            targets.update(set(document.get_participants()))
+        if subscribers:
+            targets.update(document.subscribers)
+
         message = { 'type':mtype, 'docname':document.name }
-        message.update(kwargs)
-        for p in participants:
-            # print p, mtype
-            try:
-                address = self.identities.find_by_name(p).location
-            except KeyError:
-                print "No known address for %r, skipping" % p
-                break
+        message.update(properties)
+        for target in targets:
+            # print target, mtype
+            if hasattr(target, 'location'):
+                address = target.location
+            else:
+                try:
+                    address = self.identities.find_by_name(target).location
+                except KeyError:
+                    print "No known address for %r, skipping" % target
+                    break
             if address != self.identity.location:
                 self.client.write_json(address, message)
 
     def lock_action(self, document, content, actiontype = None):
-        self.transmit(document, 'deje-lock-acquire', content=content)
+        self.transmit(document, 'deje-lock-acquire', {'content':content}, participants = True, subscribers=False)
 
     # Network actions
 

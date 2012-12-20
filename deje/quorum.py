@@ -73,15 +73,16 @@ class Quorum(object):
         '''
         signers = signatures or self.valid_signatures
         for signer in signers:
-            kwargs = {
-                'signer' : signer,
-                'content-hash' : self.hash,
-                'signature': self.transmittable_sig(signer),
-            }
             self.document.owner.transmit(
                 self.document,
                 "deje-lock-acquired",
-                **kwargs
+                {
+                    'signer' : signer,
+                    'content-hash' : self.hash,
+                    'signature': self.transmittable_sig(signer),
+                },
+                [self.parent.author],
+                participants = True # includes all signers
             )
 
     def transmit_complete(self):
@@ -96,14 +97,15 @@ class Quorum(object):
         for signer in self.valid_signatures:
             sigs[signer] = self.transmittable_sig(signer)
 
-        kwargs = {
-            'signatures' : sigs,
-            'content-hash' : self.hash,
-        }
         self.document.owner.transmit(
             self.document,
             "deje-lock-complete",
-            **kwargs
+            {
+                'signatures' : sigs,
+                'content-hash' : self.hash,
+            },
+            [self.parent.author],
+            participants = True # includes all signers
         )
 
     def transmittable_sig(self, signer):
