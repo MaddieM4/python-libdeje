@@ -234,7 +234,7 @@ class Owner(object):
     def get_snapshot(self, document, callback):
         pass
 
-    def error(self, document, recipients, code, explanation="", data={}):
+    def error(self, recipients, code, explanation="", data={}):
         for r in recipients:
             self.client.write_json(r, {
                 'type':'deje-error',
