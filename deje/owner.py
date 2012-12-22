@@ -139,56 +139,71 @@ class Owner(object):
         set([<deje.identity.Identity object at ...>])
         '''
         content = msg.jsoncontent
+        # Rule out basic errors
         if type(content) != dict:
             print "Recieved non-{} message, dropping"
             return
         if not "type" in content:
             print "Recieved message with no type, dropping"
             return
-        mtype = content['type']
-        if mtype == "deje-lock-acquire":
-            lcontent = content['content']
-            ltype = lcontent['type']
-            doc = self.documents[content['docname']]
-            if ltype == "deje-checkpoint":
-                cp_content = lcontent['checkpoint']
-                cp_version = lcontent['version']
-                cp_author  = lcontent['author']
 
-                cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
-                if doc.can_write(cp_author) and cp.test():
-                    cp.quorum.sign(self.identity)
-                    cp.quorum.transmit([self.identity.name])
-            if ltype == "deje-subscribe":
-                rr_subname = lcontent['subscriber']
-                subscriber = self.identities.find_by_name(rr_subname)
-                rr = read.ReadRequest(doc, subscriber)
-                if doc.can_read(subscriber):
-                    rr.sign(self.identity)
-                    rr.update()
+        # Accumulate basic information
+        mtype = content['type']
+        if "docname" in content and content['docname'] in self.documents:
+            doc = self.documents[content['docname']]
+        else:
+            doc = None
+        if mtype == "deje-lock-acquire":
+            self._on_deje_lock_acquire(msg, content, mtype, doc)
         elif mtype == "deje-lock-acquired":
-            sender = self.identities.find_by_name(content['signer'])
-            doc = self.documents[content['docname']]
-            try:
-                cp = doc._qs.by_hash[content['content-hash']].parent
-            except KeyError:
-                print "Unknown checkpoint data, dropping"
-                return
-            sig = content['signature'].encode('raw_unicode_escape')
-            cp.quorum.sign(sender, sig)
-            cp.update()
+            self._on_deje_lock_acquired(msg, content, mtype, doc)
         elif mtype == "deje-lock-complete":
-            doc = self.documents[content['docname']]
-            try:
-                quorum = doc._qs.by_hash[content['content-hash']]
-            except KeyError:
-                print "Unknown checkpoint data for complete, dropping (%r)" % content['content-hash']
-                return
-            for signer in content['signatures']:
-                sender = self.identities.find_by_name(signer)
-                sig = content['signatures'][signer].encode('raw_unicode_escape')
-                quorum.sign(sender, sig)
-                quorum.parent.update()
+            self._on_deje_lock_complete(msg, content, mtype, doc)
+        else:
+            print "Recieved message with unknown type (%r)" % mtype
+
+    def _on_deje_lock_acquire(self, msg, content, ctype, doc):
+        lcontent = content['content']
+        ltype = lcontent['type']
+        if ltype == "deje-checkpoint":
+            cp_content = lcontent['checkpoint']
+            cp_version = lcontent['version']
+            cp_author  = lcontent['author']
+
+            cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
+            if doc.can_write(cp_author) and cp.test():
+                cp.quorum.sign(self.identity)
+                cp.quorum.transmit([self.identity.name])
+        if ltype == "deje-subscribe":
+            rr_subname = lcontent['subscriber']
+            subscriber = self.identities.find_by_name(rr_subname)
+            rr = read.ReadRequest(doc, subscriber)
+            if doc.can_read(subscriber):
+                rr.sign(self.identity)
+                rr.update()
+
+    def _on_deje_lock_acquired(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_name(content['signer'])
+        try:
+            cp = doc._qs.by_hash[content['content-hash']].parent
+        except KeyError:
+            print "Unknown checkpoint data, dropping"
+            return
+        sig = content['signature'].encode('raw_unicode_escape')
+        cp.quorum.sign(sender, sig)
+        cp.update()
+
+    def _on_deje_lock_complete(self, msg, content, ctype, doc):
+        try:
+            quorum = doc._qs.by_hash[content['content-hash']]
+        except KeyError:
+            print "Unknown checkpoint data for complete, dropping (%r)" % content['content-hash']
+            return
+        for signer in content['signatures']:
+            sender = self.identities.find_by_name(signer)
+            sig = content['signatures'][signer].encode('raw_unicode_escape')
+            quorum.sign(sender, sig)
+            quorum.parent.update()
 
     def on_lock_succeed(self, document, content):
         pass
