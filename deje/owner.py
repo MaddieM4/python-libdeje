@@ -103,12 +103,12 @@ class Owner(object):
             doc = self.documents[content['docname']]
         else:
             doc = None
-        if mtype == "deje-lock-acquire":
-            self._on_deje_lock_acquire(msg, content, mtype, doc)
-        elif mtype == "deje-lock-acquired":
-            self._on_deje_lock_acquired(msg, content, mtype, doc)
-        elif mtype == "deje-lock-complete":
-            self._on_deje_lock_complete(msg, content, mtype, doc)
+
+        # Find and call function
+        funcname = "_on_" + mtype.replace('-','_')
+        if hasattr(self, funcname):
+            func = getattr(self, funcname)
+            func(msg, content, mtype, doc)
         else:
             print "Recieved message with unknown type (%r)" % mtype
 
@@ -155,8 +155,17 @@ class Owner(object):
             quorum.sign(sender, sig)
             quorum.parent.update()
 
-    def on_lock_succeed(self, document, content):
-        pass
+    def _on_deje_get_version(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        self.transmit(doc, 'deje-doc-version', {'version':doc.version}, [sender], subscribers = False)
+
+    def _on_deje_doc_version(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        if sender.name not in doc.get_participants():
+            print "Version information came from non-participant source, ignoring"
+            return
+        version = content['version']
+        doc.trigger_callback('recv-version', version)
 
     # Network utility functions
 
@@ -188,16 +197,24 @@ class Owner(object):
     # Network actions
 
     def get_version(self, document, callback):
-        self.lock_action(document, {
-            'type':'deje-get-version',
-            'reply-to': self.identity,
-        })
+        """
+        >>> import testing
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
+        >>> def on_recv_version(version):
+        ...     print "Version is %d" % version
+        >>> victor.get_version(vdoc, on_recv_version)
+        Version is 0
+        """
+        document.set_callback('recv-version', callback)
+        self.transmit(document, 'deje-get-version', {}, participants = True, subscribers = False)
 
-    def get_block(self, document, callback):
-        pass
+    def get_block(self, document, version, callback):
+        document.set_callback('recv-block-%d' % version, callback)
+        self.transmit(document, 'deje-get-block', {}, participants = True, subscribers = False)
 
     def get_snapshot(self, document, callback):
-        pass
+        document.set_callback('recv-snapshot-%d' % version, callback)
+        self.transmit(document, 'deje-get-snapshot', {}, participants = True, subscribers = False)
 
     def error(self, recipients, code, explanation="", data={}):
         for r in recipients:

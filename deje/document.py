@@ -29,6 +29,7 @@ class Document(object):
         self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
+        self._callbacks = {}
         self.subscribers = set()
         for res in resources:
             self.add_resource(res)
@@ -195,3 +196,36 @@ class Document(object):
     @property
     def version(self):
         return len(self._blockchain)
+
+    # Callbacks
+
+    def set_callback(self, label, callback):
+        '''
+        >>> import testing
+        >>> doc = testing.document()
+        >>> def callback_A(result):
+        ...     print "%r from A" % result
+        >>> def callback_B(result):
+        ...     print "%r from B" % result
+        >>> doc.set_callback('police_raid', callback_A)
+        >>> doc.set_callback('police_raid', callback_B)
+
+        Order is unpredictable for callbacks
+
+        >>> doc._callbacks #doctest: +ELLIPSIS
+        {'police_raid': set([<function callback_... at ...>, <function callback_... at ...>])}
+        >>> doc.trigger_callback('police_raid', ["detective", "inspector"]) #doctest: +ELLIPSIS
+        ['detective', 'inspector'] from ...
+        ['detective', 'inspector'] from ...
+        '''
+        if not label in self._callbacks:
+            self._callbacks[label] = set([callback])
+        else:
+            self._callbacks[label].add(callback)
+
+    def trigger_callback(self, label, result):
+        if label not in self._callbacks:
+            return
+        for callback in self._callbacks[label]:
+            callback(result)
+        self._callbacks[label].clear()

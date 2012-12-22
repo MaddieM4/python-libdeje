@@ -93,6 +93,10 @@ class EncryptorCache(object):
                 return ident
         raise KeyError(name)
 
+    def find_by_location(self, location):
+        location = str_address(location)
+        return self.cache[location]
+
     def __repr__(self):
         return "<EncryptorCache %r>" % repr(self.cache)
 
