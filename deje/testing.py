@@ -53,3 +53,27 @@ def quorum():
 def owner(ident = None):
     from owner import Owner
     return Owner(ident or identity(), make_jack=False)
+
+def ejtp_test():
+    import identity as identity_module
+    from owner import Owner
+    from ejtp.router import Router
+    r = Router()
+    mitzi  = Owner(identity("mitzi"),  r)
+    atlas  = Owner(identity("atlas"),  r)
+    victor = Owner(identity("victor"), r)
+    identity_module.sync_caches(
+        mitzi.identities,
+        atlas.identities,
+        victor.identities,
+    )
+
+    # Document that mitzi and atlas are part of, but victor is not.
+    # Separate identical starting points for all of them.
+    mdoc = document(handler_lua_template="tag_team")
+    adoc = document(handler_lua_template="tag_team")
+    vdoc = document(handler_lua_template="tag_team")
+    mitzi.own_document(mdoc)
+    atlas.own_document(adoc)
+    victor.own_document(vdoc)
+    return (mitzi, atlas, victor, mdoc, adoc, vdoc)

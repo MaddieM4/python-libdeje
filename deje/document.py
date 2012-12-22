@@ -71,7 +71,26 @@ class Document(object):
     # Checkpoint stuff
 
     def checkpoint(self, cp):
-        "Create a checkpoint from arbitrary object 'cp'"
+        '''
+        Create a checkpoint from arbitrary object 'cp'
+
+        >>> import testing
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
+
+        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
+        ...     'path':'/example',
+        ...     'property':'content',
+        ...     'value':'Mitzi says hi',
+        ... })
+        >>> mcp.quorum.completion
+        2
+        >>> mdoc.competing
+        []
+        >>> mdoc.get_resource("/example").content
+        u'Mitzi says hi'
+        >>> adoc.get_resource("/example").content
+        u'Mitzi says hi'
+        '''
         if not self.can_write():
             raise ValueError("You don't have write permission")
         checkpoint = Checkpoint(self, cp, author = self.identity)
@@ -89,6 +108,30 @@ class Document(object):
             raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
         
     def subscribe(self):
+        '''
+        >>> import testing
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
+
+        Test a read
+
+        >>> vdoc.version
+        0
+        >>> vdoc.can_read()
+        True
+        >>> # One error is normal, due to transmission patterns
+        >>> rr = vdoc.subscribe()
+        Unknown checkpoint data, dropping
+        >>> mdoc.competing
+        []
+        >>> adoc.competing
+        []
+        >>> rr #doctest: +ELLIPSIS
+        <deje.read.ReadRequest object at ...>
+        >>> mdoc.subscribers #doctest: +ELLIPSIS
+        set([<deje.identity.Identity object at ...>])
+        >>> adoc.subscribers #doctest: +ELLIPSIS
+        set([<deje.identity.Identity object at ...>])
+        '''
         if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self)

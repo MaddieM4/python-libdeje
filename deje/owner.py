@@ -27,6 +27,11 @@ class Owner(object):
     '''
     def __init__(self, self_ident, router=None, make_jack=True):
         '''
+        Make sure string idents fail
+        >>> from ejtp.router import Router
+        >>> anon = Owner("anonymous", Router())
+        Traceback (most recent call last):
+        AttributeError: 'str' object has no attribute 'location'
 
         Make sure self_idents with no location fail
         >>> import testing
@@ -63,80 +68,25 @@ class Owner(object):
     def on_ejtp(self, msg, client):
         '''
         >>> import testing
-        >>> import identity
-        >>> from ejtp.router import Router
-        >>> r = Router()
-        >>> mitzi  = Owner(testing.identity("mitzi"),  r)
-        >>> atlas  = Owner(testing.identity("atlas"),  r)
-        >>> victor = Owner(testing.identity("victor"), r)
-        >>> identity.sync_caches(
-        ...     mitzi.identities,
-        ...     atlas.identities,
-        ...     victor.identities,
-        ... )
-        >>> anon   = Owner("anonymous", r)
-        Traceback (most recent call last):
-        AttributeError: 'str' object has no attribute 'location'
-        
-        Document that mitzi and atlas are part of, but victor is not.
-        Separate identical starting points for all of them.
-        >>> mdoc = testing.document(handler_lua_template="tag_team")
-        >>> adoc = testing.document(handler_lua_template="tag_team")
-        >>> vdoc = testing.document(handler_lua_template="tag_team")
-        >>> mitzi.own_document(mdoc)
-        >>> atlas.own_document(adoc)
-        >>> victor.own_document(vdoc)
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
 
-        Test raw EJTP connectivity with a malformed message
         >>> mitzi.identity.location
         ['local', None, 'mitzi']
         >>> atlas.identity.location
         ['local', None, 'atlas']
         >>> mitzi.client.interface == mitzi.identity.location
         True
+        >>> r = mitzi.client.router
         >>> r.client(mitzi.identity.location) == mitzi.client
         True
         >>> atlas.client.interface == atlas.identity.location
         True
         >>> mitzi.client.router == atlas.client.router
         True
+
+        Test raw EJTP connectivity with a malformed message
         >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
         Recieved non-{} message, dropping
-
-        Test a write
-        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
-        ...     'path':'/example',
-        ...     'property':'content',
-        ...     'value':'Mitzi says hi',
-        ... })
-        >>> mcp.quorum.completion
-        2
-        >>> mdoc.competing
-        []
-        >>> mdoc.get_resource("/example").content
-        u'Mitzi says hi'
-        >>> adoc.get_resource("/example").content
-        u'Mitzi says hi'
-
-        Test a read
-
-        >>> vdoc.version
-        0
-        >>> vdoc.can_read()
-        True
-        >>> # One error is normal, due to transmission patterns
-        >>> rr = vdoc.subscribe()
-        Unknown checkpoint data, dropping
-        >>> mdoc.competing
-        []
-        >>> adoc.competing
-        []
-        >>> rr #doctest: +ELLIPSIS
-        <deje.read.ReadRequest object at ...>
-        >>> mdoc.subscribers #doctest: +ELLIPSIS
-        set([<deje.identity.Identity object at ...>])
-        >>> adoc.subscribers #doctest: +ELLIPSIS
-        set([<deje.identity.Identity object at ...>])
         '''
         content = msg.jsoncontent
         # Rule out basic errors
