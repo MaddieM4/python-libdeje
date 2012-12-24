@@ -65,7 +65,7 @@ class Checkpoint(object):
     def transmit(self):
         self.owner.lock_action(self.document, {
             'type': 'deje-checkpoint',
-            'version': self.document.version,
+            'version': self.version,
             'checkpoint': self.content,
             'author': self.authorname,
         })

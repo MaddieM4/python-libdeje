@@ -93,15 +93,12 @@ class Quorum(object):
             return
 
         self.transmitted_complete = True
-        sigs = {}
-        for signer in self.valid_signatures:
-            sigs[signer] = self.transmittable_sig(signer)
 
         self.document.owner.transmit(
             self.document,
             "deje-lock-complete",
             {
-                'signatures' : sigs,
+                'signatures' : self.sigs_dict(),
                 'content-hash' : self.hash,
             },
             [self.parent.author],
@@ -110,6 +107,12 @@ class Quorum(object):
 
     def transmittable_sig(self, signer):
         return self.signatures[signer][1].decode('raw_unicode_escape')
+
+    def sigs_dict(self):
+        sigs = {}
+        for signer in self.valid_signatures:
+            sigs[signer] = self.transmittable_sig(signer)
+        return sigs
 
     # Parent-derived properties
 

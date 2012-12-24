@@ -157,7 +157,10 @@ class Owner(object):
 
     def _on_deje_get_version(self, msg, content, ctype, doc):
         sender = self.identities.find_by_location(msg.addr)
-        self.transmit(doc, 'deje-doc-version', {'version':doc.version}, [sender], subscribers = False)
+        if not doc.can_read(sender):
+            print "Permissions error: cannot read"
+            return
+        self.reply(doc, 'deje-doc-version', {'version':doc.version}, sender)
 
     def _on_deje_doc_version(self, msg, content, ctype, doc):
         sender = self.identities.find_by_location(msg.addr)
@@ -166,6 +169,31 @@ class Owner(object):
             return
         version = content['version']
         doc.trigger_callback('recv-version', version)
+
+    def _on_deje_get_block(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        blocknumber = content['version']
+        blockcp = doc._blockchain[blocknumber]
+        block = {
+            'author': blockcp.authorname,
+            'content': blockcp.content,
+            'version': blockcp.version,
+            'signatures': blockcp.quorum.sigs_dict(),
+        }
+        if not doc.can_read(sender):
+            print "Permissions error: cannot read"
+            return
+        self.reply(doc, 'deje-doc-block', {'block':block}, sender)
+
+    def _on_deje_doc_block(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        if sender.name not in doc.get_participants():
+            print "Block information came from non-participant source, ignoring"
+            return
+        block = content['block']
+        version = block['version']
+        doc.trigger_callback('recv-block-%d' % version, block)
+
 
     # Network utility functions
 
@@ -191,6 +219,9 @@ class Owner(object):
             if address != self.identity.location:
                 self.client.write_json(address, message)
 
+    def reply(self, document, mtype, properties, target):
+        return self.transmit(document, mtype, properties, [target], subscribers=False)
+
     def lock_action(self, document, content, actiontype = None):
         self.transmit(document, 'deje-lock-acquire', {'content':content}, participants = True, subscribers=False)
 
@@ -204,13 +235,56 @@ class Owner(object):
         ...     print "Version is %d" % version
         >>> victor.get_version(vdoc, on_recv_version)
         Version is 0
+        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
+        ...     'path':'/example',
+        ...     'property':'content',
+        ...     'value':'Mitzi says hi',
+        ... })
+        >>> victor.get_version(vdoc, on_recv_version)
+        Version is 1
         """
         document.set_callback('recv-version', callback)
         self.transmit(document, 'deje-get-version', {}, participants = True, subscribers = False)
 
     def get_block(self, document, version, callback):
+        """
+        >>> import json
+        >>> import testing
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
+
+        Print in a predictible manner for doctest
+
+        >>> def on_recv_block(block):
+        ...     keys = block.keys()
+        ...     keys.sort()
+        ...     for key in keys:
+        ...         print key + ": " + json.dumps(block[key], indent=4)
+
+        Put in a checkpoint to retrieve
+
+        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
+        ...     'path':'/example',
+        ...     'property':'content',
+        ...     'value':'Mitzi says hi',
+        ... })
+
+        Retrieve checkpoint
+
+        >>> victor.get_block(vdoc, 0, on_recv_block) #doctest: +ELLIPSIS
+        author: "mitzi@lackadaisy.com"
+        content: {
+            "path": "/example", 
+            "property": "content", 
+            "value": "Mitzi says hi"
+        }
+        signatures: {
+            "atlas@lackadaisy.com": "...", 
+            "mitzi@lackadaisy.com": "..."
+        }
+        version: 0
+        """
         document.set_callback('recv-block-%d' % version, callback)
-        self.transmit(document, 'deje-get-block', {}, participants = True, subscribers = False)
+        self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
 
     def get_snapshot(self, document, callback):
         document.set_callback('recv-snapshot-%d' % version, callback)
