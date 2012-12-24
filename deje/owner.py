@@ -194,6 +194,22 @@ class Owner(object):
         version = block['version']
         doc.trigger_callback('recv-block-%d' % version, block)
 
+    def _on_deje_get_snapshot(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        version = content['version']
+        if not doc.can_read(sender):
+            print "Permissions error: cannot read"
+            return
+        self.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender)
+
+    def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
+        sender = self.identities.find_by_location(msg.addr)
+        if sender.name not in doc.get_participants():
+            print "Snapshot information came from non-participant source, ignoring"
+            return
+        snapshot = content['snapshot']
+        version  = content['version']
+        doc.trigger_callback('recv-snapshot-%d' % version, snapshot)
 
     # Network utility functions
 
@@ -255,10 +271,7 @@ class Owner(object):
         Print in a predictible manner for doctest
 
         >>> def on_recv_block(block):
-        ...     keys = block.keys()
-        ...     keys.sort()
-        ...     for key in keys:
-        ...         print key + ": " + json.dumps(block[key], indent=4)
+        ...     print json.dumps(block, indent=4, sort_keys=True)
 
         Put in a checkpoint to retrieve
 
@@ -271,24 +284,43 @@ class Owner(object):
         Retrieve checkpoint
 
         >>> victor.get_block(vdoc, 0, on_recv_block) #doctest: +ELLIPSIS
-        author: "mitzi@lackadaisy.com"
-        content: {
-            "path": "/example", 
-            "property": "content", 
-            "value": "Mitzi says hi"
+        {
+            "author": "mitzi@lackadaisy.com", 
+            "content": {
+                "path": "/example", 
+                "property": "content", 
+                "value": "Mitzi says hi"
+            }, 
+            "signatures": {
+                "atlas@lackadaisy.com": "...", 
+                "mitzi@lackadaisy.com": "..."
+            }, 
+            "version": 0
         }
-        signatures: {
-            "atlas@lackadaisy.com": "...", 
-            "mitzi@lackadaisy.com": "..."
-        }
-        version: 0
         """
         document.set_callback('recv-block-%d' % version, callback)
         self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
 
-    def get_snapshot(self, document, callback):
+    def get_snapshot(self, document, version, callback):
+        """
+        >>> import json
+        >>> import testing
+        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
+        >>> def on_recv_snapshot(snapshot):
+        ...     print json.dumps(snapshot, indent=4, sort_keys=True)
+
+        >>> victor.get_snapshot(vdoc, 0, on_recv_snapshot) #doctest: +ELLIPSIS
+        {
+            "/handler.lua": {
+                "comment": "The primary handler", 
+                "content": "\\n        function checkpoint_test(cp, author)...", 
+                "path": "/handler.lua", 
+                "type": "text/lua"
+            }
+        }
+        """
         document.set_callback('recv-snapshot-%d' % version, callback)
-        self.transmit(document, 'deje-get-snapshot', {}, participants = True, subscribers = False)
+        self.transmit(document, 'deje-get-snapshot', {'version':version}, participants = True, subscribers = False)
 
     def error(self, recipients, code, explanation="", data={}):
         for r in recipients:

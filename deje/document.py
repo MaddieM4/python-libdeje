@@ -52,6 +52,18 @@ class Document(object):
     def resources(self):
         return self._resources
 
+    def snapshot(self, version = None):
+        if version == None:
+            version = self.version
+        if version != self.version:
+            raise NotImplementedError("Rewinds not supported yet")
+
+        resources = {}
+        for resource in self.resources.values():
+            path = resource.path
+            resources[path] = resource.serialize()
+        return resources
+
     # Animus
 
     def activate(self):
