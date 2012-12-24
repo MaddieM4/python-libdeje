@@ -23,6 +23,7 @@ __all__ = [
     'identity',
     'interpreters',
     'owner',
+    'protocol',
     'quorum',
     'quorumspace',
     'read',
