@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 import ejtp.client
 import identity
 import protocol
+import errors
 
 class Owner(object):
     '''
@@ -85,16 +86,16 @@ class Owner(object):
 
         Test raw EJTP connectivity with a malformed message
         >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
-        Recieved non-{} message, dropping
+        Error from 'mitzi@lackadaisy.com', code 30: u'Recieved non-{} message, dropping'
         '''
         content = msg.jsoncontent
         # Rule out basic errors
         if type(content) != dict:
+            return self.error(msg, errors.MSG_NOT_DICT)
             print "Recieved non-{} message, dropping"
             return
         if not "type" in content:
-            print "Recieved message with no type, dropping"
-            return
+            return self.error(msg, errors.MSG_NO_TYPE)
 
         # Accumulate basic information
         mtype = content['type']
@@ -216,11 +217,15 @@ class Owner(object):
         document.set_callback('recv-snapshot-%d' % version, callback)
         self.transmit(document, 'deje-get-snapshot', {'version':version}, participants = True, subscribers = False)
 
-    def error(self, recipients, code, explanation="", data={}):
-        for r in recipients:
-            self.client.write_json(r, {
-                'type':'deje-error',
-                'code':int(code),
-                'explanation':str(explanation),
-                'data':data,
-            })
+    def error(self, msg, attributes, data=None):
+        '''
+        Shortcut syntax for replying with error information. Not the same
+        functional signature as self.protocol.error!
+        '''
+        recipient = msg.addr
+        code = attributes['code']
+        explanation = attributes['explanation']
+        if '%' in explanation:
+            explanation = explanation % data
+
+        self.protocol.error([recipient], code, explanation, data)

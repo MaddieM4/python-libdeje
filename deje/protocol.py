@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 import read
 import checkpoint
+import errors
 
 class Protocol(object):
     '''
@@ -35,7 +36,17 @@ class Protocol(object):
             func = getattr(self, funcname)
             func(msg, content, mtype, doc)
         else:
-            print "Recieved message with unknown type (%r)" % mtype
+            self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, mtype)
+
+    # Error handling
+
+    def _on_deje_error(self, msg, content, ctype, doc):
+        sender = msg.addr
+        try:
+            sender = self.owner.identities.find_by_location(msg.addr).name
+        except KeyError:
+            pass # No saved information on this ident
+        print "Error from %r, code %d: %r" % (sender, content['code'], content['explanation'])
 
     # Locking mechanisms
 
@@ -139,3 +150,14 @@ class Protocol(object):
         snapshot = content['snapshot']
         version  = content['version']
         doc.trigger_callback('recv-snapshot-%d' % version, snapshot)
+
+    # Transport shortcuts
+
+    def error(self, recipients, code, explanation="", data={}):
+        for r in recipients:
+            self.owner.client.write_json(r, {
+                'type':'deje-error',
+                'code':int(code),
+                'explanation':str(explanation),
+                'data':data,
+            })
