@@ -14,3 +14,13 @@ MSG_UNKNOWN_TYPE = {
     'code': 32,
     'explanation':"Recieved message with unknown type (%r)",
 } 
+
+# Locking errors
+
+LOCK_HASH_NOT_RECOGNIZED = {
+    'code': 40,
+    'explanation': "Unknown lock quorum data, dropping (%s)",
+}
+
+# Checkpoint errors
+

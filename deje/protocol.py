@@ -72,21 +72,21 @@ class Protocol(object):
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_name(content['signer'])
+        content_hash = content['content-hash']
         try:
-            cp = doc._qs.by_hash[content['content-hash']].parent
+            quorum = doc._qs.by_hash[content_hash]
         except KeyError:
-            print "Unknown checkpoint data, dropping"
-            return
+            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash)
         sig = content['signature'].encode('raw_unicode_escape')
-        cp.quorum.sign(sender, sig)
-        cp.update()
+        quorum.sign(sender, sig)
+        quorum.parent.update()
 
     def _on_deje_lock_complete(self, msg, content, ctype, doc):
+        content_hash = content['content-hash']
         try:
-            quorum = doc._qs.by_hash[content['content-hash']]
+            quorum = doc._qs.by_hash[content_hash]
         except KeyError:
-            print "Unknown checkpoint data for complete, dropping (%r)" % content['content-hash']
-            return
+            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash)
         for signer in content['signatures']:
             sender = self.owner.identities.find_by_name(signer)
             sig = content['signatures'][signer].encode('raw_unicode_escape')

@@ -133,7 +133,7 @@ class Document(object):
         True
         >>> # One error is normal, due to transmission patterns
         >>> rr = vdoc.subscribe()
-        Unknown checkpoint data, dropping
+        Error from 'mitzi@lackadaisy.com', code 40: u'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'
         >>> mdoc.competing
         []
         >>> adoc.competing

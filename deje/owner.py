@@ -92,8 +92,6 @@ class Owner(object):
         # Rule out basic errors
         if type(content) != dict:
             return self.error(msg, errors.MSG_NOT_DICT)
-            print "Recieved non-{} message, dropping"
-            return
         if not "type" in content:
             return self.error(msg, errors.MSG_NO_TYPE)
 
