@@ -22,5 +22,20 @@ LOCK_HASH_NOT_RECOGNIZED = {
     'explanation': "Unknown lock quorum data, dropping (%s)",
 }
 
+# Permissions errors
+
+PERMISSION_CANNOT_READ = {
+    'code': 50,
+    'explanation': "Permissions error: cannot read",
+}
+
+PERMISSION_CANNOT_WRITE = {
+    'code': 51,
+    'explanation': "Permissions error: cannot write",
+}
+
 # Checkpoint errors
+
+# Subscription errors
+
 

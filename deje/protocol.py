@@ -60,6 +60,7 @@ class Protocol(object):
 
             cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
             if doc.can_write(cp_author) and cp.test():
+                # TODO: Error message for permissions failures and test failures
                 cp.quorum.sign(self.owner.identity)
                 cp.quorum.transmit([self.owner.identity.name])
         if ltype == "deje-subscribe":
@@ -67,6 +68,7 @@ class Protocol(object):
             subscriber = self.owner.identities.find_by_name(rr_subname)
             rr = read.ReadRequest(doc, subscriber)
             if doc.can_read(subscriber):
+                # TODO: Error message for permissions failures
                 rr.sign(self.owner.identity)
                 rr.update()
 
@@ -98,8 +100,7 @@ class Protocol(object):
     def _on_deje_get_version(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.addr)
         if not doc.can_read(sender):
-            print "Permissions error: cannot read"
-            return
+            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         self.owner.reply(doc, 'deje-doc-version', {'version':doc.version}, sender)
 
     def _on_deje_doc_version(self, msg, content, ctype, doc):
@@ -121,8 +122,7 @@ class Protocol(object):
             'signatures': blockcp.quorum.sigs_dict(),
         }
         if not doc.can_read(sender):
-            print "Permissions error: cannot read"
-            return
+            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         self.owner.reply(doc, 'deje-doc-block', {'block':block}, sender)
 
     def _on_deje_doc_block(self, msg, content, ctype, doc):
@@ -138,8 +138,7 @@ class Protocol(object):
         sender = self.owner.identities.find_by_location(msg.addr)
         version = content['version']
         if not doc.can_read(sender):
-            print "Permissions error: cannot read"
-            return
+            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         self.owner.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender)
 
     def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
