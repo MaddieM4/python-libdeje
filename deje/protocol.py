@@ -106,8 +106,7 @@ class Protocol(object):
     def _on_deje_doc_version(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.addr)
         if sender.name not in doc.get_participants():
-            print "Version information came from non-participant source, ignoring"
-            return
+            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "version")
         version = content['version']
         doc.trigger_callback('recv-version', version)
 
@@ -128,8 +127,7 @@ class Protocol(object):
     def _on_deje_doc_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.addr)
         if sender.name not in doc.get_participants():
-            print "Block information came from non-participant source, ignoring"
-            return
+            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
         block = content['block']
         version = block['version']
         doc.trigger_callback('recv-block-%d' % version, block)
@@ -144,8 +142,7 @@ class Protocol(object):
     def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.addr)
         if sender.name not in doc.get_participants():
-            print "Snapshot information came from non-participant source, ignoring"
-            return
+            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "snapshot")
         snapshot = content['snapshot']
         version  = content['version']
         doc.trigger_callback('recv-snapshot-%d' % version, snapshot)

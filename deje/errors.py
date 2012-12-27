@@ -34,6 +34,11 @@ PERMISSION_CANNOT_WRITE = {
     'explanation': "Permissions error: cannot write",
 }
 
+PERMISSION_DOCINFO_NOT_PARTICIPANT = {
+    'code': 52,
+    'explanation': "%r information came from non-participant source, ignoring",
+}
+
 # Checkpoint errors
 
 # Subscription errors
