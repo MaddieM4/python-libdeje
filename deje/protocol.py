@@ -15,6 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.util.py2and3 import *
 import read
 import checkpoint
 import errors
@@ -74,24 +75,25 @@ class Protocol(object):
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_name(content['signer'])
-        content_hash = content['content-hash']
+        content_hash = String(content['content-hash'])
         try:
             quorum = doc._qs.by_hash[content_hash]
         except KeyError:
-            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash)
-        sig = content['signature'].encode('raw_unicode_escape')
+            #return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, {'attempted':content_hash,'available':repr(doc._qs.by_hash)})
+            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
+        sig = RawData(content['signature'])
         quorum.sign(sender, sig)
         quorum.parent.update()
 
     def _on_deje_lock_complete(self, msg, content, ctype, doc):
-        content_hash = content['content-hash']
+        content_hash = String(content['content-hash'])
         try:
             quorum = doc._qs.by_hash[content_hash]
         except KeyError:
-            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash)
+            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
         for signer in content['signatures']:
             sender = self.owner.identities.find_by_name(signer)
-            sig = content['signatures'][signer].encode('raw_unicode_escape')
+            sig = RawData(content['signatures'][signer])
             quorum.sign(sender, sig)
             quorum.parent.update()
 

@@ -141,9 +141,9 @@ class Document(object):
         >>> rr #doctest: +ELLIPSIS
         <deje.read.ReadRequest object at ...>
         >>> mdoc.subscribers #doctest: +ELLIPSIS
-        set([<deje.identity.Identity object at ...>])
+        set([<ejtp.identity.core.Identity object at ...>])
         >>> adoc.subscribers #doctest: +ELLIPSIS
-        set([<deje.identity.Identity object at ...>])
+        set([<ejtp.identity.core.Identity object at ...>])
         '''
         if not self.can_read():
             raise ValueError("You don't have read permission")

@@ -43,7 +43,7 @@ class Owner(object):
         Do setup for testing a good owner.
         >>> owner = testing.owner()
         >>> owner.identities #doctest: +ELLIPSIS
-        <IdentityCache '{\\'["local",null,"mitzi"]\\': <ejtp.identity.core.Identity object at ...>}'>
+        <IdentityCache '{String(\\'["local",null,"mitzi"]\\'): <ejtp.identity.core.Identity object at ...>}'>
         >>> doc = testing.document(handler_lua_template="echo_chamber")
         >>> doc.handler #doctest: +ELLIPSIS
         <deje.resource.Resource object at ...>
@@ -163,8 +163,10 @@ class Owner(object):
 
         Print in a predictible manner for doctest
 
+        >>> from Queue import Queue
+        >>> queue = Queue()
         >>> def on_recv_block(block):
-        ...     print json.dumps(block, indent=4, sort_keys=True)
+        ...     queue.put(block)
 
         Put in a checkpoint to retrieve
 
@@ -176,20 +178,22 @@ class Owner(object):
 
         Retrieve checkpoint
 
-        >>> victor.get_block(vdoc, 0, on_recv_block) #doctest: +ELLIPSIS
+        >>> victor.get_block(vdoc, 0, on_recv_block)
+        >>> result = queue.get()
+        >>> sorted(result.keys())
+        [u'author', u'content', u'signatures', u'version']
+        >>> result['author']
+        u'mitzi@lackadaisy.com'
+        >>> print json.dumps(result['content'], indent=4, sort_keys=True)
         {
-            "author": "mitzi@lackadaisy.com", 
-            "content": {
-                "path": "/example", 
-                "property": "content", 
-                "value": "Mitzi says hi"
-            }, 
-            "signatures": {
-                "atlas@lackadaisy.com": "...", 
-                "mitzi@lackadaisy.com": "..."
-            }, 
-            "version": 0
+            "path": "/example", 
+            "property": "content", 
+            "value": "Mitzi says hi"
         }
+        >>> sorted(result['signatures'].keys())
+        [u'atlas@lackadaisy.com', u'mitzi@lackadaisy.com']
+        >>> result['version']
+        0
         """
         document.set_callback('recv-block-%d' % version, callback)
         self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
