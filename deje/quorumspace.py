@@ -51,7 +51,7 @@ class QuorumSpace(object):
         >>> qs.by_hash[cp2.hash()] #doctest: +ELLIPSIS
         <deje.quorum.Quorum object at ...>
         >>> qs.by_author #doctest: +ELLIPSIS
-        {<deje.identity.Identity object at ...>: <deje.quorum.Quorum object at ...>}
+        {<ejtp.identity.core.Identity object at ...>: <deje.quorum.Quorum object at ...>}
         >>> cp1.quorum.competing
         True
         >>> cp1.quorum.done
@@ -63,7 +63,7 @@ class QuorumSpace(object):
         Double signing, same person but different cp
         >>> cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
         Traceback (most recent call last):
-        QSDoubleSigning: (<deje.identity.Identity object at ...>, <deje.document.Document object at ...>)
+        QSDoubleSigning: (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
 
         >>> cp1.quorum.sign(atlas)
         >>> qs.is_free(mitzi)

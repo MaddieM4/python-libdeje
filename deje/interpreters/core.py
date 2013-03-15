@@ -15,12 +15,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from sandbox import Sandbox
+#from sandbox import Sandbox
 
 class Interpreter(object):
     def __init__(self, resource):
         self.resource = resource
-        self.sandbox = Sandbox()
+        #self.sandbox = Sandbox()
         self._context = None
         self.make_context()
 

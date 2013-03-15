@@ -16,7 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import ejtp.client
-import identity
+from ejtp import identity
 import protocol
 import errors
 
@@ -38,19 +38,19 @@ class Owner(object):
         >>> badident.location = None
         >>> Owner(badident, None, False)
         Traceback (most recent call last):
-        AttributeError: Identity location not set
+        TypeError: str_address() takes exactly 1 argument (0 given)
 
         Do setup for testing a good owner.
         >>> owner = testing.owner()
         >>> owner.identities #doctest: +ELLIPSIS
-        <EncryptorCache '{\\'["local",null,"mitzi"]\\': <deje.identity.Identity object at ...>}'>
+        <IdentityCache '{\\'["local",null,"mitzi"]\\': <ejtp.identity.core.Identity object at ...>}'>
         >>> doc = testing.document(handler_lua_template="echo_chamber")
         >>> doc.handler #doctest: +ELLIPSIS
         <deje.resource.Resource object at ...>
         >>> owner.own_document(doc)
 
         '''
-        self.identities = identity.EncryptorCache()
+        self.identities = identity.IdentityCache()
         self.identities.update_ident(self_ident)
         self.identity = self_ident
 
@@ -88,7 +88,7 @@ class Owner(object):
         >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
         Error from 'mitzi@lackadaisy.com', code 30: u'Recieved non-{} message, dropping'
         '''
-        content = msg.jsoncontent
+        content = msg.unpack()
         # Rule out basic errors
         if type(content) != dict:
             return self.error(msg, errors.MSG_NOT_DICT)
@@ -220,7 +220,7 @@ class Owner(object):
         Shortcut syntax for replying with error information. Not the same
         functional signature as self.protocol.error!
         '''
-        recipient = msg.addr
+        recipient = msg.receiver
         code = attributes['code']
         explanation = attributes['explanation']
         if '%' in explanation:

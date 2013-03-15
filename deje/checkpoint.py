@@ -85,7 +85,7 @@ class Checkpoint(object):
         >>> cp = Checkpoint(doc, None, author=owner.identity)
         
         >>> cp.author #doctest: +ELLIPSIS
-        <deje.identity.Identity object at ...>
+        <ejtp.identity.core.Identity object at ...>
 
         >>> cp.authorname
         'mitzi@lackadaisy.com'
@@ -102,7 +102,7 @@ class Checkpoint(object):
         '''
         >>> import testing
         >>> testing.checkpoint().hash()
-        'a6aa316b4b784fda1a38b53730d1a7698c3c1a33'
+        String('a6aa316b4b784fda1a38b53730d1a7698c3c1a33')
         '''
         return self.quorum.hash
 

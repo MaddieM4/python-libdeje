@@ -41,9 +41,9 @@ class Protocol(object):
     # Error handling
 
     def _on_deje_error(self, msg, content, ctype, doc):
-        sender = msg.addr
+        sender = msg.sender
         try:
-            sender = self.owner.identities.find_by_location(msg.addr).name
+            sender = self.owner.identities.find_by_location(sender).name
         except KeyError:
             pass # No saved information on this ident
         print "Error from %r, code %d: %r" % (sender, content['code'], content['explanation'])
@@ -98,20 +98,20 @@ class Protocol(object):
     # Document information
 
     def _on_deje_get_version(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         self.owner.reply(doc, 'deje-doc-version', {'version':doc.version}, sender)
 
     def _on_deje_doc_version(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         if sender.name not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "version")
         version = content['version']
         doc.trigger_callback('recv-version', version)
 
     def _on_deje_get_block(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         blocknumber = content['version']
         blockcp = doc._blockchain[blocknumber]
         block = {
@@ -125,7 +125,7 @@ class Protocol(object):
         self.owner.reply(doc, 'deje-doc-block', {'block':block}, sender)
 
     def _on_deje_doc_block(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         if sender.name not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
         block = content['block']
@@ -133,14 +133,14 @@ class Protocol(object):
         doc.trigger_callback('recv-block-%d' % version, block)
 
     def _on_deje_get_snapshot(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         version = content['version']
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         self.owner.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender)
 
     def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.addr)
+        sender = self.owner.identities.find_by_location(msg.sender)
         if sender.name not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "snapshot")
         snapshot = content['snapshot']

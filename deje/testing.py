@@ -21,7 +21,7 @@ identities = {
 }
 
 def identity(name="mitzi"):
-    from identity import Identity
+    from ejtp.identity.core import Identity
     return Identity(*identities[name])
 
 def checkpoint(doc = None):
@@ -55,15 +55,13 @@ def owner(ident = None):
     return Owner(ident or identity(), make_jack=False)
 
 def ejtp_test():
-    import identity as identity_module
-    from owner import Owner
     from ejtp.router import Router
+    from owner import Owner
     r = Router()
     mitzi  = Owner(identity("mitzi"),  r)
     atlas  = Owner(identity("atlas"),  r)
     victor = Owner(identity("victor"), r)
-    identity_module.sync_caches(
-        mitzi.identities,
+    mitzi.identities.sync(
         atlas.identities,
         victor.identities,
     )

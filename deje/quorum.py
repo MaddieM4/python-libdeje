@@ -16,6 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from ejtp.util.hasher import checksum
+from ejtp.util.py2and3 import *
 import datetime
 
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
@@ -106,7 +107,7 @@ class Quorum(object):
         )
 
     def transmittable_sig(self, signer):
-        return self.signatures[signer][1].decode('raw_unicode_escape')
+        return self.signatures[signer][1]
 
     def sigs_dict(self):
         sigs = {}
@@ -239,7 +240,7 @@ def assert_valid_signature(identity, content_hash, signature):
         expires, subsig = signature.split("\x00", 1)
     except:
         raise ValueError("Bad signature format - no nullbyte separator")
-    expire_date = datetime.datetime.strptime(expires, "%Y-%m-%d %H:%M:%S.%f")
+    expire_date = datetime.datetime.strptime(expires.export(), "%Y-%m-%d %H:%M:%S.%f")
     plaintext = expires + content_hash
     if not expire_date > datetime.datetime.utcnow():
         raise ValueError("Signature is expired")
@@ -249,5 +250,5 @@ def assert_valid_signature(identity, content_hash, signature):
 def generate_signature(identity, content_hash, duration = DEFAULT_DURATION):
     if type(identity) in (str, unicode, bytes):
         raise ValueError("Identity lookups not available at this time.")
-    expires = (datetime.datetime.utcnow() + duration).isoformat(' ')
-    return expires + "\x00" + identity.sign(expires + content_hash)
+    expires = RawData((datetime.datetime.utcnow() + duration).isoformat(' '))
+    return expires + RawData((0,)) + identity.sign(expires + content_hash)
