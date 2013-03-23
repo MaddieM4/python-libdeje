@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 # Prebaked handlers for Lua interpreter
 
+from __future__ import print_function
 from deje import document, resource
 
 def echo_chamber():
@@ -45,23 +46,23 @@ def echo_chamber():
 
     >>> doc.animus.interpreter.call("trigger_checkpoint", "example")
     Checkpoint 'example' achieved.
-    >>> doc.animus.interpreter.call("trigger_checkpoint", "no dice")
+    >>> doc.animus.interpreter.call("trigger_checkpoint", "no dice") #doctest: +ELLIPSIS
     Traceback (most recent call last):
-    ValueError: Checkpoint u'no dice' was not valid
+    ValueError: Checkpoint ...'no dice' was not valid
 
     Test document properties
 
-    >>> doc.get_participants()
-    [u'anonymous']
+    >>> doc.get_participants() #doctest: +ELLIPSIS
+    [...'anonymous']
     >>> doc.get_thresholds() == { 'read': 1, 'write': 1 }
     True
 
     Test request protocol mechanism
 
-    >>> doc.get_request_protocols()
-    [u'echo-chamber-1']
+    >>> doc.get_request_protocols() #doctest: +ELLIPSIS
+    [...'echo-chamber-1']
     >>> def pull_to_result(x):
-    ...     print x
+    ...     print(x)
     >>> doc.request(
     ...     pull_to_result,
     ...     "hello-world",

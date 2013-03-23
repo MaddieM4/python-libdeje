@@ -25,7 +25,7 @@ def identity(name="mitzi"):
     return Identity(*identities[name])
 
 def checkpoint(doc = None):
-    from checkpoint import Checkpoint
+    from deje.checkpoint import Checkpoint
     if not doc:
         doc = document()
     return Checkpoint(doc, {'x':'y'}, 0, 'mick-and-bandit')
@@ -34,8 +34,8 @@ def handler_lua(source):
     return document(handler_lua = source)
 
 def document(name="testing", handler_lua = None, handler_lua_template = None):
-    from document import Document
-    from resource import Resource
+    from deje.document import Document
+    from deje.resource import Resource
     doc = Document(name)
     if handler_lua_template:
         import deje.handlers.lua as handlers
@@ -51,12 +51,12 @@ def quorum():
     return cp.quorum
 
 def owner(ident = None):
-    from owner import Owner
+    from deje.owner import Owner
     return Owner(ident or identity(), make_jack=False)
 
 def ejtp_test():
     from ejtp.router import Router
-    from owner import Owner
+    from deje.owner import Owner
     r = Router()
     mitzi  = Owner(identity("mitzi"),  r)
     atlas  = Owner(identity("atlas"),  r)

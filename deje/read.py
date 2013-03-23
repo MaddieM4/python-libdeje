@@ -15,7 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import quorum
+from deje import quorum
 
 class ReadRequest(object):
     def __init__(self, document, subscriber=None):

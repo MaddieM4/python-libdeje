@@ -15,6 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
+from ejtp.util.py2and3 import *
 from deje.resource import Resource
 
 exported_functions = (
@@ -47,17 +49,17 @@ class API(object):
 
     def get_ident(self):
         ident = self.document.identity
-        if type(ident) in (str, unicode, bytes):
-            return ident
-        else:
-            return ident.name
+        try:
+            return String(ident).export()
+        except:
+            return String(ident.name).export()
 
     def checkpoint(self, cp):
         self.queue.append(lambda: self.document.checkpoint(cp))
 
     def debug(self, *args):
         for arg in args:
-            print arg
+            print(arg)
 
     # set_resource
 

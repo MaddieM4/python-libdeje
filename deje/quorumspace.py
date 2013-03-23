@@ -15,13 +15,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import quorum
+from deje import quorum
 
 class QuorumSpace(object):
     def __init__(self, document):
         '''
-        >>> import testing
-        >>> import checkpoint
+        >>> from deje import testing
+        >>> from deje import checkpoint
         >>> doc = testing.document(handler_lua_template="tag_team")
         >>> cp1 = checkpoint.Checkpoint(doc, {"hello":"world"})
         >>> cp2 = checkpoint.Checkpoint(doc, {"turtle":"food"})
@@ -30,8 +30,8 @@ class QuorumSpace(object):
         >>> qs = cp1.document._qs
 
         Try to double-sign
-        >>> cp1.quorum.participants
-        [u'mitzi@lackadaisy.com', u'atlas@lackadaisy.com']
+        >>> sorted(cp1.quorum.participants) #doctest: +ELLIPSIS
+        [...'atlas@lackadaisy.com', ...'mitzi@lackadaisy.com']
         >>> qs.is_free(mitzi)
         True
         >>> qs.is_free(atlas)
@@ -63,7 +63,7 @@ class QuorumSpace(object):
         Double signing, same person but different cp
         >>> cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
         Traceback (most recent call last):
-        QSDoubleSigning: (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
+        deje.quorumspace.QSDoubleSigning: (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
 
         >>> cp1.quorum.sign(atlas)
         >>> qs.is_free(mitzi)

@@ -15,10 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
 import ejtp.client
 from ejtp import identity
-import protocol
-import errors
+from deje import protocol
+from deje import errors
 
 class Owner(object):
     '''
@@ -33,7 +34,7 @@ class Owner(object):
         AttributeError: 'str' object has no attribute 'location'
 
         Make sure self_idents with no location fail
-        >>> import testing
+        >>> from deje import testing
         >>> badident = testing.identity()
         >>> badident.location = None
         >>> Owner(badident, None, False)
@@ -67,7 +68,7 @@ class Owner(object):
 
     def on_ejtp(self, msg, client):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
 
         >>> mitzi.identity.location
@@ -85,8 +86,8 @@ class Owner(object):
         True
 
         Test raw EJTP connectivity with a malformed message
-        >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa")
-        Error from 'mitzi@lackadaisy.com', code 30: u'Recieved non-{} message, dropping'
+        >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa") #doctest: +ELLIPSIS
+        Error from 'mitzi@lackadaisy.com', code 30: ...'Recieved non-{} message, dropping'
         '''
         content = msg.unpack()
         # Rule out basic errors
@@ -123,7 +124,7 @@ class Owner(object):
                 try:
                     address = self.identities.find_by_name(target).location
                 except KeyError:
-                    print "No known address for %r, skipping" % target
+                    print("No known address for %r, skipping" % target)
                     break
             if address != self.identity.location:
                 self.client.write_json(address, message)
@@ -138,10 +139,10 @@ class Owner(object):
 
     def get_version(self, document, callback):
         """
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
         >>> def on_recv_version(version):
-        ...     print "Version is %d" % version
+        ...     print("Version is %d" % version)
         >>> victor.get_version(vdoc, on_recv_version)
         Version is 0
         >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
@@ -158,12 +159,15 @@ class Owner(object):
     def get_block(self, document, version, callback):
         """
         >>> import json
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
 
         Print in a predictible manner for doctest
 
-        >>> from Queue import Queue
+        >>> try:
+        ...    from Queue import Queue
+        ... except:
+        ...    from queue import Queue
         >>> queue = Queue()
         >>> def on_recv_block(block):
         ...     queue.put(block)
@@ -180,18 +184,18 @@ class Owner(object):
 
         >>> victor.get_block(vdoc, 0, on_recv_block)
         >>> result = queue.get()
-        >>> sorted(result.keys())
-        [u'author', u'content', u'signatures', u'version']
-        >>> result['author']
-        u'mitzi@lackadaisy.com'
-        >>> print json.dumps(result['content'], indent=4, sort_keys=True)
+        >>> sorted(result.keys()) #doctest: +ELLIPSIS
+        [...'author', ...'content', ...'signatures', ...'version']
+        >>> print(result['author'])
+        mitzi@lackadaisy.com
+        >>> print(json.dumps(result['content'], indent=4, sort_keys=True))
         {
             "path": "/example", 
             "property": "content", 
             "value": "Mitzi says hi"
         }
-        >>> sorted(result['signatures'].keys())
-        [u'atlas@lackadaisy.com', u'mitzi@lackadaisy.com']
+        >>> sorted(result['signatures'].keys()) #doctest: +ELLIPSIS
+        [...'atlas@lackadaisy.com', ...'mitzi@lackadaisy.com']
         >>> result['version']
         0
         """
@@ -201,10 +205,10 @@ class Owner(object):
     def get_snapshot(self, document, version, callback):
         """
         >>> import json
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
         >>> def on_recv_snapshot(snapshot):
-        ...     print json.dumps(snapshot, indent=4, sort_keys=True)
+        ...     print(json.dumps(snapshot, indent=4, sort_keys=True))
 
         >>> victor.get_snapshot(vdoc, 0, on_recv_snapshot) #doctest: +ELLIPSIS
         {

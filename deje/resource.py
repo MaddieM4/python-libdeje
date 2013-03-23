@@ -15,6 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.util.py2and3 import *
+
 class Resource(object):
     def __init__(self, path="/", content="", comment="", type="application/x-octet-stream", source=None):
         if source:
@@ -34,15 +36,12 @@ class Resource(object):
 
     @path.setter
     def path(self, newpath):
-        if type(newpath) in (str, unicode):
-            if hasattr(self, '_path'):
-                oldpath = self.path
-                self._path = newpath
-                self.trigger_change('path', oldpath=oldpath)
-            else:
-                self._path = newpath
+        if hasattr(self, '_path'):
+            oldpath = self.path
+            self._path = String(newpath).export()
+            self.trigger_change('path', oldpath=oldpath)
         else:
-            raise TypeError("Resource.path must be str or unicode, got %r", type(newpath))
+            self._path = newpath
 
     @property
     def type(self):
@@ -50,12 +49,9 @@ class Resource(object):
 
     @type.setter
     def type(self, newtype):
-        if type(newtype) in (str, unicode):
-            # TODO: Verify MIME validity
-            self._type = newtype
-            self.trigger_change('type')
-        else:
-            raise TypeError("Resource.type must be str or unicode, got %r", type(newtype))
+        # TODO: Verify MIME validity
+        self._type = String(newtype).export()
+        self.trigger_change('type')
 
     @property
     def content(self):
@@ -72,11 +68,8 @@ class Resource(object):
 
     @comment.setter
     def comment(self, newcomment):
-        if type(newcomment) in (str, unicode):
-            self._comment = newcomment
-            self.trigger_change('comment')
-        else:
-            raise TypeError("Resource.comment must be str or unicode, got %r", type(newcomment))
+        self._comment = String(newcomment).export()
+        self.trigger_change('comment')
 
     def set_property(self, propname, value):
         if propname == "path":
@@ -99,10 +92,10 @@ class Resource(object):
     def interpreter(self):
         "Produce an interpreter object based on resource type."
         if self.type == "text/javascript":
-            from interpreters import js
+            from deje.interpreters import js
             return js.JSInterpreter(self)
         elif self.type == "text/lua":
-            from interpreters import lua
+            from deje.interpreters import lua
             return lua.LuaInterpreter(self)
         else:
             raise TypeError("No interpreter for resource type " + str(self.type))

@@ -15,10 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import animus
-import quorumspace
-from checkpoint import Checkpoint
-from read import ReadRequest
+from __future__ import print_function
+from deje import animus
+from deje import quorumspace
+from deje.checkpoint import Checkpoint
+from deje.read import ReadRequest
 
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
@@ -87,7 +88,7 @@ class Document(object):
         '''
         Create a checkpoint from arbitrary object 'cp'
 
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
 
         >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
@@ -99,10 +100,10 @@ class Document(object):
         2
         >>> mdoc.competing
         []
-        >>> mdoc.get_resource("/example").content
-        u'Mitzi says hi'
-        >>> adoc.get_resource("/example").content
-        u'Mitzi says hi'
+        >>> print(mdoc.get_resource("/example").content)
+        Mitzi says hi
+        >>> print(adoc.get_resource("/example").content)
+        Mitzi says hi
         '''
         if not self.can_write():
             raise ValueError("You don't have write permission")
@@ -122,7 +123,7 @@ class Document(object):
         
     def subscribe(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
 
         Test a read
@@ -213,12 +214,12 @@ class Document(object):
 
     def set_callback(self, label, callback):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> doc = testing.document()
         >>> def callback_A(result):
-        ...     print "%r from A" % result
+        ...     print("%r from A" % result)
         >>> def callback_B(result):
-        ...     print "%r from B" % result
+        ...     print("%r from B" % result)
         >>> doc.set_callback('police_raid', callback_A)
         >>> doc.set_callback('police_raid', callback_B)
 

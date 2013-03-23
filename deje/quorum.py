@@ -15,6 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.identity import Identity
 from ejtp.util.hasher import checksum
 from ejtp.util.py2and3 import *
 import datetime
@@ -53,7 +54,7 @@ class Quorum(object):
     def clear(self):
         """
         Clear out all signatures.
-        >>> import testing
+        >>> from deje import testing
         >>> quorum = testing.quorum()
         >>> ident  = testing.identity()
         >>> owner  = testing.owner()
@@ -134,7 +135,7 @@ class Quorum(object):
     @property
     def completion(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> quorum = testing.quorum()
         >>> ident  = testing.identity()
         >>> owner  = testing.owner()
@@ -159,7 +160,7 @@ class Quorum(object):
     @property
     def outdated(self):
         '''
-        >>> import testing;
+        >>> from deje import testing;
         >>> cp = testing.checkpoint( testing.document(handler_lua_template="echo_chamber") )
         >>> ident = testing.identity()
         >>> quorum = cp.quorum
@@ -191,17 +192,17 @@ class Quorum(object):
     @property
     def participants(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> quorum = testing.quorum()
-        >>> quorum.participants
-        [u'anonymous']
+        >>> quorum.participants #doctest: +ELLIPSIS
+        [...'anonymous']
         '''
         return self.document.get_participants()
 
     @property
     def thresholds(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> quorum = testing.quorum()
         >>> quorum.thresholds == { 'read':1, 'write':1 }
         True
@@ -211,7 +212,7 @@ class Quorum(object):
     @property
     def threshold(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> quorum = testing.quorum()
         >>> quorum.threshold
         1
@@ -234,13 +235,13 @@ def validate_signature(identity, content_hash, signature):
         return False
 
 def assert_valid_signature(identity, content_hash, signature):
-    if type(identity) in (str, unicode, bytes):
+    if not isinstance(identity, Identity):
         raise ValueError("Identity lookups not available at this time.")
     try:
         expires, subsig = signature.split("\x00", 1)
     except:
         raise ValueError("Bad signature format - no nullbyte separator")
-    expire_date = datetime.datetime.strptime(expires.export(), "%Y-%m-%d %H:%M:%S.%f")
+    expire_date = datetime.datetime.strptime(String(expires).export(), "%Y-%m-%d %H:%M:%S.%f")
     plaintext = expires + content_hash
     if not expire_date > datetime.datetime.utcnow():
         raise ValueError("Signature is expired")
@@ -248,7 +249,7 @@ def assert_valid_signature(identity, content_hash, signature):
         raise ValueError("Identity object thinks sig is not valid")
 
 def generate_signature(identity, content_hash, duration = DEFAULT_DURATION):
-    if type(identity) in (str, unicode, bytes):
+    if not isinstance(identity, Identity):
         raise ValueError("Identity lookups not available at this time.")
     expires = RawData((datetime.datetime.utcnow() + duration).isoformat(' '))
     return expires + RawData((0,)) + identity.sign(expires + content_hash)

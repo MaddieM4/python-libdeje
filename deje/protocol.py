@@ -15,10 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
 from ejtp.util.py2and3 import *
-import read
-import checkpoint
-import errors
+from deje import read
+from deje import checkpoint
+from deje import errors
 
 class Protocol(object):
     '''
@@ -47,7 +48,7 @@ class Protocol(object):
             sender = self.owner.identities.find_by_location(sender).name
         except KeyError:
             pass # No saved information on this ident
-        print "Error from %r, code %d: %r" % (sender, content['code'], content['explanation'])
+        print("Error from %r, code %d: %r" % (sender, content['code'], content['explanation']))
 
     # Locking mechanisms
 
