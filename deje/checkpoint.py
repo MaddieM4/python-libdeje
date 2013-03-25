@@ -36,7 +36,7 @@ class Checkpoint(object):
         True
         >>> cp.quorum.sign("some string")
         Traceback (most recent call last):
-        ValueError: Identity lookups not available at this time.
+        TypeError: Expected ejtp.identity.core.Identity, got 'some string'
         >>> cp.quorum.sig_valid("some string")
         False
         '''

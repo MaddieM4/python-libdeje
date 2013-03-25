@@ -236,7 +236,7 @@ def validate_signature(identity, content_hash, signature):
 
 def assert_valid_signature(identity, content_hash, signature):
     if not isinstance(identity, Identity):
-        raise ValueError("Identity lookups not available at this time.")
+        raise TypeError("Expected ejtp.identity.core.Identity, got %r" % identity)
     try:
         expires, subsig = signature.split("\x00", 1)
     except:
@@ -250,6 +250,6 @@ def assert_valid_signature(identity, content_hash, signature):
 
 def generate_signature(identity, content_hash, duration = DEFAULT_DURATION):
     if not isinstance(identity, Identity):
-        raise ValueError("Identity lookups not available at this time.")
+        raise TypeError("Expected ejtp.identity.core.Identity, got %r" % identity)
     expires = RawData((datetime.datetime.utcnow() + duration).isoformat(' '))
     return expires + RawData((0,)) + identity.sign(expires + content_hash)
