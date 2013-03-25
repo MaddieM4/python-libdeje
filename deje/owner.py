@@ -33,13 +33,13 @@ class Owner(object):
         Traceback (most recent call last):
         AttributeError: 'str' object has no attribute 'location'
 
-        Make sure self_idents with no location fail
+        Make sure self_idents with no location fail (error message depends on Python version)
         >>> from deje import testing
         >>> badident = testing.identity()
         >>> badident.location = None
-        >>> Owner(badident, None, False)
+        >>> Owner(badident, None, False) #doctest: +ELLIPSIS
         Traceback (most recent call last):
-        TypeError: str_address() takes exactly 1 argument (0 given)
+        TypeError: str_address() ...
 
         Do setup for testing a good owner.
         >>> owner = testing.owner()

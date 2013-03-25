@@ -133,18 +133,22 @@ class Document(object):
         >>> vdoc.can_read()
         True
         >>> # One error is normal, due to transmission patterns
-        >>> rr = vdoc.subscribe()
-        Error from 'mitzi@lackadaisy.com', code 40: u'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'
+        >>> rr = vdoc.subscribe() #doctest: +ELLIPSIS
+        Error from '...@lackadaisy.com', code 40: ...'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'
         >>> mdoc.competing
         []
         >>> adoc.competing
         []
         >>> rr #doctest: +ELLIPSIS
         <deje.read.ReadRequest object at ...>
-        >>> mdoc.subscribers #doctest: +ELLIPSIS
-        set([<ejtp.identity.core.Identity object at ...>])
-        >>> adoc.subscribers #doctest: +ELLIPSIS
-        set([<ejtp.identity.core.Identity object at ...>])
+        >>> type(mdoc.subscribers) #doctest: +ELLIPSIS
+        <... 'set'>
+        >>> list(mdoc.subscribers) #doctest: +ELLIPSIS
+        [<ejtp.identity.core.Identity object at ...>]
+        >>> type(adoc.subscribers) #doctest: +ELLIPSIS
+        <... 'set'>
+        >>> list(adoc.subscribers) #doctest: +ELLIPSIS
+        [<ejtp.identity.core.Identity object at ...>]
         '''
         if not self.can_read():
             raise ValueError("You don't have read permission")
@@ -225,8 +229,12 @@ class Document(object):
 
         Order is unpredictable for callbacks
 
-        >>> doc._callbacks #doctest: +ELLIPSIS
-        {'police_raid': set([<function callback_... at ...>, <function callback_... at ...>])}
+        >>> list(doc._callbacks.keys())
+        ['police_raid']
+        >>> type(doc._callbacks['police_raid']) #doctest: +ELLIPSIS
+        <... 'set'>
+        >>> list(doc._callbacks['police_raid']) #doctest: +ELLIPSIS
+        [<function callback_... at ...>, <function callback_... at ...>]
         >>> doc.trigger_callback('police_raid', ["detective", "inspector"]) #doctest: +ELLIPSIS
         ['detective', 'inspector'] from ...
         ['detective', 'inspector'] from ...

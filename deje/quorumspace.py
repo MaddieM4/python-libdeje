@@ -61,9 +61,11 @@ class QuorumSpace(object):
         >>> cp1.quorum.sign(mitzi)
 
         Double signing, same person but different cp
-        >>> cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        deje.quorumspace.QSDoubleSigning: (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
+        >>> try:
+        ...    cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
+        ... except QSDoubleSigning as e:
+        ...    print(e)
+        (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
 
         >>> cp1.quorum.sign(atlas)
         >>> qs.is_free(mitzi)

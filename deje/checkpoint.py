@@ -20,7 +20,7 @@ from deje import quorum
 class Checkpoint(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> doc = testing.document(handler_lua_template="echo_chamber")
         >>> owner = testing.owner()
         >>> owner.own_document(doc)
@@ -30,8 +30,8 @@ class Checkpoint(object):
         0
 
         >>> cp.quorum.sign(ident)
-        >>> cp.quorum.participants
-        [u'mitzi@lackadaisy.com']
+        >>> cp.quorum.participants #doctest: +ELLIPSIS
+        [...'mitzi@lackadaisy.com']
         >>> cp.quorum.sig_valid(ident.name)
         True
         >>> cp.quorum.sign("some string")
@@ -78,7 +78,7 @@ class Checkpoint(object):
     @property
     def authorname(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> doc = testing.document(handler_lua_template="echo_chamber")
         >>> owner = testing.owner()
         >>> owner.own_document(doc)
@@ -100,7 +100,7 @@ class Checkpoint(object):
 
     def hash(self):
         '''
-        >>> import testing
+        >>> from deje import testing
         >>> testing.checkpoint().hash()
         String('a6aa316b4b784fda1a38b53730d1a7698c3c1a33')
         '''
