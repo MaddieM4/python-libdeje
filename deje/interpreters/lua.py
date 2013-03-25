@@ -19,6 +19,11 @@ from __future__ import print_function
 import lupa
 from deje.interpreters import api
 
+if not "callable" in globals():
+    import collections
+    def callable(obj):
+        return isinstance(obj, collections.Callable)
+
 bootstrap = '''
 deje = {}
 function load_deje(module)
