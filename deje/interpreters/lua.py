@@ -60,7 +60,7 @@ class LuaInterpreter(object):
         sr_flag.revoke()
 
     def checkpoint_test(self, cp, author):
-        return self.call("checkpoint_test", cp, author)
+        return bool(self.call("checkpoint_test", cp, author))
 
     def quorum_participants(self):
         if not self.cache['quorum_participants']:
@@ -91,7 +91,7 @@ class LuaInterpreter(object):
         return self.cache['request_protocols']
 
     def host_request(self, callback, params):
-        return self.call("on_host_request", callback, params)
+        self.call("on_host_request", callback, params)
 
     # Misc
 
