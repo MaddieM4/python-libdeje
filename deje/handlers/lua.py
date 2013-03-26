@@ -167,3 +167,89 @@ def tag_team():
             return {read=2, write=2}
         end
     '''
+
+def psycho_ward():
+    '''
+    Diagnostic, returns nonsense values.
+
+    >>> from deje import testing
+    >>> from deje.interpreters.lua import HandlerReturnError
+    >>> doc = testing.handler_lua(psycho_ward())
+
+    Test on_resource_update
+
+    >>> exampletxt = resource.Resource('/example.txt', 'blerg', type='text/plain')
+    >>> doc.add_resource(exampletxt)
+
+    Normally, for this part, we'd just show tracebacks. But the printed output is
+    different between Python 2 and 3, so we have to appease the doctest gods.
+
+    >>> try:
+    ...     doc.get_participants()
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    quorum_participants() returned 7, <... 'list'> expected
+    >>> try:
+    ...     doc.get_thresholds()
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    quorum_thresholds() returned ...'shoestring', <... 'dict'> expected
+
+    >>> try:
+    ...     doc.get_request_protocols()
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    request_protocols() returned 9, <... 'list'> expected
+    >>> def pull_to_result(x):
+    ...     print(x)
+    >>> doc.request(
+    ...     pull_to_result,
+    ...     "hello-world",
+    ... )
+    Request protocol mechanism says hello.
+
+    '''
+    return '''
+        function on_resource_update(path, propname, oldpath)
+            return "pumpernickel"
+        end
+
+        function checkpoint_test(cp, author)
+            if cp == "example" then
+                return true
+            else
+                return false
+            end
+        end
+
+        function on_checkpoint_achieve(set_resource, cp, author)
+            return nil
+        end
+
+        function quorum_participants()
+            return 7
+        end
+
+        function quorum_thresholds()
+            return "shoestring"
+        end
+
+        function can_read()
+            return true
+        end
+
+        function can_write()
+            return true
+        end
+
+        function request_protocols()
+            return 9
+        end
+
+        function on_host_request(callback, params)
+            local rtype = params[0]
+            if rtype == "hello-world" then
+                callback("Request protocol mechanism says hello.")
+            end
+        end
+    '''

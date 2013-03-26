@@ -60,34 +60,34 @@ class LuaInterpreter(object):
         sr_flag.revoke()
 
     def checkpoint_test(self, cp, author):
-        return bool(self.call("checkpoint_test", cp, author))
+        return self.call("checkpoint_test", cp, author, returntype = bool)
 
     def quorum_participants(self):
         if not self.cache['quorum_participants']:
             self.cache['quorum_participants'] = \
-                list(self.call("quorum_participants").values())
+                self.call("quorum_participants", returntype = list)
         return self.cache['quorum_participants']
 
     def quorum_thresholds(self):
         if not self.cache['quorum_thresholds']:
             self.cache['quorum_thresholds'] = \
-                dict(self.call("quorum_thresholds"))
+                self.call("quorum_thresholds", returntype = dict)
         return self.cache['quorum_thresholds']
 
     def can_read(self, ident):
         if hasattr(ident, 'name'):
             ident = ident.name
-        return bool(self.call("can_read", ident))
+        return self.call("can_read", ident, returntype = bool)
 
     def can_write(self, ident):
         if hasattr(ident, 'name'):
             ident = ident.name
-        return bool(self.call("can_write", ident))
+        return self.call("can_write", ident, returntype = bool)
 
     def request_protocols(self):
         if not self.cache['request_protocols']:
             self.cache['request_protocols'] = \
-                list(self.call("request_protocols").values())
+                self.call("request_protocols", returntype = list)
         return self.cache['request_protocols']
 
     def host_request(self, callback, params):
@@ -95,13 +95,23 @@ class LuaInterpreter(object):
 
     # Misc
 
-    def call(self, event, *args):
+    def call(self, event, *args, **kwargs):
+        returntype = ("returntype" in kwargs and kwargs["returntype"]) or object
         callback = self.runtime.eval(event)
         if callback and callable(callback):
             result = callback(*args)
             self.api.process_queue()
             self.reset_cache()
-            return result
+            if returntype == dict and isinstance(result, lupa._lupa._LuaTable):
+                return dict(result)
+            if returntype == list and isinstance(result, lupa._lupa._LuaTable):
+                return list(result.values())
+            elif isinstance(result, returntype):
+                return result
+            # If value was valid, we would have returned already
+            raise HandlerReturnError(
+                '%s%r returned %r, %r expected' % (event, args, result, returntype)
+            )
         else:
             raise TypeError("Cannot call object %r", callback)
 
@@ -122,3 +132,5 @@ class LuaInterpreter(object):
     @property
     def document(self):
         return self.resource.document
+
+class HandlerReturnError(Exception): pass
