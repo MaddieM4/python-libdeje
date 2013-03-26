@@ -60,6 +60,14 @@ class Animus(object):
         if self.activate():
             return self.interpreter.host_request(callback, args)
 
+    def eval(self, value):
+        if self.activate():
+            return self.interpreter.eval(value)
+
+    def execute(self, value):
+        if self.activate():
+            return self.interpreter.execute(value)
+
     # Handler
 
     @property

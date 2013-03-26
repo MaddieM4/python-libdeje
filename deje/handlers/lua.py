@@ -176,11 +176,6 @@ def psycho_ward():
     >>> from deje.interpreters.lua import HandlerReturnError
     >>> doc = testing.handler_lua(psycho_ward())
 
-    Test on_resource_update
-
-    >>> exampletxt = resource.Resource('/example.txt', 'blerg', type='text/plain')
-    >>> doc.add_resource(exampletxt)
-
     Normally, for this part, we'd just show tracebacks. But the printed output is
     different between Python 2 and 3, so we have to appease the doctest gods.
 
@@ -206,7 +201,26 @@ def psycho_ward():
     ...     pull_to_result,
     ...     "hello-world",
     ... )
-    Request protocol mechanism says hello.
+
+    >>> try:
+    ...     doc.can_read("example")
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    can_read('example') returned <Lua table at ...>, <... 'bool'> expected
+    >>> try:
+    ...     doc.can_write("example")
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    can_write('example') returned ...'blue', <... 'bool'> expected
+
+    Lobotomize can_write() into always returning true, to test checkpoint_test
+
+    >>> doc.execute("function can_write()\\n    return true\\nend")
+    >>> try:
+    ...     doc.checkpoint("comet")
+    ... except HandlerReturnError as e:
+    ...     print(e) #doctest: +ELLIPSIS
+    checkpoint_test('comet','anonymous') returned ...'perfidia', <... 'bool'> expected
 
     '''
     return '''
@@ -215,11 +229,7 @@ def psycho_ward():
         end
 
         function checkpoint_test(cp, author)
-            if cp == "example" then
-                return true
-            else
-                return false
-            end
+            return "perfidia"
         end
 
         function on_checkpoint_achieve(set_resource, cp, author)
@@ -235,11 +245,11 @@ def psycho_ward():
         end
 
         function can_read()
-            return true
+            return {}
         end
 
         function can_write()
-            return true
+            return "blue"
         end
 
         function request_protocols()
@@ -247,9 +257,6 @@ def psycho_ward():
         end
 
         function on_host_request(callback, params)
-            local rtype = params[0]
-            if rtype == "hello-world" then
-                callback("Request protocol mechanism says hello.")
-            end
+            return "Nurok turoth"
         end
     '''

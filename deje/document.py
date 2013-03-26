@@ -77,6 +77,18 @@ class Document(object):
     def animus(self):
         return self._animus
 
+    def eval(self, value):
+        '''
+        Evaluate code in handler context, returning result
+        '''
+        return self.animus.eval(value)
+
+    def execute(self, value):
+        '''
+        Execute code in handler context
+        '''
+        return self.animus.execute(value)
+
     # Host requests
 
     def request(self, callback, *args):

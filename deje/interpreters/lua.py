@@ -110,10 +110,21 @@ class LuaInterpreter(object):
                 return result
             # If value was valid, we would have returned already
             raise HandlerReturnError(
-                '%s%r returned %r, %r expected' % (event, args, result, returntype)
+                '%s(%s) returned %r, %r expected' % (
+                    event,
+                    ",".join(repr(x) for x in args),
+                    result,
+                    returntype
+                )
             )
         else:
             raise TypeError("Cannot call object %r", callback)
+
+    def eval(self, value):
+        return self.runtime.eval(value)
+
+    def execute(self, value):
+        return self.runtime.execute(value)
 
     def reload(self):
         self.reset_cache()
