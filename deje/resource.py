@@ -21,8 +21,8 @@ from ejtp.util.py2and3 import *
 
 class Resource(object):
 
-    valid_mimetypes = mimetypes.types_map.values()
-    valid_mimetypes.extend(['text/lua', 'direct/json'])
+    valid_mimetypes = set(mimetypes.types_map.values())
+    valid_mimetypes.update(['text/lua', 'direct/json'])
 
     def __init__(self, path="/", content="", comment="", type="application/x-octet-stream", source=None):
         if source:
