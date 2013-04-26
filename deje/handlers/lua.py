@@ -32,7 +32,7 @@ def echo_chamber():
     >>> exampletxt = resource.Resource('/example.txt', 'blerg', type='text/plain')
     >>> doc.add_resource(exampletxt)
     on_resource_update /example.txt add
-    >>> exampletxt.type = "marshmallow/cloud"
+    >>> exampletxt.type = "text/html"
     on_resource_update /example.txt type
     >>> exampletxt.content = "I like turtles."
     on_resource_update /example.txt content
