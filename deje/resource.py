@@ -15,9 +15,15 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import mimetypes
+
 from ejtp.util.py2and3 import *
 
 class Resource(object):
+
+    valid_mimetypes = set(mimetypes.types_map.values())
+    valid_mimetypes.update(['text/lua', 'direct/json', 'application/x-octet-stream'])
+
     def __init__(self, path="/", content="", comment="", type="application/x-octet-stream", source=None):
         if source:
             self.deserialize(source)
@@ -49,7 +55,8 @@ class Resource(object):
 
     @type.setter
     def type(self, newtype):
-        # TODO: Verify MIME validity
+        if newtype not in self.valid_mimetypes:
+            raise ValueError('Invalid MIME type: %s' % newtype)
         self._type = String(newtype).export()
         self.trigger_change('type')
 
