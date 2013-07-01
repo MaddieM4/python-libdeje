@@ -15,10 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import datetime
+from persei import *
+
 from ejtp.identity import Identity
 from ejtp.util.hasher import checksum
-from persei import *
-import datetime
 
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 

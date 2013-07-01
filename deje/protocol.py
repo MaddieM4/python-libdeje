@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 from persei import *
+
 from deje import read
 from deje import checkpoint
 from deje import errors

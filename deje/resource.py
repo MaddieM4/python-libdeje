@@ -16,7 +16,6 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import mimetypes
-
 from persei import *
 
 class Resource(object):
