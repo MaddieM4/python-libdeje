@@ -17,7 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from ejtp.identity import Identity
 from ejtp.util.hasher import checksum
-from ejtp.util.py2and3 import *
+from persei import *
 import datetime
 
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
