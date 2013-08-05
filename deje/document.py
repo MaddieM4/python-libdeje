@@ -21,6 +21,13 @@ from deje import quorumspace
 from deje.checkpoint import Checkpoint
 from deje.read import ReadRequest
 
+def serialize_resources(resources):
+    serialized = {}
+    for resource in resources:
+        path = resource.path
+        serialized[path] = resource.serialize()
+    return serialized
+
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
         self._name = name
@@ -59,11 +66,7 @@ class Document(object):
         if version != self.version:
             raise NotImplementedError("Rewinds not supported yet")
 
-        resources = {}
-        for resource in self.resources.values():
-            path = resource.path
-            resources[path] = resource.serialize()
-        return resources
+        return serialize_resources(self.resources.values())
 
     # Animus
 
