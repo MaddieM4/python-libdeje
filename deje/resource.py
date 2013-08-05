@@ -106,6 +106,9 @@ class Resource(object):
         else:
             raise TypeError("No interpreter for resource type " + str(self.type))
 
+    def clone(self):
+        return Resource(source=self.serialize())
+
     def deserialize(self, source):
         for propname in ('path','type','content','comment'):
             if propname in source:

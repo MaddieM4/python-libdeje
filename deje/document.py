@@ -34,6 +34,7 @@ class Document(object):
         self._handler = handler_path
         self._owner = owner
         self._resources = {}
+        self._originals = {}
         self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
@@ -67,6 +68,49 @@ class Document(object):
             raise NotImplementedError("Rewinds not supported yet")
 
         return serialize_resources(self.resources.values())
+
+    def serialize(self):
+        '''
+        >>> from deje import testing
+        >>> from deje.resource import Resource
+        >>> import json
+
+        >>> doc = testing.document()
+        >>> serial = doc.serialize()
+        >>> sorted(serial.keys())
+        ['events', 'original']
+        >>> serial['original']
+        {}
+        >>> serial['events']
+        []
+
+        >>> doc.add_resource(Resource(path="/example", content="example"))
+        >>> doc.serialize()['original'] == {}
+        True
+        >>> doc.freeze()
+        >>> doc.serialize()['original'] == {
+        ...     "/example": {
+        ...         "comment": "",
+        ...         "content": "example",
+        ...         "path":    "/example",
+        ...         "type":    "application/x-octet-stream"
+        ...    }
+        ... }
+        True
+        '''
+        return {
+            'original': serialize_resources(self._originals.values()),
+            'events': self._blockchain
+        }
+
+    def freeze(self):
+        '''
+        Throw away history and base originals off of current state.
+        '''
+        self._originals = {}
+        for path in self.resources:
+            self._originals[path] = self.resources[path].clone()
+        self._blockchain = []
 
     # Animus
 
