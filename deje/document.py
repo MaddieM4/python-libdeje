@@ -20,6 +20,7 @@ from deje import animus
 from deje import quorumspace
 from deje.checkpoint import Checkpoint
 from deje.read import ReadRequest
+from deje.resource import Resource
 
 def serialize_resources(resources):
     serialized = {}
@@ -73,7 +74,6 @@ class Document(object):
         '''
         >>> from deje import testing
         >>> from deje.resource import Resource
-        >>> import json
 
         >>> doc = testing.document()
         >>> serial = doc.serialize()
@@ -102,6 +102,32 @@ class Document(object):
             'original': serialize_resources(self._originals.values()),
             'events': self._blockchain
         }
+
+    def deserialize(self, serial):
+        '''
+        >>> from deje import testing
+        >>> from deje.resource import Resource
+
+        >>> doc = testing.document()
+        >>> doc.add_resource(Resource(path="/example", content="example"))
+        >>> doc.freeze()
+        >>> serial = doc.serialize()
+
+        >>> newdoc = Document(doc.name)
+        >>> newdoc.deserialize(serial)
+        >>> newdoc.resources #doctest: +ELLIPSIS
+        {'/example': <deje.resource.Resource object at ...>}
+        >>> newdoc._originals #doctest: +ELLIPSIS
+        {'/example': <deje.resource.Resource object at ...>}
+        '''
+        self._resources = {}
+        for resource in serial['original'].values():
+            self.add_resource( Resource(source=resource) )
+        self.freeze()
+
+        for event in serial['events']:
+            cp = Checkpoint(event['content'], author = event['author'])
+            self.external_checkpoint(cp)
 
     def freeze(self):
         '''
