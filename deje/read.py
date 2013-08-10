@@ -75,4 +75,3 @@ class ReadRequest(object):
     @property
     def owner(self):
         return self.document.owner
-

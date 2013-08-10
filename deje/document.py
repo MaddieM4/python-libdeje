@@ -335,3 +335,25 @@ class Document(object):
         for callback in self._callbacks[label]:
             callback(result)
         self._callbacks[label].clear()
+
+def load_from(filename):
+    import json
+    doc = Document(filename)
+    serial = json.load(open(filename))
+    doc.deserialize(serial)
+    return doc
+
+def save_to(doc, filename):
+    '''
+    >>> from deje import testing
+    >>> doc = testing.document()
+    >>> doc.add_resource(Resource(path="/example", content="example"))
+    >>> doc.freeze()
+
+    >>> save_to(doc, "example.dje")
+    >>> newdoc = load_from("example.dje")
+    >>> newdoc.serialize() == doc.serialize()
+    True
+    '''
+    import json
+    json.dump(doc.serialize(), open(filename, 'w'))
