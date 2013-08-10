@@ -1,4 +1,4 @@
-import unittest
+from ejtp.util.compat import unittest
 
 from deje.resource import Resource
 

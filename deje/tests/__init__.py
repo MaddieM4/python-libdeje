@@ -15,19 +15,3 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-__all__ = [
-    'animus',
-    'checkpoint',
-    'document',
-    'handlers',
-    'interpreters',
-    'owner',
-    'protocol',
-    'quorum',
-    'quorumspace',
-    'read',
-    'resource',
-    'tests',
-]
-
-__version__ = "0.1.2"
