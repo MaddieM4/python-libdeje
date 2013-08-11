@@ -15,10 +15,31 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-# Prebaked handlers for Lua interpreter
-
 from __future__ import print_function
 from deje import document, resource
+
+def handler_text(handler_name):
+    functions = {
+        "echo_chamber" : echo_chamber,
+        "tag_team"     : tag_team,
+        "psycho_ward"  : psycho_ward,
+    }
+    return functions[handler_name]()
+
+def handler_resource(handler_name):
+    return resource.Resource(
+        '/handler.lua',
+         handler_text(handler_name),
+         handler_name,
+         'text/lua'
+    )
+
+def handler_document(handler_name):
+    doc = document.Document(handler_name)
+    doc.add_resource(handler_resource(handler_name))
+    return doc
+
+# Prebaked handlers for Lua interpreter
 
 def echo_chamber():
     '''

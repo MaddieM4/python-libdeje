@@ -19,27 +19,6 @@ from deje import quorum
 
 class Checkpoint(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
-        '''
-        >>> from deje import testing
-        >>> doc = testing.document(handler_lua_template="echo_chamber")
-        >>> owner = testing.owner()
-        >>> owner.own_document(doc)
-        >>> cp = testing.checkpoint(doc)
-        >>> ident = testing.identity()
-        >>> cp.version
-        0
-
-        >>> cp.quorum.sign(ident)
-        >>> cp.quorum.participants #doctest: +ELLIPSIS
-        [...'mitzi@lackadaisy.com']
-        >>> cp.quorum.sig_valid(ident.name)
-        True
-        >>> cp.quorum.sign("some string")
-        Traceback (most recent call last):
-        TypeError: Expected ejtp.identity.core.Identity, got 'some string'
-        >>> cp.quorum.sig_valid("some string")
-        False
-        '''
         self.document = document
         self.content  = content
         self.version  = int(version or self.document.version)
@@ -77,21 +56,6 @@ class Checkpoint(object):
 
     @property
     def authorname(self):
-        '''
-        >>> from deje import testing
-        >>> doc = testing.document(handler_lua_template="echo_chamber")
-        >>> owner = testing.owner()
-        >>> owner.own_document(doc)
-        >>> cp = Checkpoint(doc, None, author=owner.identity)
-        
-        >>> cp.author #doctest: +ELLIPSIS
-        <ejtp.identity.core.Identity object at ...>
-
-        >>> cp.authorname
-        'mitzi@lackadaisy.com'
-        >>> doc.identity.name
-        'mitzi@lackadaisy.com'
-        '''
         return (hasattr(self.author, "name") and self.author.name) or self.author
         
     @property
@@ -99,11 +63,6 @@ class Checkpoint(object):
         return [self.content, self.version, self.authorname]
 
     def hash(self):
-        '''
-        >>> from deje import testing
-        >>> testing.checkpoint().hash()
-        String('a6aa316b4b784fda1a38b53730d1a7698c3c1a33')
-        '''
         return self.quorum.hash
 
     @property
