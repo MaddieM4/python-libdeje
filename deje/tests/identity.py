@@ -15,6 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import absolute_import
 from ejtp.identity.core import Identity
 
 identities = {

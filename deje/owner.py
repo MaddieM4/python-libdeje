@@ -26,31 +26,6 @@ class Owner(object):
     Manages documents, identities, and an EJTP client.
     '''
     def __init__(self, self_ident, router=None, make_jack=True):
-        '''
-        Make sure string idents fail
-        >>> from ejtp.router import Router
-        >>> anon = Owner("anonymous", Router())
-        Traceback (most recent call last):
-        AttributeError: 'str' object has no attribute 'location'
-
-        Make sure self_idents with no location fail (error message depends on Python version)
-        >>> from deje import testing
-        >>> badident = testing.identity()
-        >>> badident.location = None
-        >>> Owner(badident, None, False) #doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        TypeError: str_address() ...
-
-        Do setup for testing a good owner.
-        >>> owner = testing.owner()
-        >>> owner.identities #doctest: +ELLIPSIS
-        <IdentityCache '{String(\\'["local",null,"mitzi"]\\'): <ejtp.identity.core.Identity object at ...>}'>
-        >>> doc = testing.document(handler_lua_template="echo_chamber")
-        >>> doc.handler #doctest: +ELLIPSIS
-        <deje.resource.Resource object at ...>
-        >>> owner.own_document(doc)
-
-        '''
         self.identities = identity.IdentityCache()
         self.identities.update_ident(self_ident)
         self.identity = self_ident
@@ -67,28 +42,6 @@ class Owner(object):
     # EJTP callbacks
 
     def on_ejtp(self, msg, client):
-        '''
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-
-        >>> mitzi.identity.location
-        ['local', None, 'mitzi']
-        >>> atlas.identity.location
-        ['local', None, 'atlas']
-        >>> mitzi.client.interface == mitzi.identity.location
-        True
-        >>> r = mitzi.client.router
-        >>> r.client(mitzi.identity.location) == mitzi.client
-        True
-        >>> atlas.client.interface == atlas.identity.location
-        True
-        >>> mitzi.client.router == atlas.client.router
-        True
-
-        Test raw EJTP connectivity with a malformed message
-        >>> atlas.client.write_json(mitzi.identity.location, "Oompa loompa") #doctest: +ELLIPSIS
-        Error from 'mitzi@lackadaisy.com', code 30: ...'Recieved non-{} message, dropping'
-        '''
         content = msg.unpack()
         # Rule out basic errors
         if type(content) != dict:
@@ -138,88 +91,14 @@ class Owner(object):
     # Network actions
 
     def get_version(self, document, callback):
-        """
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-        >>> def on_recv_version(version):
-        ...     print("Version is %d" % version)
-        >>> victor.get_version(vdoc, on_recv_version)
-        Version is 0
-        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
-        ...     'path':'/example',
-        ...     'property':'content',
-        ...     'value':'Mitzi says hi',
-        ... })
-        >>> victor.get_version(vdoc, on_recv_version)
-        Version is 1
-        """
         document.set_callback('recv-version', callback)
         self.transmit(document, 'deje-get-version', {}, participants = True, subscribers = False)
 
     def get_block(self, document, version, callback):
-        """
-        >>> import json
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-
-        Print in a predictible manner for doctest
-
-        >>> try:
-        ...    from Queue import Queue
-        ... except:
-        ...    from queue import Queue
-        >>> queue = Queue()
-        >>> def on_recv_block(block):
-        ...     queue.put(block)
-
-        Put in a checkpoint to retrieve
-
-        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
-        ...     'path':'/example',
-        ...     'property':'content',
-        ...     'value':'Mitzi says hi',
-        ... })
-
-        Retrieve checkpoint
-
-        >>> victor.get_block(vdoc, 0, on_recv_block)
-        >>> result = queue.get()
-        >>> sorted(result.keys()) #doctest: +ELLIPSIS
-        [...'author', ...'content', ...'signatures', ...'version']
-        >>> print(result['author'])
-        mitzi@lackadaisy.com
-        >>> print(json.dumps(result['content'], indent=4, sort_keys=True))
-        {
-            "path": "/example", 
-            "property": "content", 
-            "value": "Mitzi says hi"
-        }
-        >>> sorted(result['signatures'].keys()) #doctest: +ELLIPSIS
-        [...'atlas@lackadaisy.com', ...'mitzi@lackadaisy.com']
-        >>> result['version']
-        0
-        """
         document.set_callback('recv-block-%d' % version, callback)
         self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
 
     def get_snapshot(self, document, version, callback):
-        """
-        >>> import json
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-        >>> def on_recv_snapshot(snapshot):
-        ...     print(json.dumps(snapshot, indent=4, sort_keys=True))
-
-        >>> victor.get_snapshot(vdoc, 0, on_recv_snapshot) #doctest: +ELLIPSIS
-        {
-            "/handler.lua": {
-                "comment": "The primary handler", 
-                "content": "\\n        function checkpoint_test(cp, author)...", 
-                "path": "/handler.lua", 
-                "type": "text/lua"
-            }
-        }
-        """
         document.set_callback('recv-snapshot-%d' % version, callback)
         self.transmit(document, 'deje-get-snapshot', {'version':version}, participants = True, subscribers = False)
 

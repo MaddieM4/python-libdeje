@@ -15,17 +15,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-#from persei import String
+from __future__ import absolute_import
 
-from ejtp.util.compat import unittest
-from ejtp.router      import Router
+from ejtp.util.compat    import unittest
 from ejtp.identity.core  import Identity
+from deje.tests.ejtp     import TestEJTP
 
 from deje.document import Document, save_to, load_from
 from deje.resource import Resource
-from deje.owner    import Owner
-from deje.handlers.lua   import handler_document
-from deje.tests.identity import identity
 from deje.read     import ReadRequest
 
 class TestDocumentSimple(unittest.TestCase):
@@ -118,26 +115,7 @@ class TestDocumentSimple(unittest.TestCase):
         newdoc = load_from("example.dje")
         self.assertEqual(newdoc.serialize(), self.doc.serialize())
 
-class TestDocumentEJTP(unittest.TestCase):
-
-    def setUp(self):
-        self.router = Router()
-        self.mitzi  = Owner(identity("mitzi"),  self.router)
-        self.atlas  = Owner(identity("atlas"),  self.router)
-        self.victor = Owner(identity("victor"), self.router)
-        self.mitzi.identities.sync(
-            self.atlas.identities,
-            self.victor.identities,
-        )
-
-        # Document that mitzi and atlas are part of, but victor is not.
-        # Separate identical starting points for all of them.
-        self.mdoc = handler_document("tag_team")
-        self.adoc = handler_document("tag_team")
-        self.vdoc = handler_document("tag_team")
-        self.mitzi.own_document(self.mdoc)
-        self.atlas.own_document(self.adoc)
-        self.victor.own_document(self.vdoc)
+class TestDocumentEJTP(TestEJTP):
 
     def test_checkpoint(self):
         mcp = self.mdoc.checkpoint({
