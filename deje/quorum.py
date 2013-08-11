@@ -55,18 +55,6 @@ class Quorum(object):
     def clear(self):
         """
         Clear out all signatures.
-        >>> from deje import testing
-        >>> quorum = testing.quorum()
-        >>> ident  = testing.identity()
-        >>> owner  = testing.owner()
-        >>> owner.own_document(quorum.document)
-
-        >>> quorum.sign(ident)
-        >>> quorum.completion
-        1
-        >>> quorum.clear()
-        >>> quorum.completion
-        0
         """
         self.signatures = {}
 
@@ -135,19 +123,6 @@ class Quorum(object):
 
     @property
     def completion(self):
-        '''
-        >>> from deje import testing
-        >>> quorum = testing.quorum()
-        >>> ident  = testing.identity()
-        >>> owner  = testing.owner()
-        >>> owner.own_document(quorum.document)
-
-        >>> quorum.completion
-        0
-        >>> quorum.sign(ident)
-        >>> quorum.completion
-        1
-        '''
         return len(self.valid_signatures)
 
     @property
@@ -160,30 +135,6 @@ class Quorum(object):
 
     @property
     def outdated(self):
-        '''
-        >>> from deje import testing;
-        >>> cp = testing.checkpoint( testing.document(handler_lua_template="echo_chamber") )
-        >>> ident = testing.identity()
-        >>> quorum = cp.quorum
-
-        >>> quorum.document.version
-        0
-        >>> quorum.version
-        0
-        >>> quorum.outdated
-        False
-        >>> quorum.sign(ident)
-        >>> quorum.outdated
-        False
-        >>> cp.enact()
-        Checkpoint '{'x': 'y'}' achieved.
-        >>> quorum.document.version
-        1
-        >>> quorum.version
-        0
-        >>> quorum.outdated
-        True
-        '''
         # Version is not relevant for read requests
         if self.version != None:
             return self.document.version > self.version
@@ -192,32 +143,14 @@ class Quorum(object):
 
     @property
     def participants(self):
-        '''
-        >>> from deje import testing
-        >>> quorum = testing.quorum()
-        >>> quorum.participants #doctest: +ELLIPSIS
-        [...'anonymous']
-        '''
         return self.document.get_participants()
 
     @property
     def thresholds(self):
-        '''
-        >>> from deje import testing
-        >>> quorum = testing.quorum()
-        >>> quorum.thresholds == { 'read':1, 'write':1 }
-        True
-        '''
         return self.document.get_thresholds()
 
     @property
     def threshold(self):
-        '''
-        >>> from deje import testing
-        >>> quorum = testing.quorum()
-        >>> quorum.threshold
-        1
-        '''
         return self.thresholds[self.threshtype]
 
     @property
