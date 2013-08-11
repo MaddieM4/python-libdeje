@@ -19,64 +19,6 @@ from deje import quorum
 
 class QuorumSpace(object):
     def __init__(self, document):
-        '''
-        >>> from deje import testing
-        >>> from deje import checkpoint
-        >>> doc = testing.document(handler_lua_template="tag_team")
-        >>> cp1 = checkpoint.Checkpoint(doc, {"hello":"world"})
-        >>> cp2 = checkpoint.Checkpoint(doc, {"turtle":"food"})
-        >>> mitzi = testing.identity('mitzi')
-        >>> atlas = testing.identity('atlas')
-        >>> qs = cp1.document._qs
-
-        Try to double-sign
-        >>> sorted(cp1.quorum.participants) #doctest: +ELLIPSIS
-        [...'atlas@lackadaisy.com', ...'mitzi@lackadaisy.com']
-        >>> qs.is_free(mitzi)
-        True
-        >>> qs.is_free(atlas)
-        True
-        >>> cp1.quorum.competing
-        True
-
-        >>> cp1.quorum.sign(mitzi)
-        >>> qs.is_free(mitzi)
-        False
-        >>> qs.is_free(atlas)
-        True
-        >>> len(qs.by_hash)
-        2
-        >>> qs.by_hash[cp1.hash()] #doctest: +ELLIPSIS
-        <deje.quorum.Quorum object at ...>
-        >>> qs.by_hash[cp2.hash()] #doctest: +ELLIPSIS
-        <deje.quorum.Quorum object at ...>
-        >>> qs.by_author #doctest: +ELLIPSIS
-        {<ejtp.identity.core.Identity object at ...>: <deje.quorum.Quorum object at ...>}
-        >>> cp1.quorum.competing
-        True
-        >>> cp1.quorum.done
-        False
-
-        Not double signing, same person and cp
-        >>> cp1.quorum.sign(mitzi)
-
-        Double signing, same person but different cp
-        >>> try:
-        ...    cp2.quorum.sign(mitzi) #doctest: +ELLIPSIS
-        ... except QSDoubleSigning as e:
-        ...    print(e)
-        (<ejtp.identity.core.Identity object at ...>, <deje.document.Document object at ...>)
-
-        >>> cp1.quorum.sign(atlas)
-        >>> qs.is_free(mitzi)
-        True
-        >>> qs.is_free(atlas)
-        True
-        >>> cp1.quorum.competing
-        False
-        >>> cp1.quorum.done
-        True
-        '''
         self.document  = document
         self.by_author = {}
         self.by_hash = {}
