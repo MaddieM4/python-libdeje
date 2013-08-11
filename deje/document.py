@@ -71,55 +71,12 @@ class Document(object):
         return serialize_resources(self.resources.values())
 
     def serialize(self):
-        '''
-        >>> from deje import testing
-        >>> from deje.resource import Resource
-
-        >>> doc = testing.document()
-        >>> serial = doc.serialize()
-        >>> sorted(serial.keys())
-        ['events', 'original']
-        >>> serial['original']
-        {}
-        >>> serial['events']
-        []
-
-        >>> doc.add_resource(Resource(path="/example", content="example"))
-        >>> doc.serialize()['original'] == {}
-        True
-        >>> doc.freeze()
-        >>> doc.serialize()['original'] == {
-        ...     "/example": {
-        ...         "comment": "",
-        ...         "content": "example",
-        ...         "path":    "/example",
-        ...         "type":    "application/x-octet-stream"
-        ...    }
-        ... }
-        True
-        '''
         return {
             'original': serialize_resources(self._originals.values()),
             'events': self._blockchain
         }
 
     def deserialize(self, serial):
-        '''
-        >>> from deje import testing
-        >>> from deje.resource import Resource
-
-        >>> doc = testing.document()
-        >>> doc.add_resource(Resource(path="/example", content="example"))
-        >>> doc.freeze()
-        >>> serial = doc.serialize()
-
-        >>> newdoc = Document(doc.name)
-        >>> newdoc.deserialize(serial)
-        >>> newdoc.resources #doctest: +ELLIPSIS
-        {'/example': <deje.resource.Resource object at ...>}
-        >>> newdoc._originals #doctest: +ELLIPSIS
-        {'/example': <deje.resource.Resource object at ...>}
-        '''
         self._resources = {}
         for resource in serial['original'].values():
             self.add_resource( Resource(source=resource) )
@@ -172,23 +129,6 @@ class Document(object):
     def checkpoint(self, cp):
         '''
         Create a checkpoint from arbitrary object 'cp'
-
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-
-        >>> mcp = mdoc.checkpoint({ #doctest: +ELLIPSIS
-        ...     'path':'/example',
-        ...     'property':'content',
-        ...     'value':'Mitzi says hi',
-        ... })
-        >>> mcp.quorum.completion
-        2
-        >>> mdoc.competing
-        []
-        >>> print(mdoc.get_resource("/example").content)
-        Mitzi says hi
-        >>> print(adoc.get_resource("/example").content)
-        Mitzi says hi
         '''
         if not self.can_write():
             raise ValueError("You don't have write permission")
@@ -207,34 +147,6 @@ class Document(object):
             raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
         
     def subscribe(self):
-        '''
-        >>> from deje import testing
-        >>> mitzi, atlas, victor, mdoc, adoc, vdoc = testing.ejtp_test()
-
-        Test a read
-
-        >>> vdoc.version
-        0
-        >>> vdoc.can_read()
-        True
-        >>> # One error is normal, due to transmission patterns
-        >>> rr = vdoc.subscribe() #doctest: +ELLIPSIS
-        Error from '...@lackadaisy.com', code 40: ...'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'
-        >>> mdoc.competing
-        []
-        >>> adoc.competing
-        []
-        >>> rr #doctest: +ELLIPSIS
-        <deje.read.ReadRequest object at ...>
-        >>> type(mdoc.subscribers) #doctest: +ELLIPSIS
-        <... 'set'>
-        >>> list(mdoc.subscribers) #doctest: +ELLIPSIS
-        [<ejtp.identity.core.Identity object at ...>]
-        >>> type(adoc.subscribers) #doctest: +ELLIPSIS
-        <... 'set'>
-        >>> list(adoc.subscribers) #doctest: +ELLIPSIS
-        [<ejtp.identity.core.Identity object at ...>]
-        '''
         if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self)
@@ -302,28 +214,6 @@ class Document(object):
     # Callbacks
 
     def set_callback(self, label, callback):
-        '''
-        >>> from deje import testing
-        >>> doc = testing.document()
-        >>> def callback_A(result):
-        ...     print("%r from A" % result)
-        >>> def callback_B(result):
-        ...     print("%r from B" % result)
-        >>> doc.set_callback('police_raid', callback_A)
-        >>> doc.set_callback('police_raid', callback_B)
-
-        Order is unpredictable for callbacks
-
-        >>> list(doc._callbacks.keys())
-        ['police_raid']
-        >>> type(doc._callbacks['police_raid']) #doctest: +ELLIPSIS
-        <... 'set'>
-        >>> list(doc._callbacks['police_raid']) #doctest: +ELLIPSIS
-        [<function callback_... at ...>, <function callback_... at ...>]
-        >>> doc.trigger_callback('police_raid', ["detective", "inspector"]) #doctest: +ELLIPSIS
-        ['detective', 'inspector'] from ...
-        ['detective', 'inspector'] from ...
-        '''
         if not label in self._callbacks:
             self._callbacks[label] = set([callback])
         else:
@@ -344,16 +234,5 @@ def load_from(filename):
     return doc
 
 def save_to(doc, filename):
-    '''
-    >>> from deje import testing
-    >>> doc = testing.document()
-    >>> doc.add_resource(Resource(path="/example", content="example"))
-    >>> doc.freeze()
-
-    >>> save_to(doc, "example.dje")
-    >>> newdoc = load_from("example.dje")
-    >>> newdoc.serialize() == doc.serialize()
-    True
-    '''
     import json
     json.dump(doc.serialize(), open(filename, 'w'))
