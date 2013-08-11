@@ -69,10 +69,10 @@ class TestDocumentSimple(unittest.TestCase):
         newdoc = Document(self.doc.name)
         newdoc.deserialize(serial)
 
-        self.assertEqual(newdoc.resources.keys(), ['/example'])
+        self.assertEqual(list(newdoc.resources.keys()), ['/example'])
         self.assertIsInstance(newdoc.resources['/example'], Resource)
 
-        self.assertEqual(newdoc._originals.keys(), ['/example'])
+        self.assertEqual(list(newdoc._originals.keys()), ['/example'])
         self.assertIsInstance(newdoc._originals['/example'], Resource)
 
     def test_callback(self):
