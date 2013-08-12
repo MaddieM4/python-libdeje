@@ -17,15 +17,17 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from ejtp.util.compat    import unittest
+from deje.tests.stream   import StreamTest
 from ejtp.router         import Router
 from deje.owner          import Owner
 from deje.handlers.lua   import handler_document
 from deje.tests.identity import identity
 
-class TestEJTP(unittest.TestCase):
+class TestEJTP(StreamTest):
 
     def setUp(self):
+        StreamTest.setUp(self)
+
         self.router = Router()
         self.mitzi  = Owner(identity("mitzi"),  self.router)
         self.atlas  = Owner(identity("atlas"),  self.router)

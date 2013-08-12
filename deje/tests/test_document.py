@@ -142,7 +142,11 @@ class TestDocumentEJTP(TestEJTP):
 
         # One error is normal, due to transmission patterns
         rr = self.vdoc.subscribe()
-        # Error from '...@lackadaisy.com', code 40: ...'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'
+        self.assertEqual(
+            self.getOutput().replace("u'", "'"),
+            "Error from 'mitzi@lackadaisy.com', code 40: " +
+            "'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'\n"
+        )
         self.assertEqual(self.mdoc.competing, [])
         self.assertEqual(self.adoc.competing, [])
 

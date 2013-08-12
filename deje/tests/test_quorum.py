@@ -17,16 +17,18 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from ejtp.util.compat import unittest
+from deje.tests.stream   import StreamTest
 
-from deje.checkpoint import Checkpoint
-from deje.handlers.lua import handler_document
+from deje.checkpoint     import Checkpoint
+from deje.handlers.lua   import handler_document
 from deje.tests.identity import identity
-from deje.owner import Owner
+from deje.owner          import Owner
 
-class TestQuorum(unittest.TestCase):
+class TestQuorum(StreamTest):
 
     def setUp(self):
+        StreamTest.setUp(self)
+
         self.doc = handler_document("echo_chamber")
         self.cp  = Checkpoint(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
         self.quorum = self.cp.quorum
@@ -55,7 +57,10 @@ class TestQuorum(unittest.TestCase):
         self.assertFalse(self.quorum.outdated)
 
         self.cp.enact()
-        # Checkpoint '{'x': 'y'}' achieved.
+        self.assertOutput(
+            "Checkpoint '{'x': 'y'}' achieved.\n" +
+            "No known address for 'mick-and-bandit', skipping\n"
+        )
 
         self.assertEqual(self.doc.version, 1)
         self.assertEqual(self.quorum.version, 0)

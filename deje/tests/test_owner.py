@@ -101,7 +101,11 @@ class TestOwnerEJTP(TestEJTP):
             self.mitzi.identity.location,
             "Oompa loompa"
         )
-        # Error from 'mitzi@lackadaisy.com', code 30: ...'Recieved non-{} message, dropping'
+        self.assertEqual(
+            self.getOutput().replace("u'", "'"),
+            "Error from 'mitzi@lackadaisy.com', code 30: " +
+            "'Recieved non-{} message, dropping'\n"
+        )
 
     def test_get_version(self):
         results = []

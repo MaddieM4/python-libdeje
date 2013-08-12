@@ -17,38 +17,18 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-import sys
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-from ejtp.util.compat      import unittest
+from deje.tests.stream     import StreamTest
 
 from deje.resource         import Resource
 from deje.handlers.lua     import handler_document
 from deje.interpreters.lua import HandlerReturnError
 
-class TestLuaHandler(unittest.TestCase):
+class TestLuaHandler(StreamTest):
     def setUp(self):
-        self._stdout = sys.stdout
-        self.sio     = StringIO()
-        sys.stdout   = self.sio
+        StreamTest.setUp(self)
 
         self.doc = handler_document(self.name)
         self.doc.animus.activate()
-
-    def getOutput(self):
-        output = self.sio.getvalue()
-        self.sio.seek(0)
-        self.sio.truncate()
-        return output
-
-    def assertOutput(self, text):
-        self.assertEquals(text, self.getOutput())
-
-    def tearDown(self):
-        sys.stdout = self._stdout
 
 class TestLuaHandlerEchoChamber(TestLuaHandler):
     @property
