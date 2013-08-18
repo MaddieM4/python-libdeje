@@ -16,6 +16,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import print_function
+import dispatch
+
 from deje import animus
 from deje import quorumspace
 from deje.checkpoint import Checkpoint
@@ -39,7 +41,14 @@ class Document(object):
         self._qs = quorumspace.QuorumSpace(self)
         self._animus = animus.Animus(self)
         self._blockchain = []
-        self._callbacks = {}
+        self.signals = {
+            'recv-version': dispatch.Signal(
+                providing_args=['version']),
+            'recv-block': dispatch.Signal(
+                providing_args=['version','block']),
+            'recv-snapshot':dispatch.Signal(
+                providing_args=['version','snapshot']),
+        }
         self.subscribers = set()
         for res in resources:
             self.add_resource(res)
@@ -210,21 +219,6 @@ class Document(object):
     @property
     def version(self):
         return len(self._blockchain)
-
-    # Callbacks
-
-    def set_callback(self, label, callback):
-        if not label in self._callbacks:
-            self._callbacks[label] = set([callback])
-        else:
-            self._callbacks[label].add(callback)
-
-    def trigger_callback(self, label, result):
-        if label not in self._callbacks:
-            return
-        for callback in self._callbacks[label]:
-            callback(result)
-        self._callbacks[label].clear()
 
 def load_from(filename):
     import json

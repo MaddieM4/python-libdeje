@@ -72,39 +72,6 @@ class TestDocumentSimple(unittest.TestCase):
         self.assertEqual(list(newdoc._originals.keys()), ['/example'])
         self.assertIsInstance(newdoc._originals['/example'], Resource)
 
-    def test_callback(self):
-        results = set()
-
-        def callback_A(result):
-            results.add("%r from A" % result)
-        def callback_B(result):
-            results.add("%r from B" % result)
-        self.doc.set_callback('police_raid', callback_A)
-        self.doc.set_callback('police_raid', callback_B)
-
-        # Order is unpredictable for callbacks
-
-        self.assertEqual(
-            list(self.doc._callbacks.keys()),
-            ['police_raid']
-        )
-        self.assertIsInstance(self.doc._callbacks['police_raid'], set)
-        self.assertEqual(len(self.doc._callbacks['police_raid']), 2)
-        for callback in self.doc._callbacks['police_raid']:
-            self.assertIn(callback, (callback_A, callback_B))
-
-        self.doc.trigger_callback(
-            'police_raid',
-            ["detective", "inspector"]
-        )
-        self.assertEqual(
-            results,
-            set([
-                "['detective', 'inspector'] from A",
-                "['detective', 'inspector'] from B",
-            ])
-        )
-
     def test_saving(self):
         self.doc.add_resource(
             Resource(path="/example", content="example")

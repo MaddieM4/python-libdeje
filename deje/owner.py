@@ -91,15 +91,29 @@ class Owner(object):
     # Network actions
 
     def get_version(self, document, callback):
-        document.set_callback('recv-version', callback)
+        def wrapped(sender, **kwargs):
+            callback(kwargs['version'])
+            document.signals['recv-version'].disconnect(wrapped)
+        document.signals['recv-version'].connect(wrapped)
+
         self.transmit(document, 'deje-get-version', {}, participants = True, subscribers = False)
 
     def get_block(self, document, version, callback):
-        document.set_callback('recv-block-%d' % version, callback)
+        def wrapped(sender, **kwargs):
+            if kwargs['version'] == version:
+                callback(kwargs['block'])
+                document.signals['recv-block'].disconnect(wrapped)
+        document.signals['recv-block'].connect(wrapped)
+
         self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
 
     def get_snapshot(self, document, version, callback):
-        document.set_callback('recv-snapshot-%d' % version, callback)
+        def wrapped(sender, **kwargs):
+            if kwargs['version'] == version:
+                callback(kwargs['snapshot'])
+                document.signals['recv-snapshot'].disconnect(wrapped)
+        document.signals['recv-snapshot'].connect(wrapped)
+
         self.transmit(document, 'deje-get-snapshot', {'version':version}, participants = True, subscribers = False)
 
     def error(self, msg, attributes, data=None):

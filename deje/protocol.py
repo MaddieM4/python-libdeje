@@ -112,7 +112,7 @@ class Protocol(object):
         if sender.name not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "version")
         version = content['version']
-        doc.trigger_callback('recv-version', version)
+        doc.signals['recv-version'].send(self, version=version)
 
     def _on_deje_get_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
@@ -134,7 +134,11 @@ class Protocol(object):
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
         block = content['block']
         version = block['version']
-        doc.trigger_callback('recv-block-%d' % version, block)
+        doc.signals['recv-block'].send(
+            self,
+            version=version,
+            block=block
+        )
 
     def _on_deje_get_snapshot(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
@@ -149,7 +153,11 @@ class Protocol(object):
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "snapshot")
         snapshot = content['snapshot']
         version  = content['version']
-        doc.trigger_callback('recv-snapshot-%d' % version, snapshot)
+        doc.signals['recv-snapshot'].send(
+            self,
+            version=version,
+            snapshot=snapshot
+        )
 
     # Transport shortcuts
 
