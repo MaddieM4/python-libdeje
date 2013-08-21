@@ -53,20 +53,20 @@ def echo_chamber():
             end
         end
 
-        function trigger_checkpoint(value)
-            deje.checkpoint(value)
+        function trigger_event(value)
+            deje.event(value)
         end
 
-        function checkpoint_test(cp, author)
-            if cp == "example" then
+        function event_test(ev, author)
+            if ev == "example" then
                 return true
             else
                 return false
             end
         end
 
-        function on_checkpoint_achieve(set_resource, cp, author)
-            deje.debug("Checkpoint '" .. tostring(cp) .. "' achieved.")
+        function on_event_achieve(set_resource, ev, author)
+            deje.debug("Event '" .. tostring(ev) .. "' achieved.")
         end
 
         function quorum_participants()
@@ -99,15 +99,15 @@ def echo_chamber():
 
 def tag_team():
     '''
-    Every checkpoint requires approval from Mitzi and Atlas. Same for reads.
+    Every event requires approval from Mitzi and Atlas. Same for reads.
     '''
     return '''
-        function checkpoint_test(cp, author)
+        function event_test(ev, author)
             return true
         end
 
-        function on_checkpoint_achieve(set_resource, cp, author)
-            set_resource(cp.path, cp.property, cp.value)
+        function on_event_achieve(set_resource, ev, author)
+            set_resource(ev.path, ev.property, ev.value)
         end
 
         function on_resource_update()
@@ -152,11 +152,11 @@ def psycho_ward():
             return "pumpernickel"
         end
 
-        function checkpoint_test(cp, author)
+        function event_test(ev, author)
             return "perfidia"
         end
 
-        function on_checkpoint_achieve(set_resource, cp, author)
+        function on_event_achieve(set_resource, ev, author)
             return nil
         end
 

@@ -39,7 +39,7 @@ PERMISSION_DOCINFO_NOT_PARTICIPANT = {
     'explanation': "%r information came from non-participant source, ignoring",
 }
 
-# Checkpoint errors
+# Event errors
 
 # Subscription errors
 

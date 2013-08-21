@@ -19,7 +19,7 @@ from __future__ import print_function
 from persei import *
 
 from deje import read
-from deje import checkpoint
+from deje import event
 from deje import errors
 
 class Protocol(object):
@@ -56,16 +56,16 @@ class Protocol(object):
     def _on_deje_lock_acquire(self, msg, content, ctype, doc):
         lcontent = content['content']
         ltype = lcontent['type']
-        if ltype == "deje-checkpoint":
-            cp_content = lcontent['checkpoint']
-            cp_version = lcontent['version']
-            cp_author  = lcontent['author']
+        if ltype == "deje-event":
+            ev_content = lcontent['event']
+            ev_version = lcontent['version']
+            ev_author  = lcontent['author']
 
-            cp = checkpoint.Checkpoint(doc, cp_content, cp_version, cp_author)
-            if doc.can_write(cp_author) and cp.test():
+            ev = event.Event(doc, ev_content, ev_version, ev_author)
+            if doc.can_write(ev_author) and ev.test():
                 # TODO: Error message for permissions failures and test failures
-                cp.quorum.sign(self.owner.identity)
-                cp.quorum.transmit([self.owner.identity.name])
+                ev.quorum.sign(self.owner.identity)
+                ev.quorum.transmit([self.owner.identity.name])
         if ltype == "deje-subscribe":
             rr_subname = lcontent['subscriber']
             subscriber = self.owner.identities.find_by_name(rr_subname)
@@ -117,12 +117,12 @@ class Protocol(object):
     def _on_deje_get_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
         blocknumber = content['version']
-        blockcp = doc._blockchain[blocknumber]
+        blockev = doc._blockchain[blocknumber]
         block = {
-            'author': blockcp.authorname,
-            'content': blockcp.content,
-            'version': blockcp.version,
-            'signatures': blockcp.quorum.sigs_dict(),
+            'author': blockev.authorname,
+            'content': blockev.content,
+            'version': blockev.version,
+            'signatures': blockev.quorum.sigs_dict(),
         }
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)

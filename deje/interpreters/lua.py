@@ -54,13 +54,13 @@ class LuaInterpreter(object):
         self.call("on_resource_update", path, propname, oldpath)
         self.reload()
 
-    def on_checkpoint_achieve(self, cp, author):
+    def on_event_achieve(self, ev, author):
         set_resource, sr_flag = self.api.set_resource()
-        self.call("on_checkpoint_achieve", set_resource, cp, author)
+        self.call("on_event_achieve", set_resource, ev, author)
         sr_flag.revoke()
 
-    def checkpoint_test(self, cp, author):
-        return self.call("checkpoint_test", cp, author, returntype = bool)
+    def event_test(self, ev, author):
+        return self.call("event_test", ev, author, returntype = bool)
 
     def quorum_participants(self):
         if not self.cache['quorum_participants']:

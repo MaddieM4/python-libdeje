@@ -23,7 +23,7 @@ from deje.resource import Resource
 exported_functions = (
     'get_resource',
     'get_ident',
-    'checkpoint',
+    'event',
     'debug',
 )
 
@@ -55,8 +55,8 @@ class API(object):
         except:
             return String(ident.name).export()
 
-    def checkpoint(self, cp):
-        self.queue.append(lambda: self.document.checkpoint(cp))
+    def event(self, ev):
+        self.queue.append(lambda: self.document.event(ev))
 
     def debug(self, *args):
         for arg in args:

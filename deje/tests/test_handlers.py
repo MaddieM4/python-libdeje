@@ -56,14 +56,14 @@ class TestLuaHandlerEchoChamber(TestLuaHandler):
             "/example.txt was moved to /fridge/turtles.txt\n"
         )
 
-    def test_checkpoint(self):
-        self.doc.animus.interpreter.call("trigger_checkpoint", "example")
-        self.assertOutput("Checkpoint 'example' achieved.\n")
+    def test_event(self):
+        self.doc.animus.interpreter.call("trigger_event", "example")
+        self.assertOutput("Event 'example' achieved.\n")
 
         self.assertRaises(
             ValueError,
             self.doc.animus.interpreter.call,
-            "trigger_checkpoint", "no dice"
+            "trigger_event", "no dice"
         )
 
     def test_document_properties(self):
@@ -119,7 +119,7 @@ class TestLuaHandlerPsychoWard(TestLuaHandler):
             []
         )
 
-    def test_checkpoint(self):
+    def test_event(self):
         # Lobotomize can_write() into always returning true
         self.doc.execute("""
             function can_write()
@@ -129,6 +129,6 @@ class TestLuaHandlerPsychoWard(TestLuaHandler):
 
         self.assertRaises(
             HandlerReturnError,
-            self.doc.checkpoint,
+            self.doc.event,
             "comet"
         )

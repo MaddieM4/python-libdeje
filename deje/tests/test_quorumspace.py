@@ -19,7 +19,7 @@ from __future__ import absolute_import
 
 from ejtp.util.compat    import unittest
 
-from deje.checkpoint     import Checkpoint
+from deje.event          import Event
 from deje.handlers.lua   import handler_document
 from deje.tests.identity import identity
 from deje.owner          import Owner
@@ -30,52 +30,52 @@ class TestQuorumSpace(unittest.TestCase):
 
     def setUp(self):
         self.doc = handler_document("tag_team")
-        self.cp1 = Checkpoint(self.doc, {"hello":"world"})
-        self.cp2 = Checkpoint(self.doc, {"turtle":"food"})
+        self.ev1 = Event(self.doc, {"hello":"world"})
+        self.ev2 = Event(self.doc, {"turtle":"food"})
         self.mitzi = identity('mitzi')
         self.atlas = identity('atlas')
         self.qs  = self.doc._qs
 
     def test_initial_state(self):
         self.assertEqual(
-            sorted(self.cp1.quorum.participants),
+            sorted(self.ev1.quorum.participants),
             ['atlas@lackadaisy.com', 'mitzi@lackadaisy.com']
         )
         self.assertTrue(self.qs.is_free(self.mitzi))
         self.assertTrue(self.qs.is_free(self.atlas))
-        self.assertTrue(self.cp1.quorum.competing)
+        self.assertTrue(self.ev1.quorum.competing)
 
     def test_double_sign(self):
         # TODO: Break this apart when I better understand the side
         # effects that this test depends on.
 
-        self.cp1.quorum.sign(self.mitzi)
+        self.ev1.quorum.sign(self.mitzi)
         self.assertFalse(self.qs.is_free(self.mitzi))
         self.assertTrue(self.qs.is_free(self.atlas))
         self.assertEqual(len(self.qs.by_hash), 2)
 
-        self.assertIsInstance(self.qs.by_hash[self.cp1.hash()], Quorum)
-        self.assertIsInstance(self.qs.by_hash[self.cp2.hash()], Quorum)
+        self.assertIsInstance(self.qs.by_hash[self.ev1.hash()], Quorum)
+        self.assertIsInstance(self.qs.by_hash[self.ev2.hash()], Quorum)
 
         self.assertEquals(
             self.qs.by_author,
-            {self.mitzi: self.cp1.quorum}
+            {self.mitzi: self.ev1.quorum}
         )
-        self.assertTrue(self.cp1.quorum.competing)
-        self.assertFalse(self.cp1.quorum.done)
+        self.assertTrue(self.ev1.quorum.competing)
+        self.assertFalse(self.ev1.quorum.done)
 
-        # Not double signing, same person and cp
-        self.cp1.quorum.sign(self.mitzi)
+        # Not double signing, same person and ev
+        self.ev1.quorum.sign(self.mitzi)
 
-        # Double signing, same person but different cp
+        # Double signing, same person but different ev
         self.assertRaises(
             QSDoubleSigning,
-            self.cp2.quorum.sign,
+            self.ev2.quorum.sign,
             self.mitzi
         )
 
-        self.cp1.quorum.sign(self.atlas)
+        self.ev1.quorum.sign(self.atlas)
         self.assertTrue(self.qs.is_free(self.mitzi))
         self.assertTrue(self.qs.is_free(self.atlas))
-        self.assertFalse(self.cp1.quorum.competing)
-        self.assertTrue(self.cp1.quorum.done)
+        self.assertFalse(self.ev1.quorum.competing)
+        self.assertTrue(self.ev1.quorum.done)

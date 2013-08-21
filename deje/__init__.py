@@ -17,8 +17,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = [
     'animus',
-    'checkpoint',
     'document',
+    'event',
     'handlers',
     'interpreters',
     'owner',

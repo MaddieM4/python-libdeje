@@ -21,44 +21,44 @@ from persei import String
 from ejtp.util.compat import unittest
 from ejtp.identity.core import Identity
 
-from deje.checkpoint import Checkpoint
+from deje.event import Event
 from deje.handlers.lua import handler_document
 from deje.tests.identity import identity
 from deje.owner import Owner
 
-class TestCheckpoint(unittest.TestCase):
+class TestEvent(unittest.TestCase):
 
     def setUp(self):
         self.doc = handler_document('echo_chamber')
-        self.cp  = Checkpoint(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
+        self.ev  = Event(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 
     def test_init(self):
-        self.assertEqual(self.cp.version, 0)
-        self.cp.quorum.sign(self.ident)
+        self.assertEqual(self.ev.version, 0)
+        self.ev.quorum.sign(self.ident)
         self.assertEqual(
-            self.cp.quorum.participants,
+            self.ev.quorum.participants,
             ['mitzi@lackadaisy.com']
         )
-        self.assertTrue(self.cp.quorum.sig_valid(self.ident.name))
+        self.assertTrue(self.ev.quorum.sig_valid(self.ident.name))
         self.assertRaises(
             TypeError,
-            self.cp.quorum.sign,
+            self.ev.quorum.sign,
             "some string"
         )
-        self.assertFalse(self.cp.quorum.sig_valid("some string"))
+        self.assertFalse(self.ev.quorum.sig_valid("some string"))
 
     def test_authorname(self):
-        # Override cp for this test
-        self.cp = Checkpoint(self.doc, None, author=self.owner.identity)
+        # Override ev for this test
+        self.ev = Event(self.doc, None, author=self.owner.identity)
 
         self.assertTrue(
-            isinstance(self.cp.author, Identity)
+            isinstance(self.ev.author, Identity)
         )
         self.assertEqual(
-            self.cp.authorname,
+            self.ev.authorname,
             'mitzi@lackadaisy.com'
         )
         self.assertEqual(
@@ -68,6 +68,6 @@ class TestCheckpoint(unittest.TestCase):
 
     def test_hash(self):
         self.assertEqual(
-            self.cp.hash(),
+            self.ev.hash(),
             String('a6aa316b4b784fda1a38b53730d1a7698c3c1a33')
         )

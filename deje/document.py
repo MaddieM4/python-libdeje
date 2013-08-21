@@ -20,7 +20,7 @@ import dispatch
 
 from deje import animus
 from deje import quorumspace
-from deje.checkpoint import Checkpoint
+from deje.event import Event
 from deje.read import ReadRequest
 from deje.resource import Resource
 
@@ -92,8 +92,8 @@ class Document(object):
         self.freeze()
 
         for event in serial['events']:
-            cp = Checkpoint(event['content'], author = event['author'])
-            self.external_checkpoint(cp)
+            ev = Event(event['content'], author = event['author'])
+            self.external_event(ev)
 
     def freeze(self):
         '''
@@ -133,27 +133,27 @@ class Document(object):
     def request(self, callback, *args):
         return self.animus.host_request(callback, args)
 
-    # Checkpoint stuff
+    # Event stuff
 
-    def checkpoint(self, cp):
+    def event(self, ev):
         '''
-        Create a checkpoint from arbitrary object 'cp'
+        Create a event from arbitrary object 'ev'
         '''
         if not self.can_write():
             raise ValueError("You don't have write permission")
-        checkpoint = Checkpoint(self, cp, author = self.identity)
-        return self.external_checkpoint(checkpoint)
+        event = Event(self, ev, author = self.identity)
+        return self.external_event(event)
 
-    def external_checkpoint(self, checkpoint):
-        if checkpoint.test():
+    def external_event(self, event):
+        if event.test():
             if self.owner:
-                checkpoint.quorum.sign(self.identity)
-                checkpoint.transmit()
+                event.quorum.sign(self.identity)
+                event.transmit()
             else:
-                checkpoint.enact()
-            return checkpoint
+                event.enact()
+            return event
         else:
-            raise ValueError("Checkpoint %r was not valid" % checkpoint.content)
+            raise ValueError("Event %r was not valid" % event.content)
         
     def subscribe(self):
         if not self.can_read():

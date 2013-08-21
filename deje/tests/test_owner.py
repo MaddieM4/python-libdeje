@@ -115,7 +115,7 @@ class TestOwnerEJTP(TestEJTP):
         self.victor.get_version(self.vdoc, on_recv_version)
         self.assertEqual(results.pop(), "Version is 0")
 
-        mcp = self.mdoc.checkpoint({
+        mev = self.mdoc.event({
             'path':'/example',
             'property':'content',
             'value':'Mitzi says hi',
@@ -128,15 +128,15 @@ class TestOwnerEJTP(TestEJTP):
         def on_recv_block(block):
             queue.put(block)
 
-        # Put in a checkpoint to retrieve
+        # Put in a event to retrieve
 
-        mcp = self.mdoc.checkpoint({
+        mev = self.mdoc.event({
             'path':'/example',
             'property':'content',
             'value':'Mitzi says hi',
         })
 
-        # Retrieve checkpoint
+        # Retrieve event
 
         self.victor.get_block(self.vdoc, 0, on_recv_block)
         result = queue.get()

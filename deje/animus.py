@@ -28,13 +28,13 @@ class Animus(object):
         if self.activate():
             self.interpreter.on_resource_update(path, propname, oldpath)
 
-    def on_checkpoint_achieve(self, cp, author):
+    def on_event_achieve(self, ev, author):
         if self.activate():
-            self.interpreter.on_checkpoint_achieve(cp, author)
+            self.interpreter.on_event_achieve(ev, author)
 
-    def checkpoint_test(self, cp, author):
+    def event_test(self, ev, author):
         if self.activate():
-            return self.interpreter.checkpoint_test(cp, author)
+            return self.interpreter.event_test(ev, author)
 
     def quorum_participants(self):
         if self.activate():

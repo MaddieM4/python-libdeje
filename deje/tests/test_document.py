@@ -84,13 +84,13 @@ class TestDocumentSimple(unittest.TestCase):
 
 class TestDocumentEJTP(TestEJTP):
 
-    def test_checkpoint(self):
-        mcp = self.mdoc.checkpoint({
+    def test_event(self):
+        mev = self.mdoc.event({
             'path':'/example',
             'property':'content',
             'value':'Mitzi says hi',
         })
-        self.assertEqual(mcp.quorum.completion, 2)
+        self.assertEqual(mev.quorum.completion, 2)
         self.assertEqual(self.mdoc.competing, [])
 
         self.assertEqual(

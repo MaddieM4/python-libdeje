@@ -19,7 +19,7 @@ from __future__ import absolute_import
 
 from deje.tests.stream   import StreamTest
 
-from deje.checkpoint     import Checkpoint
+from deje.event          import Event
 from deje.handlers.lua   import handler_document
 from deje.tests.identity import identity
 from deje.owner          import Owner
@@ -30,8 +30,8 @@ class TestQuorum(StreamTest):
         StreamTest.setUp(self)
 
         self.doc = handler_document("echo_chamber")
-        self.cp  = Checkpoint(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
-        self.quorum = self.cp.quorum
+        self.ev  = Event(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
+        self.quorum = self.ev.quorum
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
@@ -56,9 +56,9 @@ class TestQuorum(StreamTest):
         self.quorum.sign(self.ident)
         self.assertFalse(self.quorum.outdated)
 
-        self.cp.enact()
+        self.ev.enact()
         self.assertOutput(
-            "Checkpoint '{'x': 'y'}' achieved.\n" +
+            "Event '{'x': 'y'}' achieved.\n" +
             "No known address for 'mick-and-bandit', skipping\n"
         )
 

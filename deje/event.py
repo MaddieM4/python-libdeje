@@ -17,7 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from deje import quorum
 
-class Checkpoint(object):
+class Event(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
         self.document = document
         self.content  = content
@@ -33,7 +33,7 @@ class Checkpoint(object):
             return
         self.enacted = True
         self.document._blockchain.append(self)
-        self.document.animus.on_checkpoint_achieve(self.content, self.author)
+        self.document.animus.on_event_achieve(self.content, self.author)
         if self.owner:
             self.quorum.transmit_complete()
 
@@ -43,16 +43,16 @@ class Checkpoint(object):
 
     def transmit(self):
         self.owner.lock_action(self.document, {
-            'type': 'deje-checkpoint',
+            'type': 'deje-event',
             'version': self.version,
-            'checkpoint': self.content,
+            'event': self.content,
             'author': self.authorname,
         })
         self.quorum.transmit()
         self.update()
 
     def test(self):
-        return self.document.animus.checkpoint_test(self.content, self.author)
+        return self.document.animus.event_test(self.content, self.author)
 
     @property
     def authorname(self):
@@ -71,5 +71,6 @@ class Checkpoint(object):
 
 def from_hashcontent(document, hashcontent, signatures={}):
     if type(hashcontent) != list or len(hashcontent) != 3:
-        raise TypeError("checkpoint.from_hashcontent expects a list of length 3, got %r" % hashcontent)
-    return Checkpoint(document, content, version, author, signatures)
+        raise TypeError("event.from_hashcontent expects a list of length 3, got %r" % hashcontent)
+    return Event(document, content, version, author, signatures)
+
