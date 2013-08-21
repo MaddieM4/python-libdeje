@@ -33,7 +33,7 @@ class Event(object):
             return
         self.enacted = True
         self.document._blockchain.append(self)
-        self.document.animus.on_event_achieve(self.content, self.author)
+        self.document.interpreter.on_event_achieve(self.content, self.author)
         if self.owner:
             self.quorum.transmit_complete()
 
@@ -52,7 +52,7 @@ class Event(object):
         self.update()
 
     def test(self):
-        return self.document.animus.event_test(self.content, self.author)
+        return self.document.interpreter.event_test(self.content, self.author)
 
     @property
     def authorname(self):

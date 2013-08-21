@@ -18,7 +18,6 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 import dispatch
 
-from deje import animus
 from deje import quorumspace
 from deje.event import Event
 from deje.read import ReadRequest
@@ -39,8 +38,8 @@ class Document(object):
         self._resources = {}
         self._originals = {}
         self._qs = quorumspace.QuorumSpace(self)
-        self._animus = animus.Animus(self)
         self._blockchain = []
+        self._interpreter = None
         self.signals = {
             'recv-version': dispatch.Signal(
                 providing_args=['version']),
@@ -51,25 +50,33 @@ class Document(object):
         }
         self.subscribers = set()
         for res in resources:
-            self.add_resource(res)
+            self.add_resource(res, False)
 
     # High-level resource manipulation
 
-    def add_resource(self, resource):
-        self._animus.on_resource_update(resource.path, 'add')
+    def add_resource(self, resource, interp_call = True):
+        if interp_call:
+            self.interpreter.on_resource_update(resource.path, 'add')
         self._resources[resource.path] = resource
         resource.document = self
 
     def get_resource(self, path):
         return self._resources[path]
 
-    def del_resource(self, path):
-        self._animus.on_resource_update(path, 'delete')
+    def del_resource(self, path, interp_call = True):
+        if interp_call:
+            self.interpreter.on_resource_update(path, 'delete')
         del self._resources[path]
 
     @property
     def resources(self):
         return self._resources
+
+    @property
+    def interpreter(self):
+        if not self._interpreter:
+            self._interpreter = self.handler.interpreter()
+        return self._interpreter
 
     def snapshot(self, version = None):
         if version == None:
@@ -88,7 +95,7 @@ class Document(object):
     def deserialize(self, serial):
         self._resources = {}
         for resource in serial['original'].values():
-            self.add_resource( Resource(source=resource) )
+            self.add_resource( Resource(source=resource), False )
         self.freeze()
 
         for event in serial['events']:
@@ -104,34 +111,22 @@ class Document(object):
             self._originals[path] = self.resources[path].clone()
         self._blockchain = []
 
-    # Animus
-
-    def activate(self):
-        self._animus.activate()
-
-    def deactivate(self):
-        self._animus.deactivate()
-
-    @property
-    def animus(self):
-        return self._animus
-
     def eval(self, value):
         '''
         Evaluate code in handler context, returning result
         '''
-        return self.animus.eval(value)
+        return self.interpreter.eval(value)
 
     def execute(self, value):
         '''
         Execute code in handler context
         '''
-        return self.animus.execute(value)
+        return self.interpreter.execute(value)
 
     # Host requests
 
     def request(self, callback, *args):
-        return self.animus.host_request(callback, args)
+        return self.interpreter.host_request(callback, args)
 
     # Event stuff
 
@@ -171,30 +166,27 @@ class Document(object):
     # Handler-derived properties
 
     def get_participants(self):
-        return self.animus.quorum_participants()
+        return self.interpreter.quorum_participants()
 
     def get_thresholds(self):
-        return self.animus.quorum_thresholds()
+        return self.interpreter.quorum_thresholds()
 
     def get_request_protocols(self):
-        return self.animus.request_protocols()
+        return self.interpreter.request_protocols()
 
     def can_read(self, ident = None):
         ident = ident or self.identity
-        return self.animus.can_read(ident)
+        return self.interpreter.can_read(ident)
 
     def can_write(self, ident = None):
         ident = ident or self.identity
-        return self.animus.can_write(ident)
+        return self.interpreter.can_write(ident)
 
     # Handler
 
     @property
     def handler(self):
-        if self._handler in self._resources:
-            return self.get_resource(self._handler)
-        else:
-            return None
+        return self.get_resource(self._handler)
 
     def set_handler(self, path):
         self._handler = path

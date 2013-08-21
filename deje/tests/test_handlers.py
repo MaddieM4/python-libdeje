@@ -28,7 +28,6 @@ class TestLuaHandler(StreamTest):
         StreamTest.setUp(self)
 
         self.doc = handler_document(self.name)
-        self.doc.animus.activate()
 
 class TestLuaHandlerEchoChamber(TestLuaHandler):
     @property
@@ -57,12 +56,12 @@ class TestLuaHandlerEchoChamber(TestLuaHandler):
         )
 
     def test_event(self):
-        self.doc.animus.interpreter.call("trigger_event", "example")
+        self.doc.interpreter.call("trigger_event", "example")
         self.assertOutput("Event 'example' achieved.\n")
 
         self.assertRaises(
             ValueError,
-            self.doc.animus.interpreter.call,
+            self.doc.interpreter.call,
             "trigger_event", "no dice"
         )
 

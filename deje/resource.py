@@ -91,7 +91,7 @@ class Resource(object):
 
     def trigger_change(self, propname, oldpath=None):
         if hasattr(self, 'document') and self.document:
-            self.document.animus.on_resource_update(self.path, propname, oldpath or self.path)
+            self.document.interpreter.on_resource_update(self.path, propname, oldpath or self.path)
 
     # Methods
 

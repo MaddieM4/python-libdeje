@@ -40,7 +40,8 @@ class TestDocumentSimple(unittest.TestCase):
         self.assertEqual(serial['events'],   [])
 
         self.doc.add_resource(
-            Resource(path="/example", content="example")
+            Resource(path="/example", content="example"),
+            False
         )
         self.assertEqual(self.doc.serialize()['original'], {})
         self.doc.freeze()
@@ -58,7 +59,8 @@ class TestDocumentSimple(unittest.TestCase):
 
     def test_deserialize(self):
         self.doc.add_resource(
-            Resource(path="/example", content="example")
+            Resource(path="/example", content="example"),
+            False
         )
         self.doc.freeze()
         serial = self.doc.serialize()
@@ -74,7 +76,8 @@ class TestDocumentSimple(unittest.TestCase):
 
     def test_saving(self):
         self.doc.add_resource(
-            Resource(path="/example", content="example")
+            Resource(path="/example", content="example"),
+            False
         )
         self.doc.freeze()
 
