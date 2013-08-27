@@ -206,7 +206,7 @@ class Document(object):
         if self.owner:
             return self.owner.identity
         else:
-            return "anonymous"
+            raise AttributeError("Attempt to access identity of unowned doc")
 
     @property
     def version(self):

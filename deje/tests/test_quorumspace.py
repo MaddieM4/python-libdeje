@@ -35,6 +35,8 @@ class TestQuorumSpace(unittest.TestCase):
         self.mitzi = identity('mitzi')
         self.atlas = identity('atlas')
         self.qs  = self.doc._qs
+        self.owner = Owner(self.mitzi, make_jack=False)
+        self.owner.own_document(self.doc)
 
     def test_initial_state(self):
         self.assertEqual(

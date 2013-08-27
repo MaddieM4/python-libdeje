@@ -114,7 +114,10 @@ def tag_team():
         end
 
         function quorum_participants()
-            return { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com' }
+            return { 
+                {'local', nil, 'mitzi'},
+                {'local', nil, 'atlas'}
+            }
         end
 
         readers = { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com', 'victor@lackadaisy.com' }

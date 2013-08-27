@@ -40,7 +40,7 @@ class TestEvent(unittest.TestCase):
         self.ev.quorum.sign(self.ident)
         self.assertEqual(
             self.ev.quorum.participants,
-            ['mitzi@lackadaisy.com']
+            [self.ident]
         )
         self.assertTrue(self.ev.quorum.sig_valid(self.ident.name))
         self.assertRaises(

@@ -19,6 +19,8 @@ from __future__ import absolute_import
 
 from deje.tests.stream     import StreamTest
 
+from ejtp.identity.core    import Identity
+from deje.owner            import Owner
 from deje.resource         import Resource
 from deje.handlers.lua     import handler_document
 from deje.interpreters.lua import HandlerReturnError
@@ -28,6 +30,13 @@ class TestLuaHandler(StreamTest):
         StreamTest.setUp(self)
 
         self.doc = handler_document(self.name)
+        self.identity = Identity(
+            "jtkirk@starfleet.gov",
+            ['rotate',5],
+            ['local', None, "kirk"]
+        )
+        self.owner = Owner(self.identity, make_jack = False)
+        self.owner.own_document(self.doc)
 
 class TestLuaHandlerEchoChamber(TestLuaHandler):
     @property
@@ -66,7 +75,10 @@ class TestLuaHandlerEchoChamber(TestLuaHandler):
         )
 
     def test_document_properties(self):
-        self.assertEquals(self.doc.get_participants(), ['anonymous'])
+        self.assertEquals(
+            self.doc.get_participants(), 
+            [self.identity]
+        )
         self.assertEquals(
             self.doc.get_thresholds(),
             {'read': 1, 'write': 1}

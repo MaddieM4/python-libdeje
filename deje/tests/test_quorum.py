@@ -67,7 +67,7 @@ class TestQuorum(StreamTest):
         self.assertTrue(self.quorum.outdated)
 
     def test_participants(self):
-        self.assertEqual(self.quorum.participants, ['mitzi@lackadaisy.com'])
+        self.assertEqual(self.quorum.participants, [self.ident])
 
     def test_thresholds(self):
         self.assertEqual(self.quorum.thresholds, {'read':1, 'write':1})

@@ -50,10 +50,7 @@ class API(object):
 
     def get_ident(self):
         ident = self.document.identity
-        try:
-            return String(ident).export()
-        except:
-            return String(ident.name).export()
+        return ident.location
 
     def event(self, ev):
         self.queue.append(lambda: self.document.event(ev))

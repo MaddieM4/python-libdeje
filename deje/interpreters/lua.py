@@ -63,9 +63,10 @@ class LuaInterpreter(object):
         return self.call("event_test", ev, author, returntype = bool)
 
     def quorum_participants(self):
+        temp = []
         if not self.cache['quorum_participants']:
-            self.cache['quorum_participants'] = \
-                self.call("quorum_participants", returntype = list)
+            temp = self.call("quorum_participants", returntype = list)
+        self.cache['quorum_participants'] = self.normalize_idents(temp)
         return self.cache['quorum_participants']
 
     def quorum_thresholds(self):
@@ -120,6 +121,14 @@ class LuaInterpreter(object):
         else:
             raise TypeError("Cannot call object %r", callback)
 
+    def normalize_idents(self, identlist):
+        results = []
+        for ident in identlist:
+            if isinstance(ident, lupa._lupa._LuaTable):
+                ident = list(ident.values())
+            results.append(self.owner.identities.find_by_location(ident))
+        return results
+
     def eval(self, value):
         return self.runtime.eval(value)
 
@@ -143,5 +152,9 @@ class LuaInterpreter(object):
     @property
     def document(self):
         return self.resource.document
+
+    @property
+    def owner(self):
+        return self.document.owner
 
 class HandlerReturnError(Exception): pass
