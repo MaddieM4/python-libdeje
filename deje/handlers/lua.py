@@ -120,7 +120,11 @@ def tag_team():
             }
         end
 
-        readers = { 'mitzi@lackadaisy.com', 'atlas@lackadaisy.com', 'victor@lackadaisy.com' }
+        readers = { 
+            {'local', nil, 'mitzi'},
+            {'local', nil, 'atlas'},
+            {'local', nil, 'victor'}
+        }
         writers = quorum_participants()
 
         function can_read(name)

@@ -63,7 +63,7 @@ class Owner(object):
     def transmit(self, document, mtype, properties, targets = [], participants = False, subscribers = True):
         targets = set(targets)
         if participants:
-            targets.update(set(document.get_participants()))
+            targets.update(ident.key for ident in document.get_participants())
         if subscribers:
             targets.update(document.subscribers)
 

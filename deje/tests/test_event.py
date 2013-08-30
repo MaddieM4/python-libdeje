@@ -42,7 +42,7 @@ class TestEvent(unittest.TestCase):
             self.ev.quorum.participants,
             [self.ident]
         )
-        self.assertTrue(self.ev.quorum.sig_valid(self.ident.name))
+        self.assertTrue(self.ev.quorum.sig_valid(self.ident.key))
         self.assertRaises(
             TypeError,
             self.ev.quorum.sign,

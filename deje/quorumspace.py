@@ -24,7 +24,7 @@ class QuorumSpace(object):
         self.by_hash = {}
 
     def on_sign(self, identity, quorum):
-        self.by_author[identity]  = quorum
+        self.by_author[identity.key] = quorum
 
     def register(self, quorum):
         self.by_hash[quorum.hash] = quorum
@@ -40,9 +40,9 @@ class QuorumSpace(object):
         return QSTransaction(self, identity, quorum)
 
     def is_free(self, identity):
-        if not identity in self.by_author.keys():
+        if not identity.key in self.by_author.keys():
             return True
-        return not self.by_author[identity].competing
+        return not self.by_author[identity.key].competing
 
     def assert_free(self, identity):
         '''

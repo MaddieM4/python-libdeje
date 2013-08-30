@@ -33,11 +33,11 @@ class Quorum(object):
         for identity in signatures:
             self.sign(identity, signatures[identity])
 
-    def sig_valid(self, author):
-        if author not in self.signatures:
+    def sig_valid(self, key):
+        if key not in self.signatures:
             return False
-        identity, signature = self.signatures[author]
-        return (author in self.participants) and validate_signature(identity, self.hash, signature)
+        identity, signature = self.signatures[key]
+        return (identity in self.participants) and validate_signature(identity, self.hash, signature)
 
     def sign(self, identity, signature = None, duration = DEFAULT_DURATION):
         if not signature:
@@ -45,12 +45,12 @@ class Quorum(object):
         assert_valid_signature(identity, self.hash, signature)
         # Equivalent or updated signature or non-colliding read.
         # Don't check for collisions in QS
-        if self.sig_valid(identity.name) or self.threshtype == "read":
-            self.signatures[identity.name] = (identity, signature)
+        if self.sig_valid(identity.key) or self.threshtype == "read":
+            self.signatures[identity.key] = (identity, signature)
             return
 
         with self.document._qs.transaction(identity, self):
-            self.signatures[identity.name] = (identity, signature)
+            self.signatures[identity.key] = (identity, signature)
 
     def clear(self):
         """
@@ -92,7 +92,7 @@ class Quorum(object):
                 'signatures' : self.sigs_dict(),
                 'content-hash' : self.hash,
             },
-            [self.parent.author],
+            [self.parent.author.key],
             participants = True # includes all signers
         )
 

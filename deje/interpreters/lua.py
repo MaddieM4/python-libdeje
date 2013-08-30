@@ -24,13 +24,33 @@ if not "callable" in globals():
     def callable(obj):
         return isinstance(obj, collections.Callable)
 
-bootstrap = '''
+BOOTSTRAP = '''
 deje = {}
 function load_deje(module)
     deje = module
 end
 return load_deje
 '''
+
+TABLE_CLASS = lupa._lupa._LuaTable
+
+def tableToList(table):
+    return [table[i+1] for i in range(max(table.keys()))]
+
+def tableToDict(table):
+    return dict(table)
+
+def tableIsList(table):
+    if not isinstance(table, TABLE_CLASS):
+        return False
+    for key in table.keys():
+        if not isinstance(key, int):
+            return False
+    return True
+
+def tableIsDict(table):
+    # Returns true even for list, as any valid list is a valid dict
+    return isinstance(table, TABLE_CLASS)
 
 class LuaInterpreter(object):
     def __init__(self, resource):
@@ -42,7 +62,7 @@ class LuaInterpreter(object):
         self.api = api.API(self.document)
 
         # Provide the deje module
-        bootstrapfunc = self.runtime.execute(bootstrap)
+        bootstrapfunc = self.runtime.execute(BOOTSTRAP)
         bootstrapfunc(self.api.export())
         self.runtime.execute('load_deje = nil')
 
@@ -103,10 +123,10 @@ class LuaInterpreter(object):
             result = callback(*args)
             self.api.process_queue()
             self.reset_cache()
-            if returntype == dict and isinstance(result, lupa._lupa._LuaTable):
-                return dict(result)
-            if returntype == list and isinstance(result, lupa._lupa._LuaTable):
-                return list(result.values())
+            if returntype == list and tableIsList(result):
+                return tableToList(result)
+            elif returntype == dict and tableIsDict(result):
+                return tableToDict(result)
             elif isinstance(result, returntype):
                 return result
             # If value was valid, we would have returned already
@@ -124,8 +144,8 @@ class LuaInterpreter(object):
     def normalize_idents(self, identlist):
         results = []
         for ident in identlist:
-            if isinstance(ident, lupa._lupa._LuaTable):
-                ident = list(ident.values())
+            if tableIsList(ident):
+                ident = tableToList(ident)
             results.append(self.owner.identities.find_by_location(ident))
         return results
 

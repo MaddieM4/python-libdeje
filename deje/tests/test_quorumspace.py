@@ -37,11 +37,12 @@ class TestQuorumSpace(unittest.TestCase):
         self.qs  = self.doc._qs
         self.owner = Owner(self.mitzi, make_jack=False)
         self.owner.own_document(self.doc)
+        self.owner.identities.update_ident(self.atlas)
 
     def test_initial_state(self):
         self.assertEqual(
-            sorted(self.ev1.quorum.participants),
-            ['atlas@lackadaisy.com', 'mitzi@lackadaisy.com']
+            sorted(self.ev1.quorum.participants, key = lambda x: x.key),
+            [self.atlas, self.mitzi]
         )
         self.assertTrue(self.qs.is_free(self.mitzi))
         self.assertTrue(self.qs.is_free(self.atlas))
@@ -61,7 +62,7 @@ class TestQuorumSpace(unittest.TestCase):
 
         self.assertEquals(
             self.qs.by_author,
-            {self.mitzi: self.ev1.quorum}
+            {self.mitzi.key: self.ev1.quorum}
         )
         self.assertTrue(self.ev1.quorum.competing)
         self.assertFalse(self.ev1.quorum.done)

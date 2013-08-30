@@ -176,11 +176,11 @@ class Document(object):
 
     def can_read(self, ident = None):
         ident = ident or self.identity
-        return self.interpreter.can_read(ident)
+        return self.interpreter.can_read(ident.key)
 
     def can_write(self, ident = None):
         ident = ident or self.identity
-        return self.interpreter.can_write(ident)
+        return self.interpreter.can_write(ident.key)
 
     # Handler
 

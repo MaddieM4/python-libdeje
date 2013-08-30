@@ -110,8 +110,8 @@ class TestLuaHandlerPsychoWard(TestLuaHandler):
             (self.doc.get_participants,),
             (self.doc.get_thresholds,),
             (self.doc.get_request_protocols,),
-            (self.doc.can_read,  "example"),
-            (self.doc.can_write, "example"),
+            #(self.doc.can_read,  "example"),
+            #(self.doc.can_write, "example"),
         ]
         for prop in properties:
             self.assertRaises(

@@ -139,7 +139,7 @@ class TestOwnerEJTP(TestEJTP):
         # Retrieve event
 
         self.victor.get_block(self.vdoc, 0, on_recv_block)
-        result = queue.get()
+        result = queue.get(timeout=2)
         self.assertEqual(
             sorted(result.keys()),
             ['author', 'content', 'signatures', 'version']
@@ -173,5 +173,5 @@ class TestOwnerEJTP(TestEJTP):
             queue.put(snapshot)
 
         self.victor.get_snapshot(self.vdoc, 0, on_recv_snapshot)
-        result = queue.get()
+        result = queue.get(timeout=2)
         self.assertEqual(result, expected)
