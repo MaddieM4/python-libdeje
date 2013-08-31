@@ -17,6 +17,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
+from persei import String
+
 from ejtp.util.compat    import unittest
 from ejtp.identity.core  import Identity
 from deje.tests.ejtp     import TestEJTP
@@ -115,7 +117,7 @@ class TestDocumentEJTP(TestEJTP):
         self.assertEqual(
             self.getOutput().replace("u'", "'").replace('atlas','mitzi'),
             "Error from 'mitzi@lackadaisy.com', code 40: " +
-            "'Unknown lock quorum data, dropping (ad4546b17ca708c051bd3619a4d688ea44873b9d)'\n"
+            "'Unknown lock quorum data, dropping (fc7278eb74a4e0f24b00b06d9dc2147ddffa1673)'\n"
         )
         self.assertEqual(self.mdoc.competing, [])
         self.assertEqual(self.adoc.competing, [])
@@ -125,5 +127,4 @@ class TestDocumentEJTP(TestEJTP):
         for doc in (self.mdoc, self.adoc):
             subscribers = doc.subscribers
             self.assertIsInstance(subscribers, set)
-            self.assertEqual(len(subscribers), 1)
-            self.assertIsInstance(list(subscribers)[0], Identity)
+            self.assertEqual(list(subscribers), [String('["local",null,"victor"]')])

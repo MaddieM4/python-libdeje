@@ -108,12 +108,12 @@ class TestOwnerEJTP(TestEJTP):
         )
 
     def test_get_version(self):
-        results = []
+        queue = Queue()
         def on_recv_version(version):
-            results.append("Version is %d" % version)
+            queue.put("Version is %d" % version)
 
-        self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(results.pop(), "Version is 0")
+        targets = self.victor.get_version(self.vdoc, on_recv_version)
+        self.assertEqual(queue.get(timeout=0.1), "Version is 0")
 
         mev = self.mdoc.event({
             'path':'/example',
@@ -121,7 +121,7 @@ class TestOwnerEJTP(TestEJTP):
             'value':'Mitzi says hi',
         })
         self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(results.pop(), "Version is 1")
+        self.assertEqual(queue.get(timeout=0.1), "Version is 1")
 
     def test_get_block(self):
         queue = Queue()
@@ -139,7 +139,7 @@ class TestOwnerEJTP(TestEJTP):
         # Retrieve event
 
         self.victor.get_block(self.vdoc, 0, on_recv_block)
-        result = queue.get(timeout=2)
+        result = queue.get(timeout=0.1)
         self.assertEqual(
             sorted(result.keys()),
             ['author', 'content', 'signatures', 'version']
@@ -155,7 +155,7 @@ class TestOwnerEJTP(TestEJTP):
         )
         self.assertEqual(
             sorted(result['signatures'].keys()),
-            ['atlas@lackadaisy.com', 'mitzi@lackadaisy.com']
+            ['["local",null,"atlas"]', '["local",null,"mitzi"]']
         )
         self.assertEqual(result['version'], 0)
 
@@ -173,5 +173,5 @@ class TestOwnerEJTP(TestEJTP):
             queue.put(snapshot)
 
         self.victor.get_snapshot(self.vdoc, 0, on_recv_snapshot)
-        result = queue.get(timeout=2)
+        result = queue.get(timeout=0.1)
         self.assertEqual(result, expected)

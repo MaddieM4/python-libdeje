@@ -30,7 +30,7 @@ class TestQuorum(StreamTest):
         StreamTest.setUp(self)
 
         self.doc = handler_document("echo_chamber")
-        self.ev  = Event(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
+        self.ev  = Event(self.doc, {'x':'y'}, 0, identity("atlas"))
         self.quorum = self.ev.quorum
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
@@ -59,7 +59,7 @@ class TestQuorum(StreamTest):
         self.ev.enact()
         self.assertOutput(
             "Event '{'x': 'y'}' achieved.\n" +
-            "No known address for 'mick-and-bandit', skipping\n"
+            "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"
         )
 
         self.assertEqual(self.doc.version, 1)

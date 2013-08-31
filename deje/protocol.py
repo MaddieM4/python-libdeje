@@ -59,16 +59,16 @@ class Protocol(object):
         if ltype == "deje-event":
             ev_content = lcontent['event']
             ev_version = lcontent['version']
-            ev_author  = lcontent['author']
+            ev_author  = self.owner.identities.find_by_name(lcontent['author'])
 
             ev = event.Event(doc, ev_content, ev_version, ev_author)
             if doc.can_write(ev_author) and ev.test():
                 # TODO: Error message for permissions failures and test failures
                 ev.quorum.sign(self.owner.identity)
-                ev.quorum.transmit([self.owner.identity.name])
+                ev.quorum.transmit([self.owner.identity.key])
         if ltype == "deje-subscribe":
             rr_subname = lcontent['subscriber']
-            subscriber = self.owner.identities.find_by_name(rr_subname)
+            subscriber = self.owner.identities.find_by_location(rr_subname)
             rr = read.ReadRequest(doc, subscriber)
             if doc.can_read(subscriber):
                 # TODO: Error message for permissions failures
@@ -76,7 +76,7 @@ class Protocol(object):
                 rr.update()
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_name(content['signer'])
+        sender = self.owner.identities.find_by_location(content['signer'])
         content_hash = String(content['content-hash'])
         try:
             quorum = doc._qs.by_hash[content_hash]
@@ -94,7 +94,7 @@ class Protocol(object):
         except KeyError:
             return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
         for signer in content['signatures']:
-            sender = self.owner.identities.find_by_name(signer)
+            sender = self.owner.identities.find_by_location(signer)
             sig = RawData(content['signatures'][signer])
             quorum.sign(sender, sig)
             quorum.parent.update()
@@ -105,11 +105,11 @@ class Protocol(object):
         sender = self.owner.identities.find_by_location(msg.sender)
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-version', {'version':doc.version}, sender)
+        self.owner.reply(doc, 'deje-doc-version', {'version':doc.version}, sender.key)
 
     def _on_deje_doc_version(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
-        if sender.name not in doc.get_participants():
+        if sender not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "version")
         version = content['version']
         doc.signals['recv-version'].send(self, version=version)
@@ -126,11 +126,11 @@ class Protocol(object):
         }
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-block', {'block':block}, sender)
+        self.owner.reply(doc, 'deje-doc-block', {'block':block}, sender.key)
 
     def _on_deje_doc_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
-        if sender.name not in doc.get_participants():
+        if sender not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
         block = content['block']
         version = block['version']
@@ -145,11 +145,11 @@ class Protocol(object):
         version = content['version']
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender)
+        self.owner.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender.key)
 
     def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
-        if sender.name not in doc.get_participants():
+        if sender not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "snapshot")
         snapshot = content['snapshot']
         version  = content['version']

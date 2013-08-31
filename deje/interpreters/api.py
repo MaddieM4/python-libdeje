@@ -50,7 +50,7 @@ class API(object):
 
     def get_ident(self):
         ident = self.document.identity
-        return ident.location
+        return ident.name
 
     def event(self, ev):
         self.queue.append(lambda: self.document.event(ev))

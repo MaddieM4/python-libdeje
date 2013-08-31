@@ -70,17 +70,17 @@ class Owner(object):
         message = { 'type':mtype, 'docname':document.name }
         message.update(properties)
         for target in targets:
-            # print target, mtype
             if hasattr(target, 'location'):
                 address = target.location
             else:
                 try:
-                    address = self.identities.find_by_name(target).location
+                    address = self.identities.find_by_location(target).location
                 except KeyError:
                     print("No known address for %r, skipping" % target)
                     break
             if address != self.identity.location:
                 self.client.write_json(address, message)
+        return targets
 
     def reply(self, document, mtype, properties, target):
         return self.transmit(document, mtype, properties, [target], subscribers=False)
@@ -96,7 +96,13 @@ class Owner(object):
             document.signals['recv-version'].disconnect(wrapped)
         document.signals['recv-version'].connect(wrapped)
 
-        self.transmit(document, 'deje-get-version', {}, participants = True, subscribers = False)
+        return self.transmit(
+            document,
+            'deje-get-version',
+            {},
+            participants = True,
+            subscribers = False
+        )
 
     def get_block(self, document, version, callback):
         def wrapped(sender, **kwargs):
@@ -105,7 +111,13 @@ class Owner(object):
                 document.signals['recv-block'].disconnect(wrapped)
         document.signals['recv-block'].connect(wrapped)
 
-        self.transmit(document, 'deje-get-block', {'version':version}, participants = True, subscribers = False)
+        return self.transmit(
+            document,
+            'deje-get-block',
+            {'version':version},
+            participants = True,
+            subscribers = False
+        )
 
     def get_snapshot(self, document, version, callback):
         def wrapped(sender, **kwargs):
@@ -114,7 +126,13 @@ class Owner(object):
                 document.signals['recv-snapshot'].disconnect(wrapped)
         document.signals['recv-snapshot'].connect(wrapped)
 
-        self.transmit(document, 'deje-get-snapshot', {'version':version}, participants = True, subscribers = False)
+        self.transmit(
+            document,
+            'deje-get-snapshot',
+            {'version':version},
+            participants = True,
+            subscribers = False
+        )
 
     def error(self, msg, attributes, data=None):
         '''

@@ -40,8 +40,8 @@ class ReadRequest(object):
         if self.enacted:
             return
         self.enacted = True
-        if self.quorum.sig_valid(self.document.identity.name):
-            self.document.subscribers.add(self.subscriber)
+        if self.quorum.sig_valid(self.document.identity.key):
+            self.document.subscribers.add(self.subscriber.key)
             if self.owner:
                 self.quorum.transmit_complete()
 
@@ -52,7 +52,7 @@ class ReadRequest(object):
     def transmit(self):
         self.owner.lock_action(self.document, {
             'type': 'deje-subscribe',
-            'subscriber': self.subscriber.name,
+            'subscriber': self.subscriber.location,
         })
         self.quorum.transmit()
         self.update()
@@ -63,7 +63,7 @@ class ReadRequest(object):
 
     @property
     def hashcontent(self):
-        return self.subscriber.name
+        return self.subscriber.key
 
     def hash(self):
         return self.quorum.hash

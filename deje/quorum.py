@@ -72,7 +72,7 @@ class Quorum(object):
                     'content-hash' : self.hash,
                     'signature': self.transmittable_sig(signer),
                 },
-                [self.parent.author],
+                [self.parent.author.key],
                 participants = True # includes all signers
             )
 
