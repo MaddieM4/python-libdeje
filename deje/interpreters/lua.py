@@ -75,8 +75,8 @@ class LuaInterpreter(object):
         self.call("on_resource_update", path, propname, oldpath)
         self.reload()
 
-    def on_event_achieve(self, ev, author):
-        set_resource, sr_flag = self.api.set_resource()
+    def on_event_achieve(self, ev, author, state=None):
+        set_resource, sr_flag = self.api.set_resource(state)
         self.call("on_event_achieve", set_resource, ev, author)
         sr_flag.revoke()
 

@@ -61,7 +61,7 @@ class API(object):
 
     # set_resource
 
-    def set_resource(self):
+    def set_resource(self, state=None):
         """
         Returns a set_resource function and a flag for marking it invalid when
         you're done using the function. Prevents handler abuses.
@@ -69,17 +69,18 @@ class API(object):
         sr_flag = SRFlag()
         def callback(path, prop, value):
             if sr_flag.valid:
-                self.queue.append(lambda: self._set_resource(path, prop, value))
+                self.queue.append(lambda: self._set_resource(path, prop, value, state))
             else:
                 raise ValueError("Attempt to access set_resource in handler after invalidation")
         return callback, sr_flag
 
-    def _set_resource(self, path, prop, value):
+    def _set_resource(self, path, prop, value, state=None):
+        container = state or self.document
         try:
-            res = self.document.get_resource(path)
+            res = container.get_resource(path)
         except KeyError:
             res = Resource(path)
-            self.document.add_resource(res)
+            container.add_resource(res)
         res.set_property(prop, value)
 
     # Function exporter

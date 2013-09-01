@@ -15,19 +15,22 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.util.hasher import checksum
 from deje import quorum
 
 class Event(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
         self.document = document
         self.content  = content
-        self.version  = int(version or self.document.version)
+        self.version  = int(version or (self.document and self.document.version) or 0)
         self.author   = author
         self.enacted  = False
-        self.quorum   = quorum.Quorum(
-                            self,
-                            signatures = signatures,
-                        )
+        if self.document:
+            self.quorum   = quorum.Quorum(
+                                self,
+                                signatures = signatures,
+                            )
+
     def enact(self):
         if self.enacted:
             return
@@ -36,6 +39,12 @@ class Event(object):
         self.document.interpreter.on_event_achieve(self.content, self.author)
         if self.owner:
             self.quorum.transmit_complete()
+
+    def apply(self, state):
+        '''
+        Apply event to a given HistoryState.
+        '''
+        self.document.interpreter.on_event_achieve(self.content, self.author, state)
 
     def update(self):
         if self.quorum.done:
@@ -63,7 +72,7 @@ class Event(object):
         return [self.content, self.version, self.authorname]
 
     def hash(self):
-        return self.quorum.hash
+        return checksum(self.hashcontent)
 
     @property
     def owner(self):

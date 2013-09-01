@@ -15,9 +15,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ejtp.util.compat  import unittest
-from deje.historystate import HistoryState
-from deje.resource     import Resource
+from ejtp.util.compat    import unittest
+from deje.handlers.lua   import handler_resource
+from deje.tests.identity import identity
+
+from deje.historystate   import HistoryState
+from deje.resource       import Resource
+from deje.event          import Event
 
 class TestHistoryState(unittest.TestCase):
 
@@ -49,16 +53,27 @@ class TestHistoryState(unittest.TestCase):
         hs.add_resource(self.resource)
         self.assertEqual(hs.resources, {'/':self.resource})
 
-    def test_enact(self):
-        # TODO : Hook in with event.enact
-        pass
+    def test_apply(self):
+        res = handler_resource("tag_team")
+        hs = HistoryState("example", [res])
+        ev = Event(
+            None,
+            {
+                'path' : '/handler.lua',
+                'property' : 'comment',
+                'value' : 'An arbitrary comment',
+            },
+            version = 0,
+            author=identity("mitzi")
+        )
+        hs.apply(ev)
+        self.assertEqual(res.comment, 'An arbitrary comment')
 
     def test_clone(self):
-        hs1 = HistoryState("example", [self.resource])
+        hs1 = HistoryState("example", [self.resource], "/stanley_gibbons.lua")
         hs2 = hs1.clone()
-        self.assertEqual(hs1.hash, hs2.hash)
 
-        # Each resource compared by ref, not value
+        # Each resource compared by ref, not value. Use serialization for that.
         self.assertNotEqual(hs1.resources, hs2.resources)
         self.assertEqual(hs1.serialize(), hs2.serialize())
 
@@ -78,4 +93,34 @@ class TestHistoryState(unittest.TestCase):
         self.assertEqual(hs.serialize(), {
             "hash" : "example",
             "resources" : hs.serialize_resources(),
+            "handler" : "/handler.lua",
         })
+
+    def test_handler(self):
+        res = handler_resource("echo_chamber")
+        hs = HistoryState("example", [res])
+        self.assertEqual(hs.handler, res)
+
+    def test_create_interpreter(self):
+        res = handler_resource("tag_team")
+        hs = HistoryState("example", [res])
+        interp = hs.create_interpreter()
+        self.assertEqual(interp.can_read(identity('mitzi')), True)
+        self.assertEqual(interp.can_write(identity('victor')), False)
+
+        # Should not be the same/cached
+        self.assertNotEqual(interp, hs.create_interpreter())
+
+    def test_interpreter(self):
+        res = handler_resource("tag_team")
+        hs = HistoryState("example", [res])
+        interp = hs.interpreter
+        self.assertEqual(interp.can_read(identity('mitzi')), True)
+        self.assertEqual(interp.can_write(identity('victor')), False)
+
+        # Should be the same/cached
+        self.assertEqual(interp, hs.interpreter)
+
+        # Should not be the same/cached, after hash change
+        hs.hash = "some other hash"
+        self.assertNotEqual(interp, hs.interpreter)
