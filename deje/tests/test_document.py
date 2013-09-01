@@ -73,8 +73,9 @@ class TestDocumentSimple(unittest.TestCase):
         self.assertEqual(list(newdoc.resources.keys()), ['/example'])
         self.assertIsInstance(newdoc.resources['/example'], Resource)
 
-        self.assertEqual(list(newdoc._originals.keys()), ['/example'])
-        self.assertIsInstance(newdoc._originals['/example'], Resource)
+        initial_resources = newdoc._initial.resources
+        self.assertEqual(list(initial_resources.keys()), ['/example'])
+        self.assertIsInstance(initial_resources['/example'], Resource)
 
     def test_saving(self):
         self.doc.add_resource(

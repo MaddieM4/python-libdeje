@@ -22,6 +22,7 @@ from deje import quorumspace
 from deje.event import Event
 from deje.read import ReadRequest
 from deje.resource import Resource
+from deje.historystate import HistoryState
 
 def serialize_resources(resources):
     serialized = {}
@@ -35,8 +36,8 @@ class Document(object):
         self._name = name
         self._handler = handler_path
         self._owner = owner
-        self._resources = {}
-        self._originals = {}
+        self._initial = HistoryState()
+        self._current = HistoryState(resources = resources)
         self._qs = quorumspace.QuorumSpace(self)
         self._blockchain = []
         self._interpreter = None
@@ -57,26 +58,24 @@ class Document(object):
     def add_resource(self, resource, interp_call = True):
         if interp_call:
             self.interpreter.on_resource_update(resource.path, 'add')
-        self._resources[resource.path] = resource
+        self._current.add_resource(resource)
         resource.document = self
 
     def get_resource(self, path):
-        return self._resources[path]
+        return self.resources[path]
 
     def del_resource(self, path, interp_call = True):
         if interp_call:
             self.interpreter.on_resource_update(path, 'delete')
-        del self._resources[path]
+        del self.resources[path]
 
     @property
     def resources(self):
-        return self._resources
+        return self._current.resources
 
     @property
     def interpreter(self):
-        if not self._interpreter:
-            self._interpreter = self.handler.interpreter()
-        return self._interpreter
+        return self._current.interpreter
 
     def snapshot(self, version = None):
         if version == None:
@@ -84,11 +83,11 @@ class Document(object):
         if version != self.version:
             raise NotImplementedError("Rewinds not supported yet")
 
-        return serialize_resources(self.resources.values())
+        return self._current.serialize_resources()
 
     def serialize(self):
         return {
-            'original': serialize_resources(self._originals.values()),
+            'original': self._initial.serialize_resources(),
             'events': self._blockchain
         }
 
@@ -106,9 +105,7 @@ class Document(object):
         '''
         Throw away history and base originals off of current state.
         '''
-        self._originals = {}
-        for path in self.resources:
-            self._originals[path] = self.resources[path].clone()
+        self._initial = self._current.clone()
         self._blockchain = []
 
     def eval(self, value):

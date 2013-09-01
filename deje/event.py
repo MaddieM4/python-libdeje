@@ -44,7 +44,7 @@ class Event(object):
         '''
         Apply event to a given HistoryState.
         '''
-        self.document.interpreter.on_event_achieve(self.content, self.author, state)
+        state.apply(self)
 
     def update(self):
         if self.quorum.done:
