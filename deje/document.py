@@ -40,7 +40,6 @@ class Document(object):
         self._current = HistoryState(resources = resources)
         self._qs = quorumspace.QuorumSpace(self)
         self._blockchain = []
-        self._interpreter = None
         self.signals = {
             'recv-version': dispatch.Signal(
                 providing_args=['version']),

@@ -68,6 +68,7 @@ class TestHistoryState(unittest.TestCase):
         )
         hs.apply(ev)
         self.assertEqual(res.comment, 'An arbitrary comment')
+        self.assertEqual(hs.hash, ev.hash())
 
     def test_clone(self):
         hs1 = HistoryState("example", [self.resource], "/stanley_gibbons.lua")
