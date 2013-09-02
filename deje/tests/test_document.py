@@ -33,29 +33,39 @@ class TestDocumentSimple(unittest.TestCase):
         self.doc = Document("testing")
 
     def test_serialize(self):
+        expected_original = {
+            'handler' : '/handler.lua',
+            'hash' : None,
+            'resources': {},
+        }
+
         serial = self.doc.serialize()
         self.assertEqual(
             sorted(serial.keys()),
             ['events', 'original']
         )
-        self.assertEqual(serial['original'], {})
+        self.assertEqual(serial['original'], expected_original)
         self.assertEqual(serial['events'],   [])
 
         self.doc.add_resource(
             Resource(path="/example", content="example"),
             False
         )
-        self.assertEqual(self.doc.serialize()['original'], {})
+        self.assertEqual(self.doc.serialize()['original'], expected_original)
         self.doc.freeze()
         self.assertEqual(
             self.doc.serialize()['original'],
             {
-                "/example": {
-                    "comment": "",
-                    "content": "example",
-                    "path":    "/example",
-                    "type":    "application/x-octet-stream"
-               }
+                'handler': '/handler.lua',
+                'hash': 'current',
+                'resources': {
+                    '/example': {
+                        'comment': '',
+                        'content': 'example',
+                        'path':    '/example',
+                        'type':    'application/x-octet-stream'
+                   }
+                }
             }
         )
 

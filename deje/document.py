@@ -25,13 +25,6 @@ from deje.resource import Resource
 from deje.historystate import HistoryState
 from deje.history import History
 
-def serialize_resources(resources):
-    serialized = {}
-    for resource in resources:
-        path = resource.path
-        serialized[path] = resource.serialize()
-    return serialized
-
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
         self._name = name
@@ -86,14 +79,13 @@ class Document(object):
 
     def serialize(self):
         return {
-            'original': self._initial.serialize_resources(),
+            'original': self._initial.serialize(),
             'events': self._history.events
         }
 
     def deserialize(self, serial):
-        self._resources = {}
-        for resource in serial['original'].values():
-            self.add_resource( Resource(source=resource), False )
+        self._current = HistoryState()
+        self._current.deserialize(serial['original'])
         self.freeze()
 
         for event in serial['events']:
@@ -206,7 +198,7 @@ class Document(object):
 
     @property
     def version(self):
-        return len(self._history.events)
+        return len(self._history.events) #self._current.hash
 
 def load_from(filename):
     import json

@@ -97,6 +97,16 @@ class TestHistoryState(unittest.TestCase):
             "handler" : "/handler.lua",
         })
 
+    def test_deserialize(self):
+        hs1 = HistoryState("example", [self.resource], "/stanley_gibbons.lua")
+        hs2 = HistoryState()
+
+        hs2.deserialize(hs1.serialize())
+
+        # Test for value equality
+        self.assertNotEqual(hs1.resources, hs2.resources)
+        self.assertEqual(hs1.serialize(), hs2.serialize())
+
     def test_handler(self):
         res = handler_resource("echo_chamber")
         hs = HistoryState("example", [res])

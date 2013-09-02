@@ -15,6 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from deje.resource import Resource
+
 class HistoryState(object):
     '''
     A set of resources that can be cloned, or have events applied to it.
@@ -74,6 +76,15 @@ class HistoryState(object):
             "resources" : self.serialize_resources(),
             "handler" : self.handler_path,
         }
+
+    def deserialize(self, serial):
+        self.hash         = serial['hash']
+        self.handler_path = serial['handler']
+
+        for r_serial in serial['resources'].values():
+            r_real = Resource()
+            r_real.deserialize(r_serial)
+            self.add_resource(r_real)
 
     @property
     def handler(self):
