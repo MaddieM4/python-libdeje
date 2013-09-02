@@ -49,8 +49,8 @@ class TestQuorum(StreamTest):
         self.assertEqual(self.quorum.completion, 1)
 
     def test_outdated(self):
-        self.assertEqual(self.doc.version, 0)
-        self.assertEqual(self.quorum.version, 0)
+        self.assertEqual(self.doc.version, 'current')
+        self.assertEqual(self.quorum.version, 'current')
         self.assertFalse(self.quorum.outdated)
 
         self.quorum.sign(self.ident)
@@ -62,8 +62,8 @@ class TestQuorum(StreamTest):
             "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"
         )
 
-        self.assertEqual(self.doc.version, 1)
-        self.assertEqual(self.quorum.version, 0)
+        self.assertEqual(self.doc.version, self.ev.hash())
+        self.assertEqual(self.quorum.version, 'current')
         self.assertTrue(self.quorum.outdated)
 
     def test_participants(self):

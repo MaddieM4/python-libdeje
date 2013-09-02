@@ -120,7 +120,7 @@ class TestDocumentEJTP(TestEJTP):
 
     def test_subscribe(self):
         # Test a read
-        self.assertEqual(self.vdoc.version, 0)
+        self.assertEqual(self.vdoc.version, 'current')
         self.assertTrue(self.vdoc.can_read())
 
         # One error is normal, due to transmission patterns

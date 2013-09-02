@@ -110,10 +110,10 @@ class TestOwnerEJTP(TestEJTP):
     def test_get_version(self):
         queue = Queue()
         def on_recv_version(version):
-            queue.put("Version is %d" % version)
+            queue.put("Version is %r" % str(version))
 
         targets = self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(queue.get(timeout=0.1), "Version is 0")
+        self.assertEqual(queue.get(timeout=0.1), "Version is 'current'")
 
         mev = self.mdoc.event({
             'path':'/example',
@@ -121,7 +121,7 @@ class TestOwnerEJTP(TestEJTP):
             'value':'Mitzi says hi',
         })
         self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(queue.get(timeout=0.1), "Version is 1")
+        self.assertEqual(queue.get(timeout=0.1), "Version is '5d5cde1b1b090ced74fabdb44d4e97a430dc0b5d'")
 
     def test_get_block(self):
         queue = Queue()
@@ -138,7 +138,7 @@ class TestOwnerEJTP(TestEJTP):
 
         # Retrieve event
 
-        self.victor.get_block(self.vdoc, 0, on_recv_block)
+        self.victor.get_block(self.vdoc, self.mdoc.version, on_recv_block)
         result = queue.get(timeout=0.1)
         self.assertEqual(
             sorted(result.keys()),
@@ -157,7 +157,7 @@ class TestOwnerEJTP(TestEJTP):
             sorted(result['signatures'].keys()),
             ['["local",null,"atlas"]', '["local",null,"mitzi"]']
         )
-        self.assertEqual(result['version'], 0)
+        self.assertEqual(result['version'], self.mdoc.version.export())
 
     def test_get_snapshot(self):
         queue = Queue()
@@ -172,6 +172,6 @@ class TestOwnerEJTP(TestEJTP):
         def on_recv_snapshot(snapshot):
             queue.put(snapshot)
 
-        self.victor.get_snapshot(self.vdoc, 0, on_recv_snapshot)
+        self.victor.get_snapshot(self.vdoc, self.vdoc.version, on_recv_snapshot)
         result = queue.get(timeout=0.1)
         self.assertEqual(result, expected)

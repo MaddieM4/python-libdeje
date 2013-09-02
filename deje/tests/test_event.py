@@ -30,13 +30,13 @@ class TestEvent(unittest.TestCase):
 
     def setUp(self):
         self.doc = handler_document('echo_chamber')
-        self.ev  = Event(self.doc, {'x':'y'}, 0, 'mick-and-bandit')
+        self.ev  = Event(self.doc, {'x':'y'}, 'stormageddon', 'mick-and-bandit')
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 
     def test_init(self):
-        self.assertEqual(self.ev.version, 0)
+        self.assertEqual(self.ev.version, 'stormageddon')
         self.ev.quorum.sign(self.ident)
         self.assertEqual(
             self.ev.quorum.participants,
@@ -69,5 +69,11 @@ class TestEvent(unittest.TestCase):
     def test_hash(self):
         self.assertEqual(
             self.ev.hash(),
-            String('a6aa316b4b784fda1a38b53730d1a7698c3c1a33')
+            String('9c99da349c82165aa167c54f0fd8bae8f44a671d')
+        )
+
+    def test_hashcontent(self):
+        self.assertEqual(
+            self.ev.hashcontent,
+            [{'x': 'y'}, 'stormageddon', 'mick-and-bandit']
         )

@@ -22,7 +22,7 @@ class Event(object):
     def __init__(self, document, content, version = None, author = None, signatures = {}):
         self.document = document
         self.content  = content
-        self.version  = int(version or (self.document and self.document.version) or 0)
+        self.version  = version or (self.document and self.document.version) or None
         self.author   = author
         self.enacted  = False
         if self.document:

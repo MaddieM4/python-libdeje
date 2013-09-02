@@ -137,7 +137,7 @@ class Quorum(object):
     def outdated(self):
         # Version is not relevant for read requests
         if self.version != None:
-            return self.document.version > self.version
+            return self.document.version != self.version
         else:
             return False
 

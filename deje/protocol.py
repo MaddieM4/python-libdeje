@@ -116,12 +116,12 @@ class Protocol(object):
 
     def _on_deje_get_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
-        blocknumber = content['version']
-        blockev = doc._history.events[blocknumber]
+        evhash = String(content['version'])
+        blockev = doc._history.events_by_hash[evhash]
         block = {
             'author': blockev.authorname,
             'content': blockev.content,
-            'version': blockev.version,
+            'version': evhash, # blockev.version is actually the event's parent's hash
             'signatures': blockev.quorum.sigs_dict(),
         }
         if not doc.can_read(sender):

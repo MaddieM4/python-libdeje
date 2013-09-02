@@ -16,6 +16,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import print_function
+
+from persei import String
+
 import ejtp.client
 from ejtp import identity
 from deje import protocol
@@ -105,8 +108,9 @@ class Owner(object):
         )
 
     def get_block(self, document, version, callback):
+        version = String(version)
         def wrapped(sender, **kwargs):
-            if kwargs['version'] == version:
+            if String(kwargs['version']) == version:
                 callback(kwargs['block'])
                 document.signals['recv-block'].disconnect(wrapped)
         document.signals['recv-block'].connect(wrapped)
@@ -120,8 +124,9 @@ class Owner(object):
         )
 
     def get_snapshot(self, document, version, callback):
+        version = String(version)
         def wrapped(sender, **kwargs):
-            if kwargs['version'] == version:
+            if String(kwargs['version']) == version:
                 callback(kwargs['snapshot'])
                 document.signals['recv-snapshot'].disconnect(wrapped)
         document.signals['recv-snapshot'].connect(wrapped)

@@ -73,7 +73,10 @@ class Document(object):
         if version == None:
             version = self.version
         if version != self.version:
-            raise NotImplementedError("Rewinds not supported yet")
+            raise NotImplementedError(
+                "Rewinds not supported yet (have %r, %r requested)"
+                % (self.version, version)
+            )
 
         return self._current.serialize_resources()
 
@@ -198,7 +201,7 @@ class Document(object):
 
     @property
     def version(self):
-        return len(self._history.events) #self._current.hash
+        return self._current.hash
 
 def load_from(filename):
     import json
