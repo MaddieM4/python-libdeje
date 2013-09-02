@@ -32,7 +32,7 @@ class TestQuorum(StreamTest):
 
         self.doc = handler_document("echo_chamber")
         self.ev  = Event({'x':'y'}, identity("atlas"), 0)
-        self.quorum = Quorum(self.ev)
+        self.quorum = Quorum(self.ev, self.doc._qs)
         self.quorum.document = self.doc
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)

@@ -24,12 +24,15 @@ from ejtp.util.hasher import checksum
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
 class Quorum(object):
-    def __init__(self, action, signatures = {}):
+    def __init__(self, action, qs = None, signatures = {}):
         self.action     = action
+        self.qs         = qs
         self.signatures = {}
         self.transmitted_complete = False
         for identity in signatures:
             self.sign(identity, signatures[identity])
+        if qs:
+            qs.register(self)
 
     @property
     def threshtype(self):
@@ -65,7 +68,7 @@ class Quorum(object):
         Enact self.action if it's ready.
         '''
         if self.action.ready(self, document):
-            self.action.enact(document)
+            self.action.enact(self, document)
 
     def transmit_action(self, document):
         '''
@@ -105,8 +108,8 @@ class Quorum(object):
 
         self.transmitted_complete = True
 
-        self.document.owner.transmit(
-            self.document,
+        document.owner.transmit(
+            document,
             "deje-lock-complete",
             {
                 'signatures' : self.sigs_dict(),
@@ -153,20 +156,26 @@ class Quorum(object):
     def outdated(self):
         # Version is not relevant for read requests
         if self.version != None:
-            return self.document.version != self.version
+            return self.qs.version != self.version
         else:
             return False
 
     @property
     def participants(self):
-        return self.document.get_participants()
+        if not self.qs:
+            raise ValueError("Cannot determine participants without QS")
+        return self.qs.participants
 
     @property
     def thresholds(self):
-        return self.document.get_thresholds()
+        if not self.qs:
+            raise ValueError("Cannot determine thresholds without QS")
+        return self.qs.thresholds
 
     @property
     def threshold(self):
+        if not self.qs:
+            raise ValueError("Cannot determine threshold without QS")
         return self.thresholds[self.threshtype]
 
     @property

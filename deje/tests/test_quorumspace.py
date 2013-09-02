@@ -30,13 +30,13 @@ class TestQuorumSpace(unittest.TestCase):
 
     def setUp(self):
         self.doc = handler_document("tag_team")
+        self.qs  = self.doc._qs
         self.mitzi = identity('mitzi')
         self.atlas = identity('atlas')
         self.ev1 = Event({"hello":"world"}, self.mitzi)
         self.ev2 = Event({"turtle":"food"}, self.mitzi)
-        self.ev1.quorum = Quorum(self.ev1)
-        self.ev2.quorum = Quorum(self.ev2)
-        self.qs  = self.doc._qs
+        self.ev1.quorum = Quorum(self.ev1, self.qs)
+        self.ev2.quorum = Quorum(self.ev2, self.qs)
         self.owner = Owner(self.mitzi, make_jack=False)
         self.owner.own_document(self.doc)
         self.owner.identities.update_ident(self.atlas)

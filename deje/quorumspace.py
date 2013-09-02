@@ -28,6 +28,7 @@ class QuorumSpace(object):
 
     def register(self, quorum):
         self.by_hash[quorum.hash] = quorum
+        quorum.qs = self
 
     def get_competing_actions(self):
         "Get all read and write actions in QS"
@@ -50,6 +51,18 @@ class QuorumSpace(object):
         '''
         if not self.is_free(identity):
             raise QSDoubleSigning(identity, self.document)
+
+    @property
+    def participants(self):
+        return self.document.get_participants()
+
+    @property
+    def thresholds(self):
+        return self.document.get_thresholds()
+
+    @property
+    def version(self):
+        return self.document.version
 
 class QSTransaction(object):
     '''

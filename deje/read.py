@@ -31,14 +31,14 @@ class ReadRequest(object):
         '''
         Returns whether the conditions are right to enact this ReadRequest.
         '''
-        return self.quorum.done and not self.enacted
+        return quorum.done and not self.enacted
 
-    def enact(self, document):
+    def enact(self, quorum, document):
         self.enacted = True
-        if self.quorum.sig_valid(document.identity.key):
+        if quorum.sig_valid(document.identity.key):
             document.subscribers.add(self.subscriber.key)
             if self.owner:
-                self.quorum.transmit_complete(document)
+                quorum.transmit_complete(document)
 
     @property
     def transmit_data(self):

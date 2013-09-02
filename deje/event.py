@@ -26,7 +26,7 @@ class Event(object):
 
     @property
     def quorum_threshold_type(self):
-        return "read"
+        return "write"
 
     def ready(self, quorum, document):
         '''
@@ -34,11 +34,11 @@ class Event(object):
         '''
         return self.quorum.done and self not in document._history.events
 
-    def enact(self, document):
+    def enact(self, quorum, document):
         document._history.add_event(self)
         self.apply(document._current)
         if document.owner:
-            self.quorum.transmit_complete(document.owner)
+            quorum.transmit_complete(document)
 
     @property
     def transmit_data(self):

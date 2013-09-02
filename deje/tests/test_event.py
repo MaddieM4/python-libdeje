@@ -33,8 +33,7 @@ class TestEvent(unittest.TestCase):
         self.doc = handler_document('echo_chamber')
         self.ident = identity()
         self.ev  = Event({'x':'y'}, self.ident, 'stormageddon')
-        self.ev.quorum = Quorum(self.ev)
-        self.ev.quorum.document = self.doc
+        self.ev.quorum = Quorum(self.ev, self.doc._qs)
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 

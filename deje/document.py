@@ -128,8 +128,7 @@ class Document(object):
         if not self.can_write():
             raise ValueError("You don't have write permission")
         event = Event(ev, self.identity, self.version)
-        event.quorum = Quorum(event)
-        event.quorum.document = self
+        event.quorum = Quorum(event, self._qs)
         return self.external_event(event)
 
     def external_event(self, event):
@@ -147,7 +146,7 @@ class Document(object):
         if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self.identity)
-        request.quorum = Quorum(request)
+        request.quorum = Quorum(request, self._qs)
         if self.owner:
             request.quorum.transmit_action(self)
         return request
