@@ -19,11 +19,20 @@ from ejtp.util.hasher import checksum
 from deje import quorum
 
 class Event(object):
-    def __init__(self, content, author, version = None, signatures = {}):
+    def __init__(self, content, author, version = None):
         self.content  = content
         self.author   = author
         self.version  = version
-        self.quorum   = quorum.Quorum(self, signatures = signatures)
+
+    @property
+    def quorum_threshold_type(self):
+        return "read"
+
+    def ready(self, quorum, document):
+        '''
+        Returns whether the conditions are right to enact this Event.
+        '''
+        return self.quorum.done and self not in document._history.events
 
     def enact(self, document):
         document._history.add_event(self)
@@ -31,26 +40,20 @@ class Event(object):
         if document.owner:
             self.quorum.transmit_complete(document.owner)
 
+    @property
+    def transmit_data(self):
+        return {
+            'type': 'deje-event',
+            'version': self.version,
+            'event': self.content,
+            'author': self.authorname,
+        }
+
     def apply(self, state):
         '''
         Apply event to a given HistoryState.
         '''
         state.apply(self)
-
-    def update(self, document):
-        if self.quorum.done and self not in document._history.events:
-            self.enact(document)
-
-    def transmit(self, document):
-        owner = document.owner
-        owner.lock_action(document, {
-            'type': 'deje-event',
-            'version': self.version,
-            'event': self.content,
-            'author': self.authorname,
-        })
-        self.quorum.transmit(document)
-        self.update(document)
 
     def test(self, state):
         return state.interpreter.event_test(self.content, self.author)

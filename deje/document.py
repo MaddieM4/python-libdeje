@@ -23,6 +23,7 @@ from deje.event import Event
 from deje.read import ReadRequest
 from deje.historystate import HistoryState
 from deje.history import History
+from deje.quorum import Quorum
 
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
@@ -127,6 +128,7 @@ class Document(object):
         if not self.can_write():
             raise ValueError("You don't have write permission")
         event = Event(ev, self.identity, self.version)
+        event.quorum = Quorum(event)
         event.quorum.document = self
         return self.external_event(event)
 
@@ -134,7 +136,7 @@ class Document(object):
         if event.test(self._current):
             if self.owner:
                 event.quorum.sign(self.identity)
-                event.transmit(self)
+                event.quorum.transmit_action(self)
             else:
                 event.enact(self)
             return event
@@ -144,9 +146,10 @@ class Document(object):
     def subscribe(self):
         if not self.can_read():
             raise ValueError("You don't have read permission")
-        request = ReadRequest(self)
+        request = ReadRequest(self.identity)
+        request.quorum = Quorum(request)
         if self.owner:
-            request.transmit()
+            request.quorum.transmit_action(self)
         return request
 
     @property

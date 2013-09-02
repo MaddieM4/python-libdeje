@@ -22,6 +22,7 @@ from ejtp.util.compat import unittest
 from ejtp.identity.core import Identity
 
 from deje.event import Event
+from deje.quorum import Quorum
 from deje.handlers.lua import handler_document
 from deje.tests.identity import identity
 from deje.owner import Owner
@@ -32,6 +33,8 @@ class TestEvent(unittest.TestCase):
         self.doc = handler_document('echo_chamber')
         self.ident = identity()
         self.ev  = Event({'x':'y'}, self.ident, 'stormageddon')
+        self.ev.quorum = Quorum(self.ev)
+        self.ev.quorum.document = self.doc
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 

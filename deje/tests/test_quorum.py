@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from deje.tests.stream   import StreamTest
 
 from deje.event          import Event
+from deje.quorum         import Quorum
 from deje.handlers.lua   import handler_document
 from deje.tests.identity import identity
 from deje.owner          import Owner
@@ -31,7 +32,7 @@ class TestQuorum(StreamTest):
 
         self.doc = handler_document("echo_chamber")
         self.ev  = Event({'x':'y'}, identity("atlas"), 0)
-        self.quorum = self.ev.quorum
+        self.quorum = Quorum(self.ev)
         self.quorum.document = self.doc
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
@@ -57,7 +58,7 @@ class TestQuorum(StreamTest):
         self.quorum.sign(self.ident)
         self.assertFalse(self.quorum.outdated)
 
-        self.ev.enact()
+        self.ev.enact(self.doc)
         self.assertOutput(
             "Event '{'x': 'y'}' achieved.\n" +
             "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"

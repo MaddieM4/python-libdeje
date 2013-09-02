@@ -15,47 +15,37 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.util.hasher import checksum
 from deje import quorum
 
 class ReadRequest(object):
-    def __init__(self, document, subscriber=None):
-        self.document = document
-        self.subscriber = subscriber or document.identity
+    def __init__(self, subscriber):
+        self.subscriber = subscriber
         self.enacted  = False
-        self.quorum   = quorum.Quorum(
-                            self,
-                            "read",
-                        )
-        self.document._qs.register(self.quorum)
 
-    def sign(self, *args, **kwargs):
-        self.quorum.sign(*args, **kwargs)
-        if self.owner:
-            if self.subscriber == self.owner.identity:
-                self.transmit()
-            else:
-                self.quorum.transmit(self.document)
+    @property
+    def quorum_threshold_type(self):
+        return "read"
 
-    def enact(self):
-        if self.enacted:
-            return
+    def ready(self, quorum, document):
+        '''
+        Returns whether the conditions are right to enact this ReadRequest.
+        '''
+        return self.quorum.done and not self.enacted
+
+    def enact(self, document):
         self.enacted = True
-        if self.quorum.sig_valid(self.document.identity.key):
-            self.document.subscribers.add(self.subscriber.key)
+        if self.quorum.sig_valid(document.identity.key):
+            document.subscribers.add(self.subscriber.key)
             if self.owner:
-                self.quorum.transmit_complete(self.document)
+                self.quorum.transmit_complete(document)
 
-    def update(self):
-        if self.quorum.done:
-            self.enact()
-
-    def transmit(self):
-        self.owner.lock_action(self.document, {
+    @property
+    def transmit_data(self):
+        return {
             'type': 'deje-subscribe',
             'subscriber': self.subscriber.location,
-        })
-        self.quorum.transmit(self.document)
-        self.update()
+        }
 
     @property
     def version(self):
@@ -66,12 +56,8 @@ class ReadRequest(object):
         return self.subscriber.key
 
     def hash(self):
-        return self.quorum.hash
+        return checksum(self.hashcontent)
 
     @property
     def author(self):
         return self.subscriber
-
-    @property
-    def owner(self):
-        return self.document.owner

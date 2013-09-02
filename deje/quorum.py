@@ -24,14 +24,16 @@ from ejtp.util.hasher import checksum
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
 class Quorum(object):
-    def __init__(self, parent, threshold = "write", signatures = {}):
-        self.parent     = parent
-        self.threshtype = threshold
+    def __init__(self, action, signatures = {}):
+        self.action     = action
         self.signatures = {}
-        #self.document._qs.register(self)
         self.transmitted_complete = False
         for identity in signatures:
             self.sign(identity, signatures[identity])
+
+    @property
+    def threshtype(self):
+        return self.action.quorum_threshold_type
 
     def sig_valid(self, key):
         if key not in self.signatures:
@@ -58,6 +60,24 @@ class Quorum(object):
         """
         self.signatures = {}
 
+    def check_enact(self, document):
+        '''
+        Enact self.action if it's ready.
+        '''
+        if self.action.ready(self, document):
+            self.action.enact(document)
+
+    def transmit_action(self, document):
+        '''
+        Announce an action, and begin trying to collect a consensus.
+        '''
+        document.owner.lock_action(
+            document,
+            self.action.transmit_data
+        )
+        self.transmit(document)
+        self.check_enact(document)
+
     def transmit(self, document, signatures = None):
         '''
         Send a deje-lock-acquired for every valid signature
@@ -72,7 +92,7 @@ class Quorum(object):
                     'content-hash' : self.hash,
                     'signature': self.transmittable_sig(signer),
                 },
-                [self.parent.author.key],
+                [self.action.author.key],
                 participants = True # includes all signers
             )
 
@@ -92,7 +112,7 @@ class Quorum(object):
                 'signatures' : self.sigs_dict(),
                 'content-hash' : self.hash,
             },
-            [self.parent.author.key],
+            [self.action.author.key],
             participants = True # includes all signers
         )
 
@@ -109,11 +129,11 @@ class Quorum(object):
 
     @property
     def version(self):
-        return self.parent.version
+        return self.action.version
 
     @property
     def content(self):
-        return self.parent.hashcontent
+        return self.action.hashcontent
 
     # Handler-derived properties
 

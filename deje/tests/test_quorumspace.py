@@ -34,6 +34,8 @@ class TestQuorumSpace(unittest.TestCase):
         self.atlas = identity('atlas')
         self.ev1 = Event({"hello":"world"}, self.mitzi)
         self.ev2 = Event({"turtle":"food"}, self.mitzi)
+        self.ev1.quorum = Quorum(self.ev1)
+        self.ev2.quorum = Quorum(self.ev2)
         self.qs  = self.doc._qs
         self.owner = Owner(self.mitzi, make_jack=False)
         self.owner.own_document(self.doc)
@@ -41,7 +43,7 @@ class TestQuorumSpace(unittest.TestCase):
 
     def test_initial_state(self):
         self.assertEqual(
-            sorted(self.ev1.quorum.participants, key = lambda x: x.key),
+            sorted(self.qs.participants, key = lambda x: x.key),
             [self.atlas, self.mitzi]
         )
         self.assertTrue(self.qs.is_free(self.mitzi))

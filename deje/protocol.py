@@ -61,19 +61,19 @@ class Protocol(object):
             ev_version = lcontent['version']
             ev_author  = self.owner.identities.find_by_name(lcontent['author'])
 
-            ev = event.Event(doc, ev_content, ev_version, ev_author)
-            if doc.can_write(ev_author) and ev.test():
+            ev = event.Event(ev_content, ev_author, ev_version)
+            if doc.can_write(ev_author) and ev.test(doc._current):
                 # TODO: Error message for permissions failures and test failures
                 ev.quorum.sign(self.owner.identity)
                 ev.quorum.transmit([self.owner.identity.key])
         if ltype == "deje-subscribe":
             rr_subname = lcontent['subscriber']
             subscriber = self.owner.identities.find_by_location(rr_subname)
-            rr = read.ReadRequest(doc, subscriber)
+            rr = read.ReadRequest(subscriber)
             if doc.can_read(subscriber):
                 # TODO: Error message for permissions failures
-                rr.sign(self.owner.identity)
-                rr.update()
+                rr.quorum.sign(self.owner.identity)
+                rr.quorum.check_enact(doc)
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(content['signer'])
