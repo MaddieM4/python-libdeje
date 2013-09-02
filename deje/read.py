@@ -34,7 +34,7 @@ class ReadRequest(object):
             if self.subscriber == self.owner.identity:
                 self.transmit()
             else:
-                self.quorum.transmit()
+                self.quorum.transmit(self.document)
 
     def enact(self):
         if self.enacted:
@@ -43,7 +43,7 @@ class ReadRequest(object):
         if self.quorum.sig_valid(self.document.identity.key):
             self.document.subscribers.add(self.subscriber.key)
             if self.owner:
-                self.quorum.transmit_complete()
+                self.quorum.transmit_complete(self.document)
 
     def update(self):
         if self.quorum.done:
@@ -54,7 +54,7 @@ class ReadRequest(object):
             'type': 'deje-subscribe',
             'subscriber': self.subscriber.location,
         })
-        self.quorum.transmit()
+        self.quorum.transmit(self.document)
         self.update()
 
     @property

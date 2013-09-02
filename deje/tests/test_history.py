@@ -32,15 +32,14 @@ class TestHistory(unittest.TestCase):
 
         self.res_default = Resource()
         self.res_tt      = handler_resource("tag_team")
-        self.ev_default  = Event(None, {'hello':'world'}, author = self.mitzi)
+        self.ev_default  = Event({'hello':'world'}, self.mitzi)
         self.ev_tt       = Event(
-            None,
             {
                 'path' : '/handler.lua',
                 'property' : 'comment',
                 'value' : 'An arbitrary comment',
             },
-            author = self.atlas
+            self.atlas
         )
         self.hs1         = HistoryState(None, [self.res_default])
         self.hs2         = HistoryState("example", [self.res_default, self.res_tt])

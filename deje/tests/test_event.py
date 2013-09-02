@@ -30,8 +30,8 @@ class TestEvent(unittest.TestCase):
 
     def setUp(self):
         self.doc = handler_document('echo_chamber')
-        self.ev  = Event(self.doc, {'x':'y'}, 'stormageddon', 'mick-and-bandit')
         self.ident = identity()
+        self.ev  = Event({'x':'y'}, self.ident, 'stormageddon')
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 
@@ -52,7 +52,7 @@ class TestEvent(unittest.TestCase):
 
     def test_authorname(self):
         # Override ev for this test
-        self.ev = Event(self.doc, None, author=self.owner.identity)
+        self.ev = Event(None, self.owner.identity)
 
         self.assertTrue(
             isinstance(self.ev.author, Identity)
@@ -69,11 +69,11 @@ class TestEvent(unittest.TestCase):
     def test_hash(self):
         self.assertEqual(
             self.ev.hash(),
-            String('9c99da349c82165aa167c54f0fd8bae8f44a671d')
+            String('92395fb63e777d342d75915ad25dde1172e20f7c')
         )
 
     def test_hashcontent(self):
         self.assertEqual(
             self.ev.hashcontent,
-            [{'x': 'y'}, 'stormageddon', 'mick-and-bandit']
+            [{'x': 'y'}, 'stormageddon', 'mitzi@lackadaisy.com']
         )

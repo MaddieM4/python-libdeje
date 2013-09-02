@@ -28,7 +28,7 @@ class Quorum(object):
         self.parent     = parent
         self.threshtype = threshold
         self.signatures = {}
-        self.document._qs.register(self)
+        #self.document._qs.register(self)
         self.transmitted_complete = False
         for identity in signatures:
             self.sign(identity, signatures[identity])
@@ -49,8 +49,8 @@ class Quorum(object):
             self.signatures[identity.key] = (identity, signature)
             return
 
-        with self.document._qs.transaction(identity, self):
-            self.signatures[identity.key] = (identity, signature)
+        #with self.document._qs.transaction(identity, self):
+        #    self.signatures[identity.key] = (identity, signature)
 
     def clear(self):
         """
@@ -58,14 +58,14 @@ class Quorum(object):
         """
         self.signatures = {}
 
-    def transmit(self, signatures = None):
+    def transmit(self, document, signatures = None):
         '''
         Send a deje-lock-acquired for every valid signature
         '''
         signers = signatures or self.valid_signatures
         for signer in signers:
-            self.document.owner.transmit(
-                self.document,
+            document.owner.transmit(
+                document,
                 "deje-lock-acquired",
                 {
                     'signer' : signer,
@@ -76,7 +76,7 @@ class Quorum(object):
                 participants = True # includes all signers
             )
 
-    def transmit_complete(self):
+    def transmit_complete(self, document):
         '''
         Send a deje-lock-complete with all valid signatures
         '''
@@ -106,10 +106,6 @@ class Quorum(object):
         return sigs
 
     # Parent-derived properties
-
-    @property
-    def document(self):
-        return self.parent.document
 
     @property
     def version(self):

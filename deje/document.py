@@ -91,7 +91,7 @@ class Document(object):
         self.freeze()
 
         for event in serial['events']:
-            ev = Event(event['content'], author = event['author'])
+            ev = Event(event['content'], event['author'], event['version'])
             self.external_event(ev)
 
     def freeze(self):
@@ -126,16 +126,17 @@ class Document(object):
         '''
         if not self.can_write():
             raise ValueError("You don't have write permission")
-        event = Event(self, ev, author = self.identity)
+        event = Event(ev, self.identity, self.version)
+        event.quorum.document = self
         return self.external_event(event)
 
     def external_event(self, event):
-        if event.test():
+        if event.test(self._current):
             if self.owner:
                 event.quorum.sign(self.identity)
-                event.transmit()
+                event.transmit(self)
             else:
-                event.enact()
+                event.enact(self)
             return event
         else:
             raise ValueError("Event %r was not valid" % event.content)

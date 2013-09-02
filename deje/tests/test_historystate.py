@@ -57,14 +57,13 @@ class TestHistoryState(unittest.TestCase):
         res = handler_resource("tag_team")
         hs = HistoryState("example", [res])
         ev = Event(
-            None,
             {
                 'path' : '/handler.lua',
                 'property' : 'comment',
                 'value' : 'An arbitrary comment',
             },
-            version = 0,
-            author=identity("mitzi")
+            identity("mitzi"),
+            None
         )
         hs.apply(ev)
         self.assertEqual(res.comment, 'An arbitrary comment')

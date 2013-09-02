@@ -19,26 +19,17 @@ from ejtp.util.hasher import checksum
 from deje import quorum
 
 class Event(object):
-    def __init__(self, document, content, version = None, author = None, signatures = {}):
-        self.document = document
+    def __init__(self, content, author, version = None, signatures = {}):
         self.content  = content
-        self.version  = version or (self.document and self.document.version) or None
         self.author   = author
-        self.enacted  = False
-        if self.document:
-            self.quorum   = quorum.Quorum(
-                                self,
-                                signatures = signatures,
-                            )
+        self.version  = version
+        self.quorum   = quorum.Quorum(self, signatures = signatures)
 
-    def enact(self):
-        if self.enacted:
-            return
-        self.enacted = True
-        self.document._history.add_event(self)
-        self.apply(self.document._current)
-        if self.owner:
-            self.quorum.transmit_complete()
+    def enact(self, document):
+        document._history.add_event(self)
+        self.apply(document._current)
+        if document.owner:
+            self.quorum.transmit_complete(document.owner)
 
     def apply(self, state):
         '''
@@ -46,26 +37,27 @@ class Event(object):
         '''
         state.apply(self)
 
-    def update(self):
-        if self.quorum.done:
-            self.enact()
+    def update(self, document):
+        if self.quorum.done and self not in document._history.events:
+            self.enact(document)
 
-    def transmit(self):
-        self.owner.lock_action(self.document, {
+    def transmit(self, document):
+        owner = document.owner
+        owner.lock_action(document, {
             'type': 'deje-event',
             'version': self.version,
             'event': self.content,
             'author': self.authorname,
         })
-        self.quorum.transmit()
-        self.update()
+        self.quorum.transmit(document)
+        self.update(document)
 
-    def test(self):
-        return self.document.interpreter.event_test(self.content, self.author)
+    def test(self, state):
+        return state.interpreter.event_test(self.content, self.author)
 
     @property
     def authorname(self):
-        return (hasattr(self.author, "name") and self.author.name) or self.author
+        return self.author.name
         
     @property
     def hashcontent(self):
@@ -73,13 +65,3 @@ class Event(object):
 
     def hash(self):
         return checksum(self.hashcontent)
-
-    @property
-    def owner(self):
-        return self.document.owner
-
-def from_hashcontent(document, hashcontent, signatures={}):
-    if type(hashcontent) != list or len(hashcontent) != 3:
-        raise TypeError("event.from_hashcontent expects a list of length 3, got %r" % hashcontent)
-    return Event(document, content, version, author, signatures)
-
