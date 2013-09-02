@@ -30,12 +30,18 @@ class QuorumSpace(object):
         self.by_hash[quorum.hash] = quorum
         quorum.qs = self
 
+    def get_quorum(self, action):
+        for quorum in self.by_hash.values():
+            if quorum.action == action:
+                return quorum
+        raise KeyError("No quorum for given action", action)
+
     def get_competing_actions(self):
         "Get all read and write actions in QS"
-        return [x.parent for x in self.by_hash.values() if x.competing]
+        return [x.action for x in self.by_hash.values() if x.competing]
 
     def get_known_actions(self):
-        return [x.parent for x in self.by_hash.values()]
+        return [x.action for x in self.by_hash.values()]
 
     def transaction(self, identity, quorum):
         return QSTransaction(self, identity, quorum)

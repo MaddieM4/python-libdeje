@@ -32,7 +32,7 @@ class Event(object):
         '''
         Returns whether the conditions are right to enact this Event.
         '''
-        return self.quorum.done and self not in document._history.events
+        return quorum.done and self not in document._history.events
 
     def enact(self, quorum, document):
         document._history.add_event(self)

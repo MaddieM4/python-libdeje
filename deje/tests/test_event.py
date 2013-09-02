@@ -33,24 +33,24 @@ class TestEvent(unittest.TestCase):
         self.doc = handler_document('echo_chamber')
         self.ident = identity()
         self.ev  = Event({'x':'y'}, self.ident, 'stormageddon')
-        self.ev.quorum = Quorum(self.ev, self.doc._qs)
+        self.quorum = Quorum(self.ev, self.doc._qs)
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
 
     def test_init(self):
         self.assertEqual(self.ev.version, 'stormageddon')
-        self.ev.quorum.sign(self.ident)
+        self.quorum.sign(self.ident)
         self.assertEqual(
-            self.ev.quorum.participants,
+            self.quorum.participants,
             [self.ident]
         )
-        self.assertTrue(self.ev.quorum.sig_valid(self.ident.key))
+        self.assertTrue(self.quorum.sig_valid(self.ident.key))
         self.assertRaises(
             TypeError,
             self.ev.quorum.sign,
             "some string"
         )
-        self.assertFalse(self.ev.quorum.sig_valid("some string"))
+        self.assertFalse(self.quorum.sig_valid("some string"))
 
     def test_authorname(self):
         # Override ev for this test

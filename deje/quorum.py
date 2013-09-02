@@ -54,8 +54,8 @@ class Quorum(object):
             self.signatures[identity.key] = (identity, signature)
             return
 
-        #with self.document._qs.transaction(identity, self):
-        #    self.signatures[identity.key] = (identity, signature)
+        with self.qs.transaction(identity, self):
+            self.signatures[identity.key] = (identity, signature)
 
     def clear(self):
         """
