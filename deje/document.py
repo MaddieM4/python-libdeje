@@ -23,6 +23,7 @@ from deje.event import Event
 from deje.read import ReadRequest
 from deje.resource import Resource
 from deje.historystate import HistoryState
+from deje.history import History
 
 def serialize_resources(resources):
     serialized = {}
@@ -39,7 +40,7 @@ class Document(object):
         self._initial = HistoryState()
         self._current = HistoryState(resources = resources)
         self._qs = quorumspace.QuorumSpace(self)
-        self._blockchain = []
+        self._history = History()
         self.signals = {
             'recv-version': dispatch.Signal(
                 providing_args=['version']),
@@ -87,7 +88,7 @@ class Document(object):
     def serialize(self):
         return {
             'original': self._initial.serialize_resources(),
-            'events': self._blockchain
+            'events': self._history.events
         }
 
     def deserialize(self, serial):
@@ -105,7 +106,7 @@ class Document(object):
         Throw away history and base originals off of current state.
         '''
         self._initial = self._current.clone()
-        self._blockchain = []
+        self._history.events = []
 
     def eval(self, value):
         '''
@@ -206,7 +207,7 @@ class Document(object):
 
     @property
     def version(self):
-        return len(self._blockchain)
+        return len(self._history.events)
 
 def load_from(filename):
     import json

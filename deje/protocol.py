@@ -117,7 +117,7 @@ class Protocol(object):
     def _on_deje_get_block(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(msg.sender)
         blocknumber = content['version']
-        blockev = doc._blockchain[blocknumber]
+        blockev = doc._history.events[blocknumber]
         block = {
             'author': blockev.authorname,
             'content': blockev.content,

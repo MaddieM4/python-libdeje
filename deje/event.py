@@ -35,7 +35,7 @@ class Event(object):
         if self.enacted:
             return
         self.enacted = True
-        self.document._blockchain.append(self)
+        self.document._history.add_event(self)
         self.apply(self.document._current)
         if self.owner:
             self.quorum.transmit_complete()
