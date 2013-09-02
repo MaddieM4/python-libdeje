@@ -20,24 +20,42 @@ class History(object):
     Represents a timeline of Events, with HistoryStates acting as "keyframes",
     to borrow a term from animation.
     '''
-    def __init__(self, initial_state, events = []):
+    def __init__(self, states=[], events = []):
         self.states = {}
         self.events = []
         self.events_by_hash = {}
 
-        self.add_state(initial_state)
+        self.add_states(states)
         self.add_events(events)
 
     def add_state(self, state):
         self.states[state.hash] = state
 
+    def add_states(self, states):
+        for state in states:
+            self.add_state(state)
+
     def add_event(self, event):
         self.events.append(event)
-        self.events_by_hash[event.hash] = event
+        self.events_by_hash[event.hash()] = event
 
     def add_events(self, events):
         for event in events:
             self.add_event(event)
+
+    @property
+    def orphan_states(self):
+        '''
+        A list of states that do not have corresponding events.
+        '''
+        return [self.states[h] for h in self.states.keys() if not h in self.events_by_hash]
+
+    @property
+    def orphan_events(self):
+        '''
+        A list of events that do not have corresponding states.
+        '''
+        return [self.events_by_hash[h] for h in self.events_by_hash.keys() if not h in self.states]
 
     @property
     def initial_state(self):
@@ -49,10 +67,6 @@ class History(object):
                 if h in self.states:
                     return self.states[h]
             raise KeyError("No initial state found!")
-
-    @property
-    def orphan_states(self):
-        return [h for h in self.states.keys() if not h in self.events_by_hash]
 
     @property
     def latest_existing_state(self):
