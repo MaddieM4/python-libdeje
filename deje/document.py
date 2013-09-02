@@ -35,12 +35,11 @@ def serialize_resources(resources):
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
         self._name = name
-        self._handler = handler_path
         self._owner = owner
         self._initial = HistoryState()
-        self._current = HistoryState(resources = resources)
+        self._current = HistoryState("current", resources, handler_path)
+        self._history = History([self._initial, self._current])
         self._qs = quorumspace.QuorumSpace(self)
-        self._history = History()
         self.signals = {
             'recv-version': dispatch.Signal(
                 providing_args=['version']),
@@ -183,10 +182,10 @@ class Document(object):
 
     @property
     def handler(self):
-        return self.get_resource(self._handler)
+        return self.get_resource(self._current.handler_path)
 
     def set_handler(self, path):
-        self._handler = path
+        self._current.handler_path = path
 
     # Other accessors
 
