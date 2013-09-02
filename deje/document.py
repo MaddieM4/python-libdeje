@@ -21,7 +21,6 @@ import dispatch
 from deje import quorumspace
 from deje.event import Event
 from deje.read import ReadRequest
-from deje.resource import Resource
 from deje.historystate import HistoryState
 from deje.history import History
 
