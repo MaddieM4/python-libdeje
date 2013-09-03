@@ -64,7 +64,7 @@ class Protocol(object):
             ev = event.Event(ev_content, ev_author, ev_version)
             if doc.can_write(ev_author) and ev.test(doc._current):
                 # TODO: Error message for permissions failures and test failures
-                quorum = doc._qs.get_quorum(ev)
+                quorum = doc.get_quorum(ev)
                 quorum.sign(self.owner.identity)
                 quorum.transmit([self.owner.identity.key])
         if ltype == "deje-subscribe":
@@ -72,7 +72,7 @@ class Protocol(object):
             subscriber = self.owner.identities.find_by_location(rr_subname)
             rr = read.ReadRequest(subscriber)
             if doc.can_read(subscriber):
-                quorum = doc._qs.get_quorum(rr)
+                quorum = doc.get_quorum(rr)
                 # TODO: Error message for permissions failures
                 quorum.sign(self.owner.identity)
                 quorum.check_enact(doc)

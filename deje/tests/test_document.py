@@ -106,7 +106,7 @@ class TestDocumentEJTP(TestEJTP):
             'property':'content',
             'value':'Mitzi says hi',
         })
-        self.assertEqual(mdoc.get_quorum(mev).completion, 2)
+        self.assertEqual(self.mdoc.get_quorum(mev).completion, 2)
         self.assertEqual(self.mdoc.competing, [])
 
         self.assertEqual(

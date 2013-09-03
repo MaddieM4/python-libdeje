@@ -134,7 +134,7 @@ class Document(object):
     def external_event(self, event):
         if event.test(self._current):
             if self.owner:
-                quorum = self._qs.get_quorum(event)
+                quorum = self.get_quorum(event)
                 quorum.sign(self.identity)
                 quorum.transmit_action(self)
             else:
@@ -151,6 +151,9 @@ class Document(object):
         if self.owner:
             quorum.transmit_action(self)
         return request
+
+    def get_quorum(self, action):
+        return self._qs.get_quorum(action)
 
     @property
     def competing(self):
