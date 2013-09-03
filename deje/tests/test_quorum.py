@@ -60,7 +60,7 @@ class TestQuorum(StreamTest):
         self.quorum.sign(self.ident)
         self.assertFalse(self.quorum.outdated)
 
-        self.ev.enact(self.quorum, self.doc)
+        self.quorum.enact(self.doc)
         self.assertOutput(
             "Event '{'x': 'y'}' achieved.\n" +
             "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"

@@ -21,24 +21,26 @@ from deje import quorum
 class ReadRequest(object):
     def __init__(self, subscriber):
         self.subscriber = subscriber
-        self.enacted  = False
+        self.done = False
 
     @property
     def quorum_threshold_type(self):
         return "read"
 
-    def ready(self, quorum, document):
+    def is_done(self, document):
         '''
-        Returns whether the conditions are right to enact this ReadRequest.
+        Returns whether Request has already been granted.
         '''
-        return quorum.done and not self.enacted
+        return self.done
 
     def enact(self, quorum, document):
-        self.enacted = True
+        '''
+        Add subscriber to list.
+        '''
+        self.done = True
+        # Did we promise to be one of the subscribed-to parties?
         if quorum.sig_valid(document.identity.key):
             document.subscribers.add(self.subscriber.key)
-            if document.owner:
-                quorum.transmit_complete(document)
 
     @property
     def transmit_data(self):

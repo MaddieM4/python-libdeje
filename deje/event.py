@@ -28,17 +28,18 @@ class Event(object):
     def quorum_threshold_type(self):
         return "write"
 
-    def ready(self, quorum, document):
+    def is_done(self, document):
         '''
-        Returns whether the conditions are right to enact this Event.
+        Returns whether Event has already been applied.
         '''
-        return quorum.done and self not in document._history.events
+        return self in document._history.events
 
     def enact(self, quorum, document):
+        '''
+        Apply Event to the head of the document's history.
+        '''
         document._history.add_event(self)
         self.apply(document._current)
-        if document.owner:
-            quorum.transmit_complete(document)
 
     @property
     def transmit_data(self):
@@ -56,6 +57,9 @@ class Event(object):
         state.apply(self)
 
     def test(self, state):
+        '''
+        Return whether Event is valid for the given state.
+        '''
         return state.interpreter.event_test(self.content, self.author)
 
     @property

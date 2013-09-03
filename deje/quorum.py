@@ -65,10 +65,18 @@ class Quorum(object):
 
     def check_enact(self, document):
         '''
-        Enact self.action if it's ready.
+        Call self.enact() if self.action is ready.
         '''
-        if self.action.ready(self, document):
-            self.action.enact(self, document)
+        if self.done and not self.action.is_done(document):
+            self.enact(document)
+
+    def enact(self, document):
+        '''
+        Enact self.action and transmit completion afterwards.
+        '''
+        self.action.enact(self, document)
+        if document.owner:
+            self.transmit_complete(document)
 
     def transmit_action(self, document):
         '''
