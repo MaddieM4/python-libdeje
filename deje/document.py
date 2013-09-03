@@ -134,8 +134,9 @@ class Document(object):
     def external_event(self, event):
         if event.test(self._current):
             if self.owner:
-                event.quorum.sign(self.identity)
-                event.quorum.transmit_action(self)
+                quorum = self._qs.get_quorum(event)
+                quorum.sign(self.identity)
+                quorum.transmit_action(self)
             else:
                 event.enact(self)
             return event

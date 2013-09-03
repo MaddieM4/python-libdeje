@@ -47,7 +47,7 @@ class TestEvent(unittest.TestCase):
         self.assertTrue(self.quorum.sig_valid(self.ident.key))
         self.assertRaises(
             TypeError,
-            self.ev.quorum.sign,
+            self.quorum.sign,
             "some string"
         )
         self.assertFalse(self.quorum.sig_valid("some string"))

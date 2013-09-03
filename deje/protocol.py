@@ -124,7 +124,7 @@ class Protocol(object):
             'author': blockev.authorname,
             'content': blockev.content,
             'version': evhash, # blockev.version is actually the event's parent's hash
-            'signatures': blockev.quorum.sigs_dict(),
+            'signatures': doc.get_quorum(blockev).sigs_dict(),
         }
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
