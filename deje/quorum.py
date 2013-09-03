@@ -155,10 +155,10 @@ class Quorum(object):
     @property
     def outdated(self):
         # Version is not relevant for read requests
-        if self.version != None:
-            return self.qs.version != self.version
-        else:
+        if self.threshtype == 'read':
             return False
+        else:
+            return self.qs.version != self.version
 
     @property
     def participants(self):

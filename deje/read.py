@@ -37,7 +37,7 @@ class ReadRequest(object):
         self.enacted = True
         if quorum.sig_valid(document.identity.key):
             document.subscribers.add(self.subscriber.key)
-            if self.owner:
+            if document.owner:
                 quorum.transmit_complete(document)
 
     @property

@@ -33,8 +33,8 @@ class TestQuorumSpace(unittest.TestCase):
         self.qs  = self.doc._qs
         self.mitzi = identity('mitzi')
         self.atlas = identity('atlas')
-        self.ev1 = Event({"hello":"world"}, self.mitzi)
-        self.ev2 = Event({"turtle":"food"}, self.mitzi)
+        self.ev1 = Event({"hello":"world"}, self.mitzi, self.doc.version)
+        self.ev2 = Event({"turtle":"food"}, self.mitzi, self.doc.version)
         self.q1 = Quorum(self.ev1, self.qs)
         self.q2 = Quorum(self.ev2, self.qs)
         self.owner = Owner(self.mitzi, make_jack=False)

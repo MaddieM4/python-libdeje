@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 from persei import *
 
+from deje.quorum import Quorum
 from deje import read
 from deje import event
 from deje import errors
@@ -62,19 +63,21 @@ class Protocol(object):
             ev_author  = self.owner.identities.find_by_name(lcontent['author'])
 
             ev = event.Event(ev_content, ev_author, ev_version)
+            quorum = Quorum(ev, doc._qs)
             if doc.can_write(ev_author) and ev.test(doc._current):
                 # TODO: Error message for permissions failures and test failures
-                quorum = doc.get_quorum(ev)
                 quorum.sign(self.owner.identity)
-                quorum.transmit([self.owner.identity.key])
+                quorum.transmit(doc, [self.owner.identity.key])
         if ltype == "deje-subscribe":
             rr_subname = lcontent['subscriber']
             subscriber = self.owner.identities.find_by_location(rr_subname)
+            #raise Exception(subscriber)
             rr = read.ReadRequest(subscriber)
+            quorum = Quorum(rr, doc._qs)
             if doc.can_read(subscriber):
-                quorum = doc.get_quorum(rr)
                 # TODO: Error message for permissions failures
                 quorum.sign(self.owner.identity)
+                quorum.transmit(doc)
                 quorum.check_enact(doc)
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
@@ -87,7 +90,7 @@ class Protocol(object):
             return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
         sig = RawData(content['signature'])
         quorum.sign(sender, sig)
-        quorum.parent.update()
+        quorum.check_enact(doc)
 
     def _on_deje_lock_complete(self, msg, content, ctype, doc):
         content_hash = String(content['content-hash'])
@@ -99,7 +102,7 @@ class Protocol(object):
             sender = self.owner.identities.find_by_location(signer)
             sig = RawData(content['signatures'][signer])
             quorum.sign(sender, sig)
-            quorum.parent.update()
+            quorum.check_enact(doc)
 
     # Document information
 
@@ -123,7 +126,7 @@ class Protocol(object):
         block = {
             'author': blockev.authorname,
             'content': blockev.content,
-            'version': evhash, # blockev.version is actually the event's parent's hash
+            'version': evhash, # blockev.version is actually the event's action's hash
             'signatures': doc.get_quorum(blockev).sigs_dict(),
         }
         if not doc.can_read(sender):

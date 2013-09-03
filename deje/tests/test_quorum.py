@@ -31,7 +31,7 @@ class TestQuorum(StreamTest):
         StreamTest.setUp(self)
 
         self.doc = handler_document("echo_chamber")
-        self.ev  = Event({'x':'y'}, identity("atlas"), 0)
+        self.ev  = Event({'x':'y'}, identity("atlas"), self.doc.version)
         self.quorum = Quorum(self.ev, self.doc._qs)
         self.quorum.document = self.doc
         self.ident = identity()
@@ -52,13 +52,15 @@ class TestQuorum(StreamTest):
 
     def test_outdated(self):
         self.assertEqual(self.doc.version, 'current')
+        self.assertEqual(self.doc._qs.version, 'current')
+        self.assertEqual(self.ev.version, 'current')
         self.assertEqual(self.quorum.version, 'current')
         self.assertFalse(self.quorum.outdated)
 
         self.quorum.sign(self.ident)
         self.assertFalse(self.quorum.outdated)
 
-        self.ev.enact(self.doc)
+        self.ev.enact(self.quorum, self.doc)
         self.assertOutput(
             "Event '{'x': 'y'}' achieved.\n" +
             "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"
