@@ -15,13 +15,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ejtp.util.hasher import checksum
-from deje import quorum
+from deje.action import Action
 
-class ReadRequest(object):
-    def __init__(self, subscriber):
-        self.subscriber = subscriber
+class ReadRequest(Action):
+    def __init__(self, author):
+        self.content = {
+            'type'    : 'get_version',
+            'author'  : author,
+        }
         self.done = False
+
+    @property
+    def version(self):
+        return None
 
     @property
     def quorum_threshold_type(self):
@@ -41,25 +47,3 @@ class ReadRequest(object):
         # Did we promise to be one of the subscribed-to parties?
         if quorum.sig_valid(document.identity.key):
             document.subscribers.add(self.subscriber.key)
-
-    @property
-    def transmit_data(self):
-        return {
-            'type': 'deje-subscribe',
-            'subscriber': self.subscriber.location,
-        }
-
-    @property
-    def version(self):
-        return None
-
-    @property
-    def hashcontent(self):
-        return self.subscriber.key
-
-    def hash(self):
-        return checksum(self.hashcontent)
-
-    @property
-    def author(self):
-        return self.subscriber

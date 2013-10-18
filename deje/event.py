@@ -15,14 +15,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from ejtp.util.hasher import checksum
-from deje import quorum
+from deje.action import Action
 
-class Event(object):
+class Event(Action):
     def __init__(self, content, author, version = None):
-        self.content  = content
-        self.author   = author
-        self.version  = version
+        self.items = {
+            'type'    : 'event',
+            'author'  : author,
+            'content' : content,
+            'version' : version,
+        }
+
+    @property
+    def content(self):
+        return self['content']
+
+    @content.setter
+    def content(self, v):
+        self['content'] = v
+
+    @property
+    def version(self):
+        return self['version']
+
+    @version.setter
+    def version(self, v):
+        self['version'] = v
 
     @property
     def quorum_threshold_type(self):
@@ -41,15 +59,6 @@ class Event(object):
         document._history.add_event(self)
         self.apply(document._current)
 
-    @property
-    def transmit_data(self):
-        return {
-            'type': 'deje-event',
-            'version': self.version,
-            'event': self.content,
-            'author': self.authorname,
-        }
-
     def apply(self, state):
         '''
         Apply event to a given HistoryState.
@@ -61,14 +70,3 @@ class Event(object):
         Return whether Event is valid for the given state.
         '''
         return state.interpreter.event_test(self.content, self.author)
-
-    @property
-    def authorname(self):
-        return self.author.name
-        
-    @property
-    def hashcontent(self):
-        return [self.content, self.version, self.authorname]
-
-    def hash(self):
-        return checksum(self.hashcontent)
