@@ -19,8 +19,7 @@ from __future__ import print_function
 from persei import *
 
 from deje.quorum import Quorum
-from deje import read
-from deje import event
+from deje.action import Action
 from deje import errors
 
 class Protocol(object):
@@ -56,29 +55,13 @@ class Protocol(object):
 
     def _on_deje_lock_acquire(self, msg, content, ctype, doc):
         lcontent = content['content']
-        ltype = lcontent['type']
-        if ltype == "deje-event":
-            ev_content = lcontent['event']
-            ev_version = lcontent['version']
-            ev_author  = self.owner.identities.find_by_name(lcontent['author'])
-
-            ev = event.Event(ev_content, ev_author, ev_version)
-            quorum = Quorum(ev, doc._qs)
-            if doc.can_write(ev_author) and ev.test(doc._current):
-                # TODO: Error message for permissions failures and test failures
-                quorum.sign(self.owner.identity)
-                quorum.transmit(doc, [self.owner.identity.key])
-        if ltype == "deje-subscribe":
-            rr_subname = lcontent['subscriber']
-            subscriber = self.owner.identities.find_by_location(rr_subname)
-            #raise Exception(subscriber)
-            rr = read.ReadRequest(subscriber)
-            quorum = Quorum(rr, doc._qs)
-            if doc.can_read(subscriber):
-                # TODO: Error message for permissions failures
-                quorum.sign(self.owner.identity)
-                quorum.transmit(doc)
-                quorum.check_enact(doc)
+        action = Action(lcontent, self.owner.identities).specific()
+        quorum = Quorum(action, doc._qs)
+        if action.valid(doc):
+            # TODO: Error message for validation failures
+            quorum.sign(self.owner.identity)
+            quorum.transmit(doc)
+            quorum.check_enact(doc)
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(content['signer'])

@@ -19,28 +19,26 @@ from deje.action import Action
 
 class Event(Action):
     def __init__(self, content, author, version = None):
-        self.items = {
+        self.deserialize({
             'type'    : 'event',
             'author'  : author,
             'content' : content,
             'version' : version,
+        })
+
+    def deserialize(self, items):
+        Action.deserialize(self, items)
+        self.content = self.overflow.pop('content')
+        self.version = self.overflow.pop('version')
+
+    @property
+    def items(self):
+        return {
+            "type"    : self.atype,
+            "author"  : self.author,
+            "content" : self.content,
+            "version" : self.version,
         }
-
-    @property
-    def content(self):
-        return self['content']
-
-    @content.setter
-    def content(self, v):
-        self['content'] = v
-
-    @property
-    def version(self):
-        return self['version']
-
-    @version.setter
-    def version(self, v):
-        self['version'] = v
 
     @property
     def quorum_threshold_type(self):

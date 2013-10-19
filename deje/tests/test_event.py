@@ -71,11 +71,16 @@ class TestEvent(unittest.TestCase):
     def test_hash(self):
         self.assertEqual(
             self.ev.hash(),
-            String('92395fb63e777d342d75915ad25dde1172e20f7c')
+            String('ce9950bb5a8db63712ae1ecfe9269e22289673ec')
         )
 
-    def test_hashcontent(self):
+    def test_serialize(self):
         self.assertEqual(
-            self.ev.hashcontent,
-            [{'x': 'y'}, 'stormageddon', 'mitzi@lackadaisy.com']
+            self.ev.serialize(),
+            {
+                'type': 'event',
+                'author': ['local', None, 'mitzi'],
+                'content': {'x':'y'},
+                'version': 'stormageddon',
+            }
         )

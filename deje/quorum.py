@@ -19,7 +19,6 @@ import datetime
 from persei import *
 
 from ejtp.identity import Identity
-from ejtp.util.hasher import checksum
 
 DEFAULT_DURATION = datetime.timedelta(minutes = 5)
 
@@ -84,7 +83,7 @@ class Quorum(object):
         '''
         document.owner.lock_action(
             document,
-            self.action.transmit_data
+            self.content
         )
         self.transmit(document)
         self.check_enact(document)
@@ -144,7 +143,7 @@ class Quorum(object):
 
     @property
     def content(self):
-        return self.action.hashcontent
+        return self.action.serialize()
 
     # Handler-derived properties
 
@@ -192,7 +191,7 @@ class Quorum(object):
 
     @property
     def hash(self):
-        return checksum(self.content)
+        return self.action.hash()
 
 def validate_signature(identity, content_hash, signature):
     try:

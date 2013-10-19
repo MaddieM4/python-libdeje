@@ -19,10 +19,10 @@ from deje.action import Action
 
 class ReadRequest(Action):
     def __init__(self, author):
-        self.content = {
+        self.deserialize({
             'type'    : 'get_version',
             'author'  : author,
-        }
+        })
         self.done = False
 
     @property
@@ -46,4 +46,10 @@ class ReadRequest(Action):
         self.done = True
         # Did we promise to be one of the subscribed-to parties?
         if quorum.sig_valid(document.identity.key):
-            document.subscribers.add(self.subscriber.key)
+            document.subscribers.add(self.author.key)
+
+    def test(self, state):
+        '''
+        Read events are always valid.
+        '''
+        return True

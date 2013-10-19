@@ -16,21 +16,59 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from ejtp.util.hasher import checksum
+from ejtp.identity import Identity
 
-class Action(object): # the only time I've wished the base class was called "lawsuit"
-    def init(self, items={}):
-        self.items = dict(items)
+class Action(object):
+    def __init__(self, items={}, cache = None):
+        self.deserialize(items, cache)
+
+    def deserialize(self, items, cache = None):
+        self.overflow = dict(items)
+        self.atype  = self.overflow.pop('type')
+        self.author = self.overflow.pop('author')
+
+        if not isinstance(self.author, Identity):
+            if cache:
+                self.author = cache.find_by_location(self.author)
+            else:
+                raise TypeError("Author must be ejtp.identity.Identity")
+
+    def serialize(self):
+        items = self.items
+        items['author'] = items['author'].location
+        return items
+
+    @property
+    def items(self):
+        result = {
+            "type"   : self.atype,
+            "author" : self.author,
+        }
+        result.update(self.overflow)
+        return result
+
+    @property
+    def quorum_threshold_type(self):
+        return None
+
+    @property
+    def authorname(self):
+        return self.author.name
 
     def specific(self):
         '''
         Returns the appropriate subclass based on action type.
         '''
         if self.atype == "get_version":
-            from djdns.read import ReadRequest
-            return ReadRequest(self['author'])
+            from deje.read import ReadRequest
+            return ReadRequest(self.author)
         elif self.atype == "event":
-            from djdns.event import Event
-            return Event(self['items'], self['author'], self['version'])
+            from deje.event import Event
+            return Event(
+                self.overflow['content'],
+                self.author,
+                self.overflow['version']
+            )
         else:
             raise ValueError("Invalid action type %r" % self.atype)
 
@@ -38,7 +76,16 @@ class Action(object): # the only time I've wished the base class was called "law
         '''
         Less important role in new value-passing quorum scheme.
         '''
-        return checksum(self.items)
+        return checksum(self.serialize())
+
+    def valid(self, doc):
+        if self.quorum_threshold_type == 'write':
+            authorized = doc.can_write(self.author)
+        elif self.quorum_threshold_type == 'read':
+            authorized = doc.can_read(self.author)
+        else:
+            authorized = False
+        return authorized and self.test(doc._current)
 
 
     def __repr__(self):
@@ -49,28 +96,3 @@ class Action(object): # the only time I've wished the base class was called "law
 
     def __getitem__(self, k):
         return self.items[k]
-
-    def __setitem__(self, k, v):
-        self.items[k] = v
-
-    def __delitem__(self, k):
-        del self.items[k]
-
-
-    @property
-    def atype(self):
-        if 'type' in self:
-            return self['type']
-
-    @atype.setter
-    def atype(self, v):
-        self['type'] = v
-
-    @property
-    def author(self):
-        if 'author' in self:
-            return self['author']
-
-    @author.setter
-    def author(self, v):
-        self['author'] = v

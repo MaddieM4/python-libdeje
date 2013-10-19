@@ -128,7 +128,7 @@ class TestDocumentEJTP(TestEJTP):
         self.assertEqual(
             self.getOutput().replace("u'", "'").replace('atlas','mitzi'),
             "Error from 'mitzi@lackadaisy.com', code 40: " +
-            "'Unknown lock quorum data, dropping (fc7278eb74a4e0f24b00b06d9dc2147ddffa1673)'\n"
+            "'Unknown lock quorum data, dropping (9fb93a05945cf17d05dfb556ed94e8f7735e6b7a)'\n"
         )
         self.assertEqual(self.mdoc.competing, [])
         self.assertEqual(self.adoc.competing, [])
