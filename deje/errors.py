@@ -17,11 +17,6 @@ MSG_UNKNOWN_TYPE = {
 
 # Locking errors
 
-LOCK_HASH_NOT_RECOGNIZED = {
-    'code': 40,
-    'explanation': "Unknown lock quorum data, dropping (%s)",
-}
-
 # Permissions errors
 
 PERMISSION_CANNOT_READ = {

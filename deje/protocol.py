@@ -56,7 +56,7 @@ class Protocol(object):
     def _on_deje_lock_acquire(self, msg, content, ctype, doc):
         lcontent = content['content']
         action = Action(lcontent, self.owner.identities).specific()
-        quorum = Quorum(action, doc._qs)
+        quorum = doc._qs.get_quorum(action)
         if action.valid(doc):
             # TODO: Error message for validation failures
             quorum.sign(self.owner.identity)
@@ -65,27 +65,23 @@ class Protocol(object):
 
     def _on_deje_lock_acquired(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(content['signer'])
-        content_hash = String(content['content-hash'])
-        try:
-            quorum = doc._qs.by_hash[content_hash]
-        except KeyError:
-            #return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, {'attempted':content_hash,'available':repr(doc._qs.by_hash)})
-            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
+        action = Action(content['content'], self.owner.identities).specific()
+        content_hash = String(action.hash())
+        quorum = doc._qs.get_quorum(action)
+
         sig = RawData(content['signature'])
         quorum.sign(sender, sig)
         quorum.check_enact(doc)
 
     def _on_deje_lock_complete(self, msg, content, ctype, doc):
-        content_hash = String(content['content-hash'])
-        try:
-            quorum = doc._qs.by_hash[content_hash]
-        except KeyError:
-            return self.owner.error(msg, errors.LOCK_HASH_NOT_RECOGNIZED, content_hash.export())
+        action = Action(content['content'], self.owner.identities).specific()
+        content_hash = String(action.hash())
+        quorum = doc._qs.get_quorum(action)
         for signer in content['signatures']:
             sender = self.owner.identities.find_by_location(signer)
             sig = RawData(content['signatures'][signer])
             quorum.sign(sender, sig)
-            quorum.check_enact(doc)
+        quorum.check_enact(doc)
 
     # Document information
 

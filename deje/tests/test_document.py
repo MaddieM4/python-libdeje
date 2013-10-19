@@ -123,12 +123,11 @@ class TestDocumentEJTP(TestEJTP):
         self.assertEqual(self.vdoc.version, 'current')
         self.assertTrue(self.vdoc.can_read())
 
-        # One error is normal, due to transmission patterns
+        # Should not produce errors in new robust protocol semantics
         rr = self.vdoc.subscribe()
         self.assertEqual(
-            self.getOutput().replace("u'", "'").replace('atlas','mitzi'),
-            "Error from 'mitzi@lackadaisy.com', code 40: " +
-            "'Unknown lock quorum data, dropping (9fb93a05945cf17d05dfb556ed94e8f7735e6b7a)'\n"
+            self.getOutput(),
+            ''
         )
         self.assertEqual(self.mdoc.competing, [])
         self.assertEqual(self.adoc.competing, [])

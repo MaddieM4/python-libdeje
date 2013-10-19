@@ -31,10 +31,15 @@ class QuorumSpace(object):
         quorum.qs = self
 
     def get_quorum(self, action):
-        for quorum in self.by_hash.values():
-            if quorum.action == action:
-                return quorum
-        raise KeyError("No quorum for given action", action)
+        '''
+        Get or create a quorum for a given action.
+
+        Newly-created quorums are automatically registered.
+        '''
+        h = action.hash()
+        if not h in self.by_hash:
+            self.register(quorum.Quorum(action))
+        return self.by_hash[h]
 
     def get_competing_actions(self):
         "Get all read and write actions in QS"

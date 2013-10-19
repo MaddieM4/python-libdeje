@@ -99,7 +99,7 @@ class Quorum(object):
                 "deje-lock-acquired",
                 {
                     'signer' : signer,
-                    'content-hash' : self.hash,
+                    'content' : self.content,
                     'signature': self.transmittable_sig(signer),
                 },
                 [self.action.author.key],
@@ -120,7 +120,7 @@ class Quorum(object):
             "deje-lock-complete",
             {
                 'signatures' : self.sigs_dict(),
-                'content-hash' : self.hash,
+                'content' : self.content,
             },
             [self.action.author.key],
             participants = True # includes all signers
