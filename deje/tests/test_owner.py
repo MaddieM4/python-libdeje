@@ -107,22 +107,6 @@ class TestOwnerEJTP(TestEJTP):
             "'Recieved non-{} message, dropping'\n"
         )
 
-    def test_get_version(self):
-        queue = Queue()
-        def on_recv_version(version):
-            queue.put("Version is %r" % str(version))
-
-        targets = self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(queue.get(timeout=0.1), "Version is 'current'")
-
-        mev = self.mdoc.event({
-            'path':'/example',
-            'property':'content',
-            'value':'Mitzi says hi',
-        })
-        self.victor.get_version(self.vdoc, on_recv_version)
-        self.assertEqual(queue.get(timeout=0.1), "Version is '37e7c22fb434d3386a98c05d9bf5d5430c965a76'")
-
     def test_get_events(self):
         queue = Queue()
         def on_recv_events(events):

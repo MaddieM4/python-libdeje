@@ -95,20 +95,6 @@ class Owner(object):
 
     # Network actions
 
-    def get_version(self, document, callback):
-        def wrapped(sender, **kwargs):
-            callback(kwargs['version'])
-            document.signals['recv-version'].disconnect(wrapped)
-        document.signals['recv-version'].connect(wrapped)
-
-        return self.transmit(
-            document,
-            'deje-get-version',
-            {},
-            participants = True,
-            subscribers = False
-        )
-
     def get_events(self, document, callback, start=None, end=None):
         qid = randint(0, 2**32)
         def wrapped(sender, **kwargs):
