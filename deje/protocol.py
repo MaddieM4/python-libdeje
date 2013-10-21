@@ -137,32 +137,41 @@ class Protocol(object):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if sender not in doc.get_participants():
-            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
+            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "event")
         events  = content['events']
 
         doc.signals['recv-events'].send(
             self,
-            events=events,
-            qid=qid
+            qid=qid,
+            events=events
         )
 
-    def _on_deje_get_snapshot(self, msg, content, ctype, doc):
+    def _on_deje_retrieve_state_query(self, msg, content, ctype, doc):
+        qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
-        version = content['version']
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-snapshot', {'version':version, 'snapshot':doc.snapshot(version)}, sender.key)
+        version = content['version']
+        state = doc._history.generate_state(version).serialize()
+        self.owner.reply(doc,
+            'deje-retrieve-state-response',
+            {
+                'qid'  : qid,
+                'state': state,
+            },
+            sender.key
+        )
 
-    def _on_deje_doc_snapshot(self, msg, content, ctype, doc):
+    def _on_deje_retrieve_state_response(self, msg, content, ctype, doc):
+        qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if sender not in doc.get_participants():
-            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "snapshot")
-        snapshot = content['snapshot']
-        version  = content['version']
-        doc.signals['recv-snapshot'].send(
+            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "state")
+        state = content['state']
+        doc.signals['recv-state'].send(
             self,
-            version=version,
-            snapshot=snapshot
+            qid=qid,
+            state=state
         )
 
     # Transport shortcuts

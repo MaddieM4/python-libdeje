@@ -34,12 +34,10 @@ class Document(object):
         self._history = History([self._initial, self._current])
         self._qs = quorumspace.QuorumSpace(self)
         self.signals = {
-            'recv-version': dispatch.Signal(
-                providing_args=['version']),
             'recv-events': dispatch.Signal(
                 providing_args=['qid','events']),
-            'recv-snapshot':dispatch.Signal(
-                providing_args=['version','snapshot']),
+            'recv-state':dispatch.Signal(
+                providing_args=['qid','state']),
         }
         self.subscribers = set()
         for res in resources:
@@ -68,15 +66,6 @@ class Document(object):
     @property
     def interpreter(self):
         return self._current.interpreter
-
-    def snapshot(self, version = None):
-        if version == None:
-            version = self.version
-        if version != self.version:
-            raise NotImplementedError(
-                "Rewinds not supported yet (have %r, %r requested)"
-                % (self.version, version)
-            )
 
         return self._current.serialize_resources()
 

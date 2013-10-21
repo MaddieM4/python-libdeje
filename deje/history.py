@@ -79,3 +79,23 @@ class History(object):
             if h in self.states:
                 return self.states[h]
         raise KeyError("No latest state found!")
+
+    def generate_state(self, version):
+        if version in self.states:
+            # Already exists
+            return self.states[version]
+        elif version in self.events_by_hash:
+            # Can generate
+            i_state = self.initial_state
+            i_index = self.event_index_by_hash(i_state.hash)
+            t_index = self.event_index_by_hash(version)+1
+            if t_index >= i_index:
+                events = self.events[i_index:t_index]
+                result = i_state.clone()
+                for event in events:
+                    event.apply(result)
+                return result
+            else:
+                raise KeyError("Not enough state data")
+        else:
+            raise KeyError("No such event hash")

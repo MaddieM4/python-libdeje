@@ -117,18 +117,21 @@ class Owner(object):
             subscribers = False
         )
 
-    def get_snapshot(self, document, version, callback):
-        version = String(version)
+    def get_state(self, document, version, callback):
+        qid = randint(0, 2**32)
         def wrapped(sender, **kwargs):
-            if String(kwargs['version']) == version:
-                callback(kwargs['snapshot'])
-                document.signals['recv-snapshot'].disconnect(wrapped)
-        document.signals['recv-snapshot'].connect(wrapped)
+            if kwargs['qid'] == qid:
+                callback(kwargs['state'])
+                document.signals['recv-state'].disconnect(wrapped)
+        document.signals['recv-state'].connect(wrapped)
 
         self.transmit(
             document,
-            'deje-get-snapshot',
-            {'version':version},
+            'deje-retrieve-state-query',
+            {
+                'qid': qid,
+                'version':String(version),
+            },
             participants = True,
             subscribers = False
         )

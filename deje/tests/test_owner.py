@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from persei import String
 
 from ejtp.util.compat    import unittest
+from ejtp.util.hasher    import strict
 from ejtp.identity.core  import Identity
 from ejtp.identity.cache import IdentityCache
 from ejtp.router         import Router
@@ -127,19 +128,15 @@ class TestOwnerEJTP(TestEJTP):
         result = queue.get(timeout=0.1)
         self.assertEqual(result, [mev.serialize()])
 
-    def test_get_snapshot(self):
+    def test_get_state(self):
         queue = Queue()
-        expected = {
-            "/handler.lua": {
-                "comment": "tag_team", 
-                "content": handler_text('tag_team'),
-                "path": "/handler.lua", 
-                "type": "text/lua"
-            }
-        }
-        def on_recv_snapshot(snapshot):
-            queue.put(snapshot)
+        def on_recv_state(state):
+            queue.put(state)
 
-        self.victor.get_snapshot(self.vdoc, self.vdoc.version, on_recv_snapshot)
+        self.victor.get_state(self.vdoc, self.vdoc.version, on_recv_state)
         result = queue.get(timeout=0.1)
-        self.assertEqual(result, expected)
+        self.maxDiff = None
+        self.assertEqual(
+            result,
+            self.vdoc._current.serialize()
+        )
