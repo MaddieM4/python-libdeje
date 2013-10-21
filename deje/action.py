@@ -48,10 +48,6 @@ class Action(object):
         return result
 
     @property
-    def quorum_threshold_type(self):
-        return None
-
-    @property
     def authorname(self):
         return self.author.name
 
@@ -87,8 +83,6 @@ class Action(object):
             authorized = False
         return authorized and self.test(doc._current)
 
-    # TODO: NotImplemented stubs for common action functions, like 'test'
-
     def __repr__(self):
         return "<Action %r by %r>" % (self.atype, self.author)
 
@@ -97,3 +91,30 @@ class Action(object):
 
     def __getitem__(self, k):
         return self.items[k]
+
+    # Action interface
+
+    @property
+    def quorum_threshold_type(self):
+        raise NotImplementedError('Action subclasses must provide quorum_threshold_type')
+
+    def is_done(self, document):
+        '''
+        Returns whether Action has already been applied.
+        '''
+        raise NotImplementedError('Action subclasses must provide is_done')
+
+    def enact(self, quorum, document):
+        '''
+        Carry out the action on the given document.
+        '''
+        raise NotImplementedError('Action subclasses must provide enact')
+
+    def test(self, state):
+        '''
+        Return whether Action is valid for the given state.
+
+        can_write/can_read is handled separately, so taking
+        that into account in ActionSubclass.test is redundant.
+        '''
+        raise NotImplementedError('Action subclasses must provide test')
