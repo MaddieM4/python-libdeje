@@ -123,41 +123,25 @@ class TestOwnerEJTP(TestEJTP):
         self.victor.get_version(self.vdoc, on_recv_version)
         self.assertEqual(queue.get(timeout=0.1), "Version is '37e7c22fb434d3386a98c05d9bf5d5430c965a76'")
 
-    def test_get_block(self):
+    def test_get_events(self):
         queue = Queue()
-        def on_recv_block(block):
-            queue.put(block)
+        def on_recv_events(events):
+            queue.put(events)
 
         # Put in a event to retrieve
 
-        mev = self.mdoc.event({
+        event_properties = {
             'path':'/example',
             'property':'content',
             'value':'Mitzi says hi',
-        })
+        }
+        mev = self.mdoc.event(event_properties)
 
         # Retrieve event
 
-        self.victor.get_block(self.vdoc, self.mdoc.version, on_recv_block)
+        self.victor.get_events(self.vdoc, on_recv_events, self.mdoc.version, self.mdoc.version)
         result = queue.get(timeout=0.1)
-        self.assertEqual(
-            sorted(result.keys()),
-            ['author', 'content', 'signatures', 'version']
-        )
-        self.assertEqual(result['author'], 'mitzi@lackadaisy.com')
-        self.assertEqual(
-            result['content'],
-            {
-                "path": "/example", 
-                "property": "content", 
-                "value": "Mitzi says hi"
-            }
-        )
-        self.assertEqual(
-            sorted(result['signatures'].keys()),
-            ['["local",null,"atlas"]', '["local",null,"mitzi"]']
-        )
-        self.assertEqual(result['version'], self.mdoc.version.export())
+        self.assertEqual(result, [mev.serialize()])
 
     def test_get_snapshot(self):
         queue = Queue()

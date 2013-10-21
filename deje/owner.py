@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 from persei import String
+from random import randint
 
 import ejtp.client
 from ejtp import identity
@@ -72,6 +73,7 @@ class Owner(object):
 
         message = { 'type':mtype, 'docname':document.name }
         message.update(properties)
+
         for target in targets:
             if hasattr(target, 'location'):
                 address = target.location
@@ -107,18 +109,24 @@ class Owner(object):
             subscribers = False
         )
 
-    def get_block(self, document, version, callback):
-        version = String(version)
+    def get_events(self, document, callback, start=None, end=None):
+        qid = randint(0, 2**32)
         def wrapped(sender, **kwargs):
-            if String(kwargs['version']) == version:
-                callback(kwargs['block'])
-                document.signals['recv-block'].disconnect(wrapped)
-        document.signals['recv-block'].connect(wrapped)
+            if kwargs['qid'] == qid:
+                callback(kwargs['events'])
+                document.signals['recv-events'].disconnect(wrapped)
+        document.signals['recv-events'].connect(wrapped)
+
+        arguments = {'qid':qid}
+        if start != None:
+            arguments['start'] = start
+        if end != None:
+            arguments['end'] = end
 
         return self.transmit(
             document,
-            'deje-get-block',
-            {'version':version},
+            'deje-retrieve-events-query',
+            arguments,
             participants = True,
             subscribers = False
         )

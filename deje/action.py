@@ -87,6 +87,7 @@ class Action(object):
             authorized = False
         return authorized and self.test(doc._current)
 
+    # TODO: NotImplemented stubs for common action functions, like 'test'
 
     def __repr__(self):
         return "<Action %r by %r>" % (self.atype, self.author)

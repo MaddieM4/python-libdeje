@@ -98,30 +98,52 @@ class Protocol(object):
         version = content['version']
         doc.signals['recv-version'].send(self, version=version)
 
-    def _on_deje_get_block(self, msg, content, ctype, doc):
+    def _on_deje_retrieve_events_query(self, msg, content, ctype, doc):
+        qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
-        evhash = String(content['version'])
-        blockev = doc._history.events_by_hash[evhash]
-        block = {
-            'author': blockev.authorname,
-            'content': blockev.content,
-            'version': evhash, # blockev.version is actually the event's action's hash
-            'signatures': doc.get_quorum(blockev).sigs_dict(),
-        }
         if not doc.can_read(sender):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-block', {'block':block}, sender.key)
 
-    def _on_deje_doc_block(self, msg, content, ctype, doc):
+        if 'start' in content:
+            h = String(content['start'])
+            try:
+                start = doc._history.event_index_by_hash(h)
+            except KeyError:
+                return # TODO: Respond with error
+        else:
+            start = 0
+
+        if 'end' in content:
+            h = String(content['end'])
+            try:
+                end = doc._history.event_index_by_hash(h)
+            except KeyError:
+                return # TODO: Respond with error
+        else:
+            end = len(doc._history.events) - 1
+
+        events = [x.serialize() for x in doc._history.events[start:end+1]]
+        self.owner.reply(
+            doc,
+            'deje-retrieve-events-response',
+            {
+                'qid': qid,
+                'events': events,
+            },
+            sender.key
+        )
+
+    def _on_deje_retrieve_events_response(self, msg, content, ctype, doc):
+        qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if sender not in doc.get_participants():
             return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "block")
-        block = content['block']
-        version = block['version']
-        doc.signals['recv-block'].send(
+        events  = content['events']
+
+        doc.signals['recv-events'].send(
             self,
-            version=version,
-            block=block
+            events=events,
+            qid=qid
         )
 
     def _on_deje_get_snapshot(self, msg, content, ctype, doc):

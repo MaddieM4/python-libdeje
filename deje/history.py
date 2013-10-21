@@ -43,6 +43,10 @@ class History(object):
         for event in events:
             self.add_event(event)
 
+    def event_index_by_hash(self, hash):
+        event = self.events_by_hash[hash]
+        return self.events.index(event)
+
     @property
     def orphan_states(self):
         '''

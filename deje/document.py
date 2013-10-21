@@ -36,8 +36,8 @@ class Document(object):
         self.signals = {
             'recv-version': dispatch.Signal(
                 providing_args=['version']),
-            'recv-block': dispatch.Signal(
-                providing_args=['version','block']),
+            'recv-events': dispatch.Signal(
+                providing_args=['qid','events']),
             'recv-snapshot':dispatch.Signal(
                 providing_args=['version','snapshot']),
         }
