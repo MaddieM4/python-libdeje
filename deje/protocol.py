@@ -85,19 +85,6 @@ class Protocol(object):
 
     # Document information
 
-    def _on_deje_get_version(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.sender)
-        if not doc.can_read(sender):
-            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
-        self.owner.reply(doc, 'deje-doc-version', {'version':doc.version}, sender.key)
-
-    def _on_deje_doc_version(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.sender)
-        if sender not in doc.get_participants():
-            return self.owner.error(msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "version")
-        version = content['version']
-        doc.signals['recv-version'].send(self, version=version)
-
     def _on_deje_retrieve_events_query(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
@@ -153,7 +140,8 @@ class Protocol(object):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
         version = content['version']
         state = doc._history.generate_state(version).serialize()
-        self.owner.reply(doc,
+        self.owner.reply(
+            doc,
             'deje-retrieve-state-response',
             {
                 'qid'  : qid,
