@@ -15,77 +15,20 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
 from persei import *
 
-from deje.quorum import Quorum
-from deje.action import Action
-from deje import errors
+from deje.protocol.handler import ProtocolHandler
 
-class Protocol(object):
-    '''
-    Implementation of the DEJE protocol, to get it out of owner.py.
-    '''
+class RetrieveHandler(ProtocolHandler):
 
-    def __init__(self, owner):
-        self.owner = owner
+    def __init__(self, parent):
+        ProtocolHandler.__init__(self, parent)
+        self._on_events = RetrieveEventsHandler(self)
+        self._on_state  = RetrieveStateHandler(self)
 
-    def call(self, msg, content, mtype, doc):
-        '''
-        Find and call protocol function
-        '''
-        funcname = "_on_" + mtype.replace('-','_')
-        if hasattr(self, funcname):
-            func = getattr(self, funcname)
-            func(msg, content, mtype, doc)
-        else:
-            self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, mtype)
+class RetrieveEventsHandler(ProtocolHandler):
 
-    # Error handling
-
-    def _on_deje_error(self, msg, content, ctype, doc):
-        sender = msg.sender
-        try:
-            sender = self.owner.identities.find_by_location(sender).name
-        except KeyError:
-            pass # No saved information on this ident
-        print("Error from %r, code %d: %r" % (sender, content['code'], content['explanation']))
-
-    # Locking mechanisms
-
-    def _on_deje_lock_acquire(self, msg, content, ctype, doc):
-        lcontent = content['content']
-        action = Action(lcontent, self.owner.identities).specific()
-        quorum = doc._qs.get_quorum(action)
-        if action.valid(doc):
-            # TODO: Error message for validation failures
-            quorum.sign(self.owner.identity)
-            quorum.transmit(doc)
-            quorum.check_enact(doc)
-
-    def _on_deje_lock_acquired(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(content['signer'])
-        action = Action(content['content'], self.owner.identities).specific()
-        content_hash = String(action.hash())
-        quorum = doc._qs.get_quorum(action)
-
-        sig = RawData(content['signature'])
-        quorum.sign(sender, sig)
-        quorum.check_enact(doc)
-
-    def _on_deje_lock_complete(self, msg, content, ctype, doc):
-        action = Action(content['content'], self.owner.identities).specific()
-        content_hash = String(action.hash())
-        quorum = doc._qs.get_quorum(action)
-        for signer in content['signatures']:
-            sender = self.owner.identities.find_by_location(signer)
-            sig = RawData(content['signatures'][signer])
-            quorum.sign(sender, sig)
-        quorum.check_enact(doc)
-
-    # Document information
-
-    def _on_deje_retrieve_events_query(self, msg, content, ctype, doc):
+    def _on_query(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if not doc.can_read(sender):
@@ -120,7 +63,7 @@ class Protocol(object):
             sender.key
         )
 
-    def _on_deje_retrieve_events_response(self, msg, content, ctype, doc):
+    def _on_response(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if sender not in doc.get_participants():
@@ -133,7 +76,9 @@ class Protocol(object):
             events=events
         )
 
-    def _on_deje_retrieve_state_query(self, msg, content, ctype, doc):
+class RetrieveStateHandler(ProtocolHandler):
+
+    def _on_query(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if not doc.can_read(sender):
@@ -150,7 +95,7 @@ class Protocol(object):
             sender.key
         )
 
-    def _on_deje_retrieve_state_response(self, msg, content, ctype, doc):
+    def _on_response(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
         sender = self.owner.identities.find_by_location(msg.sender)
         if sender not in doc.get_participants():
@@ -161,14 +106,3 @@ class Protocol(object):
             qid=qid,
             state=state
         )
-
-    # Transport shortcuts
-
-    def error(self, recipients, code, explanation="", data={}):
-        for r in recipients:
-            self.owner.client.write_json(r, {
-                'type':'deje-error',
-                'code':int(code),
-                'explanation':str(explanation),
-                'data':data,
-            })

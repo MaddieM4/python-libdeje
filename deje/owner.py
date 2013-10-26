@@ -35,7 +35,7 @@ class Owner(object):
         self.identity = self_ident
 
         self.documents = {}
-        self.protocol  = protocol.Protocol(self)
+        self.protocol  = protocol.ProtocolToplevel(self)
         self.client = ejtp.client.Client(router, self.identity.location, self.identities, make_jack)
         self.client.rcv_callback = self.on_ejtp
 
