@@ -93,6 +93,9 @@ class Owner(object):
     def lock_action(self, document, content, actiontype = None):
         self.transmit(document, 'deje-lock-acquire', {'content':content}, participants = True, subscribers=False)
 
+    def subscribers(self, doc):
+        return self.protocol.subscribers(doc)
+
     # Network actions
 
     def get_events(self, document, callback, start=None, end=None):

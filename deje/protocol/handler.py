@@ -15,6 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from ejtp.identity import Identity
+
 class ProtocolHandler(object):
     def __init__(self, parent):
         self.parent = parent
@@ -22,3 +24,19 @@ class ProtocolHandler(object):
     @property
     def owner(self):
         return self.parent.owner
+
+    @property
+    def toplevel(self):
+        return self.parent.toplevel
+
+    def send(self, doc, ctype, content, target):
+        self.owner.reply(doc, ctype, content, target)
+
+    def write_json(self, address, content):
+        self.owner.client.write_json(address, content)
+
+    def identity(self, location):
+        if isinstance(location, Identity):
+            return location
+        else:
+            return self.owner.identities.find_by_location(location)

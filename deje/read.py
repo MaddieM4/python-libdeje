@@ -44,9 +44,6 @@ class ReadRequest(Action):
         Add subscriber to list.
         '''
         self.done = True
-        # Did we promise to be one of the subscribed-to parties?
-        if quorum.sig_valid(document.identity.key):
-            document.subscribers.add(self.author.key)
 
     def test(self, state):
         '''

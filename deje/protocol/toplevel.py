@@ -16,6 +16,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import print_function
+from random import randint
+
 from deje import errors
 
 from deje.protocol.handler      import ProtocolHandler
@@ -40,12 +42,17 @@ class DejeHandler(ProtocolHandler):
 
 class ProtocolToplevel(object):
     def __init__(self, owner):
-        self.owner = owner
-        self._on_deje = DejeHandler(self)
+        self.owner     = owner
+        self.callbacks = {}
+        self._on_deje  = DejeHandler(self)
 
-    def call(self, msg, content, ctype, doc):
+    @property
+    def toplevel(self):
+        return self
+
+    def find(self, ctype):
         '''
-        Find and call protocol function
+        Get object for a given message type.
         '''
         chain = ctype.split('-')
         handler = self
@@ -55,13 +62,57 @@ class ProtocolToplevel(object):
                 handler = getattr(handler, item)
             else:
                 return self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, ctype)
+        return handler
+
+    def call(self, msg, content, ctype, doc):
+        '''
+        Find and call protocol function
+        '''
+        handler = self.find(ctype)
 
         if not callable(handler):
             return self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, ctype)
 
         return handler(msg, content, ctype, doc)
 
+    def _query(self, callback):
+        qid = randint(0, 2**32)
+        self.callbacks[qid] = callback
+        return qid
+
+    def _on_response(self, qid, args):
+        callback = self.callbacks.pop(qid)
+        callback(*args)
+
+    # Accessors
+
+    def subscribers(self, doc):
+        return self.find('deje-sub').subscribers(doc)
+
     # Transport shortcuts
+
+    def subscribe(self, doc, callback, sources):
+        '''
+        Callback will be called for each source, with
+        Subscription object as argument.
+        '''
+        handler = self.find('deje-sub-add')
+        handler.subscribe(doc, callback, sources)
+
+    def unsubscribe(self, doc, callback, sub):
+        '''
+        Callback will be called with args (success).
+        '''
+        handler = self.find('deje-sub-remove')
+        handler.unsubscribe(doc, callback, sub)
+
+    def get_subs(self, source, callback):
+        '''
+        Callback will be called with args (subs), where subs is
+        a dict of { hash : Subscription object }.
+        '''
+        handler = self.find('deje-sub-list')
+        handler.get_subs(source, callback)
 
     def error(self, recipients, code, explanation="", data={}):
         for r in recipients:

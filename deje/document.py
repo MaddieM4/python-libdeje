@@ -39,7 +39,6 @@ class Document(object):
             'recv-state':dispatch.Signal(
                 providing_args=['qid','state']),
         }
-        self.subscribers = set()
         for res in resources:
             self.add_resource(res, False)
 
@@ -67,7 +66,12 @@ class Document(object):
     def interpreter(self):
         return self._current.interpreter
 
-        return self._current.serialize_resources()
+    @property
+    def subscribers(self):
+        if self.owner:
+            return self.owner.subscribers(self)
+        else:
+            return tuple()
 
     def serialize(self):
         return {

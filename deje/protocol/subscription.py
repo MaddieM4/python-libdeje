@@ -25,7 +25,7 @@ class SubscriptionHandler(ProtocolHandler):
 
     def __init__(self, parent):
         ProtocolHandler.__init__(self, parent)
-        subscriptions   = {}
+        self.subscriptions = {}
 
         self._on_add    = SubAddHandler(self)
         self._on_remove = SubRemoveHandler(self)
@@ -38,21 +38,48 @@ class SubscriptionHandler(ProtocolHandler):
         if hash in self.subscriptions:
             del self.subscriptions[hash]
 
+    def subscribers(self, doc):
+        name = doc.name
+        return tuple(
+            self.identity(s.target) for s in self.subscriptions.values()
+            if s.source == self.owner.identity.location
+        )
+
 class SubAddHandler(ProtocolHandler):
     '''
     Create a new Subscription, pointing to yourself, from the remote end.
     '''
 
+    def subscribe(self,doc,callback,sources,expiration=None):
+        for source in sources:
+            qid = self.toplevel._query(callback)
+            content = { 'qid': qid }
+            if expiration:
+                content['expiration'] = expiration
+            self.send(
+                doc,
+                'deje-sub-add-query',
+                content,
+                source.key
+            )
+
     def _on_query(self, msg, content, ctype, doc):
         qid    = int(content['qid'])
-        source = msg.receiver
-        target = msg.sender
+        source = self.identity(msg.receiver)
+        target = self.identity(msg.sender)
         if 'expiration' in content:
             expiration = content['expiration']
+        else:
+            expiration = None
         if not doc.can_read(target):
             return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
 
-        sub = Subscription(source, target, doc.name, expiration)
+        sub = Subscription(
+            source.location,
+            target.location,
+            doc.name,
+            expiration
+        )
         self.parent.subscribe(sub)
         self.owner.reply(
             doc,
@@ -69,6 +96,7 @@ class SubAddHandler(ProtocolHandler):
         sub = Subscription()
         sub.deserialize(content['subscription'])
         self.parent.subscribe(sub)
+        self.toplevel._on_response(qid, [sub])
 
 class SubRemoveHandler(ProtocolHandler):
     '''
@@ -77,26 +105,40 @@ class SubRemoveHandler(ProtocolHandler):
     deje-sub-remove-*
     '''
 
+    def unsubscribe(self, doc, callback, sub):
+        qid   = self.toplevel._query(callback)
+        subh  = sub.hash()
+        ident = self.identity(sub.source)
+        self.send(
+            doc,
+            'deje-sub-remove-query',
+            {
+                'qid' : qid,
+                'hash': subh,
+            },
+            ident.key
+        )
+
     def _on_query(self, msg, content, ctype, doc):
         qid  = int(content['qid'])
-        subh = content['hash']
+        subh = String(content['hash'])
 
         success = subh in self.parent.subscriptions
         self.parent.unsubscribe(subh)
-        self.owner.reply(
+        self.send(
             doc,
             'deje-sub-remove-response',
             {
                 'qid': qid,
                 'success': success,
             },
-            msg.sender.key
+            self.identity(msg.sender).key
         )
 
     def _on_response(self, msg, content, ctype, doc):
         qid = int(content['qid'])
         success = content['success']
-        # TODO: Use this value in some way
+        self.toplevel._on_response(qid, [success])
 
 class SubListHandler(ProtocolHandler):
     '''
@@ -108,28 +150,49 @@ class SubListHandler(ProtocolHandler):
     deje-sub-list-*
     '''
 
+    def get_subs(self, source, callback, hashes=[]):
+        qid     = self.toplevel._query(callback)
+        ident   = self.identity(source)
+        content = {
+            'type' : 'deje-sub-list-query',
+            'qid'  : qid,
+        }
+
+        if hashes:
+            content['hashes'] = hashes
+
+        self.write_json(ident.location, content)
+
     def _on_query(self, msg, content, ctype, doc):
-        qid    = int(content['qid'])
+        qid = int(content['qid'])
         if 'hashes' in content:
             hashes = content['hashes']
         else:
-            hashes = self.parent.subscriptions.keys()
+            hashes = [
+                s.hash() for s in self.parent.subscriptions.values()
+                if s.source == self.owner.identity.location
+                    and s.target == msg.sender
+            ]
 
         subs = {}
         for h in hashes:
-            subs[h] = self.parent.subscriptions[h]
+            subs[h] = self.parent.subscriptions[h].serialize()
 
-        self.owner.reply(
-            doc,
-            'deje-sub-remove-response',
-            {
-                'qid': qid,
-                'subs': subs,
-            },
-            msg.sender.key
-        )
+        content = {
+            'type': 'deje-sub-list-response',
+            'qid' : qid,
+            'subs': subs,
+        }
+        self.write_json(msg.sender, content)
 
     def _on_response(self, msg, content, ctype, doc):
         qid  = int(content['qid'])
         subs = content['subs']
-        # TODO: Use this value in some way
+
+        # Deserialize
+        for h in subs:
+            sub_obj = Subscription()
+            sub_obj.deserialize(subs[h])
+            subs[h] = sub_obj
+
+        self.toplevel._on_response(qid, [subs])

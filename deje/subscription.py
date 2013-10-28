@@ -40,5 +40,10 @@ class Subscription(object):
         self.doc    = serialized['doc']
         self.expiration = serialized['expiration']
 
+    def __eq__(self, other):
+        if not isinstance(other, Subscription):
+            return False
+        return self.serialize() == other.serialize()
+
     def hash(self):
         return checksum(self.serialize())
