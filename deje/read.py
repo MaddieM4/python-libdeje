@@ -15,15 +15,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from random import randint
 from deje.action import Action
 
 class ReadRequest(Action):
-    def __init__(self, author):
+    def __init__(self, author, unique = None):
+        if unique == None:
+            unique = randint(0, 2**32)
+
         self.deserialize({
             'type'    : 'get_version',
             'author'  : author,
+            'unique'  : unique,
         })
         self.done = False
+
+    def deserialize(self, items):
+        Action.deserialize(self, items)
+        self.unique = self.overflow.pop('unique')
+
+    @property
+    def items(self):
+        return {
+            "type"    : self.atype,
+            "author"  : self.author,
+            "unique"  : self.unique,
+        }
 
     @property
     def version(self):

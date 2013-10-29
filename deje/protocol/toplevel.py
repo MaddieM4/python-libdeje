@@ -42,28 +42,35 @@ class ProtocolToplevel(object):
             if hasattr(handler, item):
                 handler = getattr(handler, item)
             else:
-                return self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, ctype)
+                raise AttributeError("No proto handling for ctype", ctype)
         return handler
 
     def call(self, msg, content, ctype, doc):
         '''
         Find and call protocol function
         '''
-        handler = self.find(ctype)
+        try:
+            handler = self.find(ctype)
+        except AttributeError:
+            handler = None # Catch in next failure handler
 
         if not callable(handler):
             return self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, ctype)
 
         return handler(msg, content, ctype, doc)
 
+    def _register(self, qid, callback):
+        self.callbacks[qid] = callback
+
     def _query(self, callback):
         qid = randint(0, 2**32)
-        self.callbacks[qid] = callback
+        self._register(qid, callback)
         return qid
 
     def _on_response(self, qid, args):
-        callback = self.callbacks.pop(qid)
-        callback(*args)
+        if qid in self.callbacks:
+            callback = self.callbacks.pop(qid)
+            callback(*args)
 
     # Accessors
 

@@ -57,7 +57,10 @@ class Action(object):
         '''
         if self.atype == "get_version":
             from deje.read import ReadRequest
-            return ReadRequest(self.author)
+            return ReadRequest(
+                self.author,
+                self.overflow['unique']
+            )
         elif self.atype == "event":
             from deje.event import Event
             return Event(

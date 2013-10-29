@@ -23,9 +23,6 @@ from deje.action import Action
 
 class LockingHandler(ProtocolHandler):
 
-    def __init__(self, parent):
-        ProtocolHandler.__init__(self, parent)
-
     def _on_acquire(self, msg, content, ctype, doc):
         lcontent = content['content']
         action = Action(lcontent, self.owner.identities).specific()

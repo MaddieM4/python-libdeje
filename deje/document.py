@@ -135,15 +135,21 @@ class Document(object):
             return event
         else:
             raise ValueError("Event %r was not valid" % event.content)
-        
-    def subscribe(self):
+
+    def get_version(self, callback):
         if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self.identity)
         quorum = Quorum(request, self._qs)
         if self.owner:
+            self.protocol._register(request.unique, callback)
             quorum.transmit_action(self)
         return request
+        
+    def subscribe(self, callback, sources):
+        if not self.can_read():
+            raise ValueError("You don't have read permission")
+        self.protocol.subscribe(self, callback, sources)
 
     def get_quorum(self, action):
         return self._qs.get_quorum(action)
@@ -190,6 +196,10 @@ class Document(object):
     @property
     def owner(self):
         return self._owner
+
+    @property
+    def protocol(self):
+        return self.owner.protocol
 
     @property
     def identity(self):

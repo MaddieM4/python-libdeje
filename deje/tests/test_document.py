@@ -27,6 +27,11 @@ from deje.document import Document, save_to, load_from
 from deje.resource import Resource
 from deje.read     import ReadRequest
 
+try:
+   from Queue import Queue
+except:
+   from queue import Queue
+
 class TestDocumentSimple(unittest.TestCase):
 
     def setUp(self):
@@ -118,18 +123,18 @@ class TestDocumentEJTP(TestEJTP):
             "Mitzi says hi"
         )
 
-    def test_subscribe(self):
-        '''
-        Currently obsolete, needs to be updated now that we no
-        longer imply subscription as part of a read.
-        '''
-        return True
-        # Test a read
+    def test_read(self):
         self.assertEqual(self.vdoc.version, 'current')
         self.assertTrue(self.vdoc.can_read())
 
-        # Should not produce errors in new robust protocol semantics
-        rr = self.vdoc.subscribe()
+        result = Queue()
+
+        def on_get_version(version):
+            result.put(version)
+
+        rr = self.vdoc.get_version(on_get_version)
+        rcvd_version = result.get(timeout=0.1)
+        self.assertEqual(rcvd_version, self.mdoc.version)
         self.assertEqual(
             self.getOutput(),
             ''
@@ -139,7 +144,8 @@ class TestDocumentEJTP(TestEJTP):
 
         self.assertIsInstance(rr, ReadRequest)
 
+        # Should not affect subscriptions
         for doc in (self.mdoc, self.adoc):
             subscribers = doc.subscribers
-            self.assertIsInstance(subscribers, set)
-            self.assertEqual(list(subscribers), [String('["local",null,"victor"]')])
+            self.assertEqual(subscribers, tuple())
+

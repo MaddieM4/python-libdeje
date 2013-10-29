@@ -122,8 +122,17 @@ class Quorum(object):
                 'signatures' : self.sigs_dict(),
                 'content' : self.content,
             },
-            [self.action.author.key],
+            [],
             participants = True # includes all signers
+        )
+        document.owner.reply(
+            document,
+            'deje-action-completion',
+            {
+                'content': self.content,
+                'version': document.version,
+            },
+            self.action.author.key
         )
 
     def transmittable_sig(self, signer):
