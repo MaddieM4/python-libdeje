@@ -22,10 +22,34 @@ from deje.protocol.handler import ProtocolHandler
 from deje.action import Action
 
 class PaxosHandler(ProtocolHandler):
+    '''
+    Handles the serialization of actions.
+
+    deje-paxos-*
+    '''
+
+    def start_action(self, doc, callback, action):
+        '''
+        Propose an action. Callback is called with boolean success.
+        '''
+        qid = self.toplevel._query(callback)
+        content = {
+            'qid': qid,
+            'action': action.serialize(),
+        }
+        self.owner.transmit(
+            doc,
+            'deje-paxos-accept',
+            content,
+            participants = True,
+            subscribers  = False
+        )
 
     def _on_accept(self, msg, content, ctype, doc):
-        lcontent = content['content']
-        action = Action(lcontent, self.owner.identities).specific()
+        action = Action(
+            content['action'],
+            self.owner.identities
+        ).specific()
         quorum = doc._qs.get_quorum(action)
         if action.valid(doc):
             # TODO: Error message for validation failures

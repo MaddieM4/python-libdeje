@@ -79,6 +79,13 @@ class ProtocolToplevel(object):
 
     # Transport shortcuts
 
+    def start_action(self, doc, callback, action):
+        '''
+        Callback will be called with boolean for success, eventually.
+        '''
+        handler = self.find('deje-paxos')
+        handler.start_action(doc, callback, action)
+
     def subscribe(self, doc, callback, sources):
         '''
         Callback will be called for each source, with

@@ -81,9 +81,10 @@ class Quorum(object):
         '''
         Announce an action, and begin trying to collect a consensus.
         '''
-        document.owner.lock_action(
+        document.owner.protocol.start_action(
             document,
-            self.content
+            lambda success: None,
+            self.action
         )
         self.transmit(document)
         self.check_enact(document)
