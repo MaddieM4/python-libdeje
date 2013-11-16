@@ -19,7 +19,7 @@ from __future__ import print_function, absolute_import
 
 from deje.protocol.handler      import ProtocolHandler
 from deje.protocol.action       import ActionHandler
-from deje.protocol.locking      import LockingHandler
+from deje.protocol.paxos        import PaxosHandler
 from deje.protocol.retrieve     import RetrieveHandler
 from deje.protocol.subscription import SubscriptionHandler
 
@@ -27,7 +27,7 @@ class DejeHandler(ProtocolHandler):
     def __init__(self, parent):
         ProtocolHandler.__init__(self, parent)
         self._on_action   = ActionHandler(self)
-        self._on_lock     = LockingHandler(self)
+        self._on_paxos    = PaxosHandler(self)
         self._on_retrieve = RetrieveHandler(self)
         self._on_sub      = SubscriptionHandler(self)
 

@@ -91,7 +91,7 @@ class Owner(object):
         return self.transmit(document, mtype, properties, [target], subscribers=False)
 
     def lock_action(self, document, content, actiontype = None):
-        self.transmit(document, 'deje-lock-acquire', {'content':content}, participants = True, subscribers=False)
+        self.transmit(document, 'deje-paxos-accept', {'content':content}, participants = True, subscribers=False)
 
     def subscribers(self, doc):
         return self.protocol.subscribers(doc)

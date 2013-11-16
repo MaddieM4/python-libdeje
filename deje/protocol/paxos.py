@@ -21,9 +21,9 @@ from persei import *
 from deje.protocol.handler import ProtocolHandler
 from deje.action import Action
 
-class LockingHandler(ProtocolHandler):
+class PaxosHandler(ProtocolHandler):
 
-    def _on_acquire(self, msg, content, ctype, doc):
+    def _on_accept(self, msg, content, ctype, doc):
         lcontent = content['content']
         action = Action(lcontent, self.owner.identities).specific()
         quorum = doc._qs.get_quorum(action)
@@ -33,7 +33,7 @@ class LockingHandler(ProtocolHandler):
             quorum.transmit(doc)
             quorum.check_enact(doc)
 
-    def _on_acquired(self, msg, content, ctype, doc):
+    def _on_accepted(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(content['signer'])
         action = Action(content['content'], self.owner.identities).specific()
         content_hash = String(action.hash())

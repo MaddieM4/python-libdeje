@@ -90,13 +90,13 @@ class Quorum(object):
 
     def transmit(self, document, signatures = None):
         '''
-        Send a deje-lock-acquired for every valid signature
+        Send a deje-paxos-accepted for every valid signature
         '''
         signers = signatures or self.valid_signatures
         for signer in signers:
             document.owner.transmit(
                 document,
-                "deje-lock-acquired",
+                "deje-paxos-accepted",
                 {
                     'signer' : signer,
                     'content' : self.content,
@@ -108,7 +108,7 @@ class Quorum(object):
 
     def transmit_complete(self, document):
         '''
-        Send a deje-lock-complete with all valid signatures
+        Send a deje-paxos-complete with all valid signatures
         '''
         if self.transmitted_complete:
             return
@@ -117,7 +117,7 @@ class Quorum(object):
 
         document.owner.transmit(
             document,
-            "deje-lock-complete",
+            "deje-paxos-complete",
             {
                 'signatures' : self.sigs_dict(),
                 'content' : self.content,
