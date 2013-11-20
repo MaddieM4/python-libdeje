@@ -45,7 +45,7 @@ class PaxosHandler(ProtocolHandler):
             subscribers  = False
         )
 
-    def send_accept(self, doc, action, signatures = None):
+    def send_accepted(self, doc, action, signatures = None):
         '''
         Send a deje-paxos-accepted for every valid signature
         '''
@@ -89,6 +89,15 @@ class PaxosHandler(ProtocolHandler):
             action.author.key
         )
 
+    def check_quorum(self, doc, action):
+        '''
+        Check if a quorum is completed-but-not-sent.
+        '''
+        quorum = doc._qs.get_quorum(action)
+        if quorum.ready(doc):
+            quorum.enact(doc)
+            self.send_complete(doc, action)
+
     def _on_accept(self, msg, content, ctype, doc):
         action = Action(
             content['action'],
@@ -98,8 +107,8 @@ class PaxosHandler(ProtocolHandler):
         if action.valid(doc):
             # TODO: Error message for validation failures
             quorum.sign(self.owner.identity)
-            quorum.transmit(doc)
-            quorum.check_enact(doc)
+            self.send_accepted(doc, action)
+            self.check_quorum(doc, action)
 
     def _on_accepted(self, msg, content, ctype, doc):
         sender = self.owner.identities.find_by_location(content['signer'])
@@ -109,7 +118,7 @@ class PaxosHandler(ProtocolHandler):
 
         sig = RawData(content['signature'])
         quorum.sign(sender, sig)
-        quorum.check_enact(doc)
+        self.check_quorum(doc, action)
 
     def _on_complete(self, msg, content, ctype, doc):
         action = Action(content['content'], self.owner.identities).specific()
@@ -119,4 +128,4 @@ class PaxosHandler(ProtocolHandler):
             sender = self.owner.identities.find_by_location(signer)
             sig = RawData(content['signatures'][signer])
             quorum.sign(sender, sig)
-        quorum.check_enact(doc)
+        self.check_quorum(doc, action)

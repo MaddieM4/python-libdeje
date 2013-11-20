@@ -62,13 +62,6 @@ class Quorum(object):
         """
         self.signatures = {}
 
-    def check_enact(self, document):
-        '''
-        Call self.enact() if self.action is ready.
-        '''
-        if self.done and not self.action.is_done(document):
-            self.enact(document)
-
     def enact(self, document):
         '''
         Enact self.action and transmit completion afterwards.
@@ -87,13 +80,13 @@ class Quorum(object):
             self.action
         )
         self.transmit(document)
-        self.check_enact(document)
+        document.owner.protocol.paxos.check_quorum(document, self.action)
 
     def transmit(self, document, signatures = None):
         '''
         Send a deje-paxos-accepted for every valid signature
         '''
-        document.owner.protocol.paxos.send_accept(
+        document.owner.protocol.paxos.send_accepted(
             document,
             self.action,
             signatures
@@ -120,6 +113,9 @@ class Quorum(object):
         for signer in self.valid_signatures:
             sigs[signer] = self.transmittable_sig(signer)
         return sigs
+
+    def ready(self, document):
+        return self.done and not self.action.is_done(document)
 
     # Parent-derived properties
 
