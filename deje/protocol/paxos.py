@@ -45,6 +45,50 @@ class PaxosHandler(ProtocolHandler):
             subscribers  = False
         )
 
+    def send_accept(self, doc, action, signatures = None):
+        '''
+        Send a deje-paxos-accepted for every valid signature
+        '''
+        quorum = doc.get_quorum(action)
+        signers = signatures or quorum.valid_signatures
+        for signer in signers:
+            self.owner.transmit(
+                doc,
+                "deje-paxos-accepted",
+                {
+                    'signer' : signer,
+                    'content' : quorum.content,
+                    'signature': quorum.transmittable_sig(signer),
+                },
+                [action.author.key],
+                participants = True # includes all signers
+            )
+
+    def send_complete(self, doc, action):
+        '''
+        Send a deje-paxos-complete with all valid signatures
+        '''
+        quorum = doc.get_quorum(action)
+        doc.owner.transmit(
+            doc,
+            "deje-paxos-complete",
+            {
+                'signatures' : quorum.sigs_dict(),
+                'content' : quorum.content,
+            },
+            [],
+            participants = True # includes all signers
+        )
+        doc.owner.reply(
+            doc,
+            'deje-action-completion',
+            {
+                'content': quorum.content,
+                'version': doc.version,
+            },
+            action.author.key
+        )
+
     def _on_accept(self, msg, content, ctype, doc):
         action = Action(
             content['action'],

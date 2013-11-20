@@ -77,14 +77,11 @@ class ProtocolToplevel(object):
     def subscribers(self, doc):
         return self.find('deje-sub').subscribers(doc)
 
-    # Transport shortcuts
+    @property
+    def paxos(self):
+        return self.find('deje-paxos')
 
-    def start_action(self, doc, callback, action):
-        '''
-        Callback will be called with boolean for success, eventually.
-        '''
-        handler = self.find('deje-paxos')
-        handler.start_action(doc, callback, action)
+    # Transport shortcuts
 
     def subscribe(self, doc, callback, sources):
         '''

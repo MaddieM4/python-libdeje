@@ -81,7 +81,7 @@ class Quorum(object):
         '''
         Announce an action, and begin trying to collect a consensus.
         '''
-        document.owner.protocol.start_action(
+        document.owner.protocol.paxos.start_action(
             document,
             lambda success: None,
             self.action
@@ -93,19 +93,11 @@ class Quorum(object):
         '''
         Send a deje-paxos-accepted for every valid signature
         '''
-        signers = signatures or self.valid_signatures
-        for signer in signers:
-            document.owner.transmit(
-                document,
-                "deje-paxos-accepted",
-                {
-                    'signer' : signer,
-                    'content' : self.content,
-                    'signature': self.transmittable_sig(signer),
-                },
-                [self.action.author.key],
-                participants = True # includes all signers
-            )
+        document.owner.protocol.paxos.send_accept(
+            document,
+            self.action,
+            signatures
+        )
 
     def transmit_complete(self, document):
         '''
@@ -113,27 +105,11 @@ class Quorum(object):
         '''
         if self.transmitted_complete:
             return
-
         self.transmitted_complete = True
 
-        document.owner.transmit(
+        document.owner.protocol.paxos.send_complete(
             document,
-            "deje-paxos-complete",
-            {
-                'signatures' : self.sigs_dict(),
-                'content' : self.content,
-            },
-            [],
-            participants = True # includes all signers
-        )
-        document.owner.reply(
-            document,
-            'deje-action-completion',
-            {
-                'content': self.content,
-                'version': document.version,
-            },
-            self.action.author.key
+            self.action
         )
 
     def transmittable_sig(self, signer):
