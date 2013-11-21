@@ -79,18 +79,11 @@ class Quorum(object):
             lambda success: None,
             self.action
         )
-        self.transmit(document)
-        document.owner.protocol.paxos.check_quorum(document, self.action)
-
-    def transmit(self, document, signatures = None):
-        '''
-        Send a deje-paxos-accepted for every valid signature
-        '''
         document.owner.protocol.paxos.send_accepted(
             document,
-            self.action,
-            signatures
+            self.action
         )
+        document.owner.protocol.paxos.check_quorum(document, self.action)
 
     def transmittable_sig(self, signer):
         return self.signatures[signer][1]
