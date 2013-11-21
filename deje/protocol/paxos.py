@@ -69,6 +69,9 @@ class PaxosHandler(ProtocolHandler):
         Send a deje-paxos-complete with all valid signatures
         '''
         quorum = doc.get_quorum(action)
+        if quorum.sent:
+            return # already sent
+        quorum.sent = True
         doc.owner.transmit(
             doc,
             "deje-paxos-complete",
@@ -91,7 +94,8 @@ class PaxosHandler(ProtocolHandler):
 
     def check_quorum(self, doc, action):
         '''
-        Check if a quorum is completed-but-not-sent.
+        Check if a quorum is completed-but-not-sent, and if it's time,
+        go through enacting it.
         '''
         quorum = doc._qs.get_quorum(action)
         if quorum.ready(doc):

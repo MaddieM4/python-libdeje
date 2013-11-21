@@ -27,7 +27,7 @@ class Quorum(object):
         self.action     = action
         self.qs         = qs
         self.signatures = {}
-        self.transmitted_complete = False
+        self.sent       = False
         for identity in signatures:
             self.sign(identity, signatures[identity])
         if qs:
@@ -68,7 +68,7 @@ class Quorum(object):
         '''
         self.action.enact(self, document)
         if document.owner:
-            self.transmit_complete(document)
+            document.owner.protocol.paxos.send_complete(document, self.action)
 
     def transmit_action(self, document):
         '''
@@ -90,19 +90,6 @@ class Quorum(object):
             document,
             self.action,
             signatures
-        )
-
-    def transmit_complete(self, document):
-        '''
-        Send a deje-paxos-complete with all valid signatures
-        '''
-        if self.transmitted_complete:
-            return
-        self.transmitted_complete = True
-
-        document.owner.protocol.paxos.send_complete(
-            document,
-            self.action
         )
 
     def transmittable_sig(self, signer):
