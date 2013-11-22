@@ -129,7 +129,7 @@ class Document(object):
             if self.owner:
                 quorum = self.get_quorum(event)
                 quorum.sign(self.identity)
-                quorum.transmit_action(self)
+                self.protocol.paxos.propose(self, event)
             else:
                 event.enact(self)
             return event
@@ -143,7 +143,7 @@ class Document(object):
         quorum = Quorum(request, self._qs)
         if self.owner:
             self.protocol._register(request.unique, callback)
-            quorum.transmit_action(self)
+            self.protocol.paxos.propose(self, request)
         return request
         
     def subscribe(self, callback, sources):

@@ -70,21 +70,6 @@ class Quorum(object):
         if document.owner:
             document.owner.protocol.paxos.send_complete(document, self.action)
 
-    def transmit_action(self, document):
-        '''
-        Announce an action, and begin trying to collect a consensus.
-        '''
-        document.owner.protocol.paxos.start_action(
-            document,
-            lambda success: None,
-            self.action
-        )
-        document.owner.protocol.paxos.send_accepted(
-            document,
-            self.action
-        )
-        document.owner.protocol.paxos.check_quorum(document, self.action)
-
     def transmittable_sig(self, signer):
         return self.signatures[signer][1]
 

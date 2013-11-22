@@ -102,6 +102,14 @@ class PaxosHandler(ProtocolHandler):
             quorum.enact(doc)
             self.send_complete(doc, action)
 
+    def propose(self, doc, action):
+        '''
+        Announce an action, and begin trying to collect a consensus.
+        '''
+        self.start_action(doc, lambda success: None, action)
+        self.send_accepted(doc, action)
+        self.check_quorum(doc, action)
+
     def _on_accept(self, msg, content, ctype, doc):
         action = Action(
             content['action'],
