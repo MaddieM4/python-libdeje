@@ -37,4 +37,4 @@ class DejeHandler(ProtocolHandler):
             sender = self.owner.identities.find_by_location(sender).name
         except KeyError:
             pass # No saved information on this ident
-        print("Error from %r, code %d: %r" % (sender, content['code'], content['explanation']))
+        print("Error from %r, code %d: %r" % (sender, content['code'], content['msg']))

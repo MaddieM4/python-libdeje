@@ -106,11 +106,12 @@ class ProtocolToplevel(object):
         handler = self.find('deje-sub-list')
         handler.get_subs(source, callback)
 
-    def error(self, recipients, code, explanation="", data={}):
+    def error(self, recipients, code, msg="", data={}, qid=0):
         for r in recipients:
             self.owner.client.write_json(r, {
                 'type':'deje-error',
+                'qid' :int(code),
                 'code':int(code),
-                'explanation':str(explanation),
+                'msg' :str(msg),
                 'data':data,
             })
