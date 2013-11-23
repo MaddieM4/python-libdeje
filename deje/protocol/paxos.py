@@ -28,13 +28,11 @@ class PaxosHandler(ProtocolHandler):
     deje-paxos-*
     '''
 
-    def start_action(self, doc, callback, action):
+    def start_action(self, doc, action):
         '''
-        Propose an action. Callback is called with boolean success.
+        Announce that an action exists for voting on.
         '''
-        qid = self.toplevel._query(callback)
         content = {
-            'qid': qid,
             'action': action.serialize(),
         }
         self.owner.transmit(
@@ -47,22 +45,20 @@ class PaxosHandler(ProtocolHandler):
 
     def send_accepted(self, doc, action, signatures = None):
         '''
-        Send a deje-paxos-accepted for every valid signature
+        Send a deje-paxos-accepted to all participants
         '''
         quorum = doc.get_quorum(action)
-        signers = signatures or quorum.valid_signatures
-        for signer in signers:
-            self.owner.transmit(
-                doc,
-                "deje-paxos-accepted",
-                {
-                    'signer' : signer,
-                    'content' : quorum.content,
-                    'signature': quorum.transmittable_sig(signer),
-                },
-                [action.author.key],
-                participants = True # includes all signers
-            )
+        ident  = self.owner.identity
+        quorum.sign(ident)
+        self.owner.transmit(
+            doc,
+            "deje-paxos-accepted",
+            {
+                'action' : quorum.content,
+                'sig'    : quorum.transmittable_sig(ident.key),
+            },
+            participants = True
+        )
 
     def send_complete(self, doc, action):
         '''
@@ -76,17 +72,17 @@ class PaxosHandler(ProtocolHandler):
             doc,
             "deje-paxos-complete",
             {
-                'signatures' : quorum.sigs_dict(),
-                'content' : quorum.content,
+                'action' : quorum.content,
+                'sigs' : quorum.sigs_dict(),
             },
-            [],
             participants = True # includes all signers
         )
         doc.owner.reply(
             doc,
             'deje-action-completion',
             {
-                'content': quorum.content,
+                'action' : quorum.content,
+                'success': True,
                 'version': doc.version,
             },
             action.author.key
@@ -106,7 +102,7 @@ class PaxosHandler(ProtocolHandler):
         '''
         Announce an action, and begin trying to collect a consensus.
         '''
-        self.start_action(doc, lambda success: None, action)
+        self.start_action(doc, action)
         self.send_accepted(doc, action)
         self.check_quorum(doc, action)
 
@@ -123,21 +119,29 @@ class PaxosHandler(ProtocolHandler):
             self.check_quorum(doc, action)
 
     def _on_accepted(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(content['signer'])
-        action = Action(content['content'], self.owner.identities).specific()
+        sender = self.owner.identities.find_by_location(msg.sender)
+        action = Action(
+            content['action'],
+            self.owner.identities
+        ).specific()
         content_hash = String(action.hash())
         quorum = doc._qs.get_quorum(action)
 
-        sig = RawData(content['signature'])
+        sig = RawData(content['sig'])
         quorum.sign(sender, sig)
         self.check_quorum(doc, action)
 
     def _on_complete(self, msg, content, ctype, doc):
-        action = Action(content['content'], self.owner.identities).specific()
+        action = Action(
+            content['action'],
+            self.owner.identities
+        ).specific()
         content_hash = String(action.hash())
         quorum = doc._qs.get_quorum(action)
-        for signer in content['signatures']:
+        sigs = content['sigs']
+
+        for signer in sigs:
             sender = self.owner.identities.find_by_location(signer)
-            sig = RawData(content['signatures'][signer])
+            sig = RawData(sigs[signer])
             quorum.sign(sender, sig)
         self.check_quorum(doc, action)

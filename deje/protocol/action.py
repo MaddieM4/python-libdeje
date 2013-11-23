@@ -30,8 +30,10 @@ class ActionHandler(ProtocolHandler):
 
         Usually sent by every quorum participant.
         '''
-        lcontent = content['content']
+        lcontent = content['action']
         action = Action(lcontent, self.owner.identities).specific()
+        if content['success'] != True:
+            return # TODO : Do something about failure
         if isinstance(action, ReadRequest):
             version = content['version']
             self.toplevel._on_response(action.unique, [version])
