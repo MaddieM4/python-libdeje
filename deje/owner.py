@@ -52,9 +52,9 @@ class Owner(object):
 
         # Rule out basic errors
         if type(message.content) != dict:
-            return self.error(message.msg, errors.MSG_NOT_DICT)
+            return message.error(errors.MSG_NOT_DICT)
         if not "type" in message:
-            return self.error(message.msg, errors.MSG_NO_TYPE)
+            return message.error(errors.MSG_NO_TYPE)
 
         self.protocol.call(message)
 
@@ -131,16 +131,3 @@ class Owner(object):
             participants = True,
             subscribers = False
         )
-
-    def error(self, msg, attributes, data=None):
-        '''
-        Shortcut syntax for replying with error information. Not the same
-        functional signature as self.protocol.error!
-        '''
-        recipient = msg.receiver
-        code = attributes['code']
-        explanation = attributes['explanation']
-        if '%' in explanation:
-            explanation = explanation % data
-
-        self.protocol.error([recipient], code, explanation, data)

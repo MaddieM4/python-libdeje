@@ -56,7 +56,7 @@ class ProtocolToplevel(object):
             handler = None # Catch in next failure handler
 
         if not callable(handler):
-            return self.owner.error(message.msg, errors.MSG_UNKNOWN_TYPE, mtype)
+            return message.error(errors.MSG_UNKNOWN_TYPE, data=mtype)
 
         return handler(message)
 

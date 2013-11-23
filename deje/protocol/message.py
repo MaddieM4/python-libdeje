@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
+from deje.errors import lookup as error_lookup
 from deje.action import Action
 
 class DEJEMessage(object):
@@ -62,3 +63,15 @@ class DEJEMessage(object):
     @property
     def action(self):
         return Action(self['action'], self.owner.identities).specific()
+
+    def error(self, code, msg='', data={}):
+        qid = None
+        if 'qid' in self:
+            qid = self.qid
+        if type(code) == dict:
+            code = code['code']
+        if not msg:
+            msg = error_lookup(code)['explanation']
+        if '%' in msg:
+            msg = msg % data
+        self.owner.protocol.error([self.sender], code, msg, data, qid)

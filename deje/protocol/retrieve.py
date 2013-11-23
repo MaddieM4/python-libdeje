@@ -34,7 +34,7 @@ class RetrieveEventsHandler(ProtocolHandler):
         doc    = message.doc
         sender = self.owner.identities.find_by_location(message.sender)
         if not doc.can_read(sender):
-            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
+            return message.error(errors.PERMISSION_CANNOT_READ)
 
         if 'start' in message:
             h = String(message['start'])
@@ -70,7 +70,7 @@ class RetrieveEventsHandler(ProtocolHandler):
         doc    = message.doc
         sender = self.owner.identities.find_by_location(message.sender)
         if sender not in doc.get_participants():
-            return self.owner.error(message.msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "event")
+            return message.error(errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, data="event")
         events  = message['events']
 
         doc.signals['recv-events'].send(
@@ -86,7 +86,7 @@ class RetrieveStateHandler(ProtocolHandler):
         doc    = message.doc
         sender = self.owner.identities.find_by_location(message.sender)
         if not doc.can_read(sender):
-            return self.owner.error(message.msg, errors.PERMISSION_CANNOT_READ)
+            return message.error(errors.PERMISSION_CANNOT_READ)
         version = message['version']
         state = doc._history.generate_state(version).serialize()
         self.owner.reply(
@@ -104,7 +104,7 @@ class RetrieveStateHandler(ProtocolHandler):
         doc    = message.doc
         sender = self.owner.identities.find_by_location(message.sender)
         if sender not in doc.get_participants():
-            return self.owner.error(message.msg, errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, "state")
+            return message.error(errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, data="state")
         state = message['state']
         doc.signals['recv-state'].send(
             self,

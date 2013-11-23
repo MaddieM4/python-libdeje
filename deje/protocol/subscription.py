@@ -74,7 +74,7 @@ class SubAddHandler(ProtocolHandler):
         else:
             expiration = None
         if not doc.can_read(target):
-            return self.owner.error(message.msg, errors.PERMISSION_CANNOT_READ)
+            return message.error(errors.PERMISSION_CANNOT_READ)
 
         sub = Subscription(
             source.location,
