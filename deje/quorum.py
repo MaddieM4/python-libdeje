@@ -62,14 +62,6 @@ class Quorum(object):
         """
         self.signatures = {}
 
-    def enact(self, document):
-        '''
-        Enact self.action and transmit completion afterwards.
-        '''
-        self.action.enact(self, document)
-        if document.owner:
-            document.owner.protocol.paxos.send_complete(document, self.action)
-
     def transmittable_sig(self, signer):
         return self.signatures[signer][1]
 

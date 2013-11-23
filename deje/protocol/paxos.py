@@ -99,7 +99,7 @@ class PaxosHandler(ProtocolHandler):
         '''
         quorum = doc._qs.get_quorum(action)
         if quorum.ready(doc):
-            quorum.enact(doc)
+            action.enact(quorum, doc)
             self.send_complete(doc, action)
 
     def propose(self, doc, action):
