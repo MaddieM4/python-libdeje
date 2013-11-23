@@ -64,16 +64,17 @@ class SubAddHandler(ProtocolHandler):
                 source.key
             )
 
-    def _on_query(self, msg, content, ctype, doc):
-        qid    = int(content['qid'])
-        source = self.identity(msg.receiver)
-        target = self.identity(msg.sender)
-        if 'expiration' in content:
-            expiration = content['expiration']
+    def _on_query(self, message):
+        qid    = message.qid
+        doc    = message.doc
+        source = self.identity(message.receiver)
+        target = self.identity(message.sender)
+        if 'expiration' in message:
+            expiration = message['expiration']
         else:
             expiration = None
         if not doc.can_read(target):
-            return self.owner.error(msg, errors.PERMISSION_CANNOT_READ)
+            return self.owner.error(message.msg, errors.PERMISSION_CANNOT_READ)
 
         sub = Subscription(
             source.location,
@@ -92,10 +93,10 @@ class SubAddHandler(ProtocolHandler):
             target.key
         )
 
-    def _on_response(self, msg, content, ctype, doc):
-        qid = int(content['qid'])
+    def _on_response(self, message):
+        qid = message.qid
         sub = Subscription()
-        sub.deserialize(content['subscription'])
+        sub.deserialize(message['subscription'])
         self.parent.subscribe(sub)
         self.toplevel._on_response(qid, [sub])
 
@@ -120,25 +121,25 @@ class SubRemoveHandler(ProtocolHandler):
             ident.key
         )
 
-    def _on_query(self, msg, content, ctype, doc):
-        qid  = int(content['qid'])
-        subh = String(content['hash'])
+    def _on_query(self, message):
+        qid  = message.qid
+        subh = String(message['hash'])
 
         success = subh in self.parent.subscriptions
         self.parent.unsubscribe(subh)
         self.send(
-            doc,
+            message.doc,
             'deje-sub-remove-response',
             {
                 'qid': qid,
                 'success': success,
             },
-            self.identity(msg.sender).key
+            self.identity(message.sender).key
         )
 
-    def _on_response(self, msg, content, ctype, doc):
-        qid = int(content['qid'])
-        success = content['success']
+    def _on_response(self, message):
+        qid = message.qid
+        success = message['success']
         self.toplevel._on_response(qid, [success])
 
 class SubListHandler(ProtocolHandler):
@@ -164,15 +165,15 @@ class SubListHandler(ProtocolHandler):
 
         self.write_json(ident.location, content)
 
-    def _on_query(self, msg, content, ctype, doc):
-        qid = int(content['qid'])
-        if 'hashes' in content:
-            hashes = content['hashes']
+    def _on_query(self, message):
+        qid = message.qid
+        if 'hashes' in message:
+            hashes = message['hashes']
         else:
             hashes = [
                 s.hash() for s in self.parent.subscriptions.values()
                 if s.source == self.owner.identity.location
-                    and s.target == msg.sender
+                    and s.target == message.sender
             ]
 
         subs = {}
@@ -184,11 +185,11 @@ class SubListHandler(ProtocolHandler):
             'qid' : qid,
             'subs': subs,
         }
-        self.write_json(msg.sender, content)
+        self.write_json(message.sender, content)
 
-    def _on_response(self, msg, content, ctype, doc):
-        qid  = int(content['qid'])
-        subs = content['subs']
+    def _on_response(self, message):
+        qid  = message.qid
+        subs = message['subs']
 
         # Deserialize
         for h in subs:

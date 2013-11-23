@@ -106,11 +106,9 @@ class PaxosHandler(ProtocolHandler):
         self.send_accepted(doc, action)
         self.check_quorum(doc, action)
 
-    def _on_accept(self, msg, content, ctype, doc):
-        action = Action(
-            content['action'],
-            self.owner.identities
-        ).specific()
+    def _on_accept(self, message):
+        doc    = message.doc
+        action = message.action
         quorum = doc._qs.get_quorum(action)
         if action.valid(doc):
             # TODO: Error message for validation failures
@@ -118,27 +116,23 @@ class PaxosHandler(ProtocolHandler):
             self.send_accepted(doc, action)
             self.check_quorum(doc, action)
 
-    def _on_accepted(self, msg, content, ctype, doc):
-        sender = self.owner.identities.find_by_location(msg.sender)
-        action = Action(
-            content['action'],
-            self.owner.identities
-        ).specific()
+    def _on_accepted(self, message):
+        sender = self.owner.identities.find_by_location(message.sender)
+        doc    = message.doc
+        action = message.action
         content_hash = String(action.hash())
         quorum = doc._qs.get_quorum(action)
 
-        sig = RawData(content['sig'])
+        sig = RawData(message['sig'])
         quorum.sign(sender, sig)
         self.check_quorum(doc, action)
 
-    def _on_complete(self, msg, content, ctype, doc):
-        action = Action(
-            content['action'],
-            self.owner.identities
-        ).specific()
+    def _on_complete(self, message):
+        doc    = message.doc
+        action = message.action
         content_hash = String(action.hash())
         quorum = doc._qs.get_quorum(action)
-        sigs = content['sigs']
+        sigs = message['sigs']
 
         for signer in sigs:
             sender = self.owner.identities.find_by_location(signer)

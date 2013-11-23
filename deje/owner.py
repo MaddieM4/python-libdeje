@@ -25,6 +25,8 @@ from ejtp import identity
 from deje import protocol
 from deje import errors
 
+from deje.protocol.message import DEJEMessage
+
 class Owner(object):
     '''
     Manages documents, identities, and an EJTP client.
@@ -46,21 +48,15 @@ class Owner(object):
     # EJTP callbacks
 
     def on_ejtp(self, msg, client):
-        content = msg.unpack()
+        message = DEJEMessage(msg, client, self)
+
         # Rule out basic errors
-        if type(content) != dict:
-            return self.error(msg, errors.MSG_NOT_DICT)
-        if not "type" in content:
-            return self.error(msg, errors.MSG_NO_TYPE)
+        if type(message.content) != dict:
+            return self.error(message.msg, errors.MSG_NOT_DICT)
+        if not "type" in message:
+            return self.error(message.msg, errors.MSG_NO_TYPE)
 
-        # Accumulate basic information
-        mtype = content['type']
-        if "docname" in content and content['docname'] in self.documents:
-            doc = self.documents[content['docname']]
-        else:
-            doc = None
-
-        self.protocol.call(msg, content, mtype, doc)
+        self.protocol.call(message)
 
     # Network utility functions
 

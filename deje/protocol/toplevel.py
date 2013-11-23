@@ -45,19 +45,20 @@ class ProtocolToplevel(object):
                 raise AttributeError("No proto handling for ctype", ctype)
         return handler
 
-    def call(self, msg, content, ctype, doc):
+    def call(self, message):
         '''
         Find and call protocol function
         '''
+        mtype = message.type
         try:
-            handler = self.find(ctype)
+            handler = self.find(mtype)
         except AttributeError:
             handler = None # Catch in next failure handler
 
         if not callable(handler):
-            return self.owner.error(msg, errors.MSG_UNKNOWN_TYPE, ctype)
+            return self.owner.error(message.msg, errors.MSG_UNKNOWN_TYPE, mtype)
 
-        return handler(msg, content, ctype, doc)
+        return handler(message)
 
     def _register(self, qid, callback):
         self.callbacks[qid] = callback

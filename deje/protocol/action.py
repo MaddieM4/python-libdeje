@@ -24,16 +24,15 @@ from deje.read   import ReadRequest
 
 class ActionHandler(ProtocolHandler):
 
-    def _on_completion(self, msg, content, ctype, doc):
+    def _on_completion(self, message):
         '''
         Sent to the action author when an action succeeds.
 
         Usually sent by every quorum participant.
         '''
-        lcontent = content['action']
-        action = Action(lcontent, self.owner.identities).specific()
-        if content['success'] != True:
+        action = message.action
+        if message['success'] != True:
             return # TODO : Do something about failure
         if isinstance(action, ReadRequest):
-            version = content['version']
+            version = message['version']
             self.toplevel._on_response(action.unique, [version])

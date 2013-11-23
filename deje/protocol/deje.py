@@ -31,10 +31,10 @@ class DejeHandler(ProtocolHandler):
         self._on_retrieve = RetrieveHandler(self)
         self._on_sub      = SubscriptionHandler(self)
 
-    def _on_error(self, msg, content, ctype, doc):
-        sender = msg.sender
+    def _on_error(self, message):
+        sender = message.sender
         try:
             sender = self.owner.identities.find_by_location(sender).name
         except KeyError:
             pass # No saved information on this ident
-        print("Error from %r, code %d: %r" % (sender, content['code'], content['msg']))
+        print("Error from %r, code %d: %r" % (sender, message['code'], message['msg']))
