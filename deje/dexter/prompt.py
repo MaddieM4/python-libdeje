@@ -21,7 +21,6 @@ import sys
 class DexterPrompt(object):
     def __init__(self, interface):
         self.interface = interface
-        self.pstring   = '>>: '
 
     def draw(self):
         with self.terminal.location(0, self.terminal.height):
@@ -39,3 +38,7 @@ class DexterPrompt(object):
     @property
     def terminal(self):
         return self.interface.terminal
+
+    @property
+    def pstring(self):
+        return self.interface.cur_view + '> '

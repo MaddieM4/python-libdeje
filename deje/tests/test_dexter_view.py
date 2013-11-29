@@ -53,7 +53,7 @@ class TestDexterView(unittest.TestCase):
             'clear',
             'CONTEXT EXIT:  location(0,0)',
             'CONTEXT ENTER: location(0,60)',
-            '>>:',
+            'msglog>',
             'CONTEXT EXIT:  location(0,60)',
         ])
 
@@ -66,7 +66,7 @@ class TestDexterView(unittest.TestCase):
             'clear',
             'CONTEXT EXIT:  location(0,0)',
             'CONTEXT ENTER: location(0,60)',
-            '>>:',
+            'msglog>',
             'CONTEXT EXIT:  location(0,60)',
             'CONTEXT ENTER: location(0,59)',
             'Hello',
@@ -82,7 +82,7 @@ class TestDexterView(unittest.TestCase):
             'clear',
             'CONTEXT EXIT:  location(0,0)',
             'CONTEXT ENTER: location(0,60)',
-            '>>:',
+            'msglog>',
             'CONTEXT EXIT:  location(0,60)',
             'CONTEXT ENTER: location(0,58)',
             'Hello',
@@ -101,7 +101,7 @@ class TestDexterView(unittest.TestCase):
             'clear',
             'CONTEXT EXIT:  location(0,0)',
             'CONTEXT ENTER: location(0,60)',
-            '>>:',
+            'msglog>',
             'CONTEXT EXIT:  location(0,60)',
             'CONTEXT ENTER: location(0,59)',
             'q' * 80, # Trimmed to terminal width
