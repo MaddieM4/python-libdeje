@@ -23,6 +23,8 @@ class DexterCommands(object):
 
     def do(self, cmdstr):
         args = self.get_args(cmdstr)
+        if not len(args):
+            return
         func = self.get_handler(args[0])
         if func != None:
             func(args[1:])

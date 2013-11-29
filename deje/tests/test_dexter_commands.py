@@ -62,10 +62,30 @@ class TestDexterCommands(unittest.TestCase):
             "CONTEXT EXIT:  location(0,60)",
         ])
 
+    def test_blank(self):
+        with self.io:
+            self.interface.do_command('')
+        self.assertEqual(self.io.get_lines(), [
+            "CONTEXT ENTER: location(0,0)",
+            "clear",
+            "CONTEXT EXIT:  location(0,0)",
+            "CONTEXT ENTER: location(0,60)",
+            "msglog>",
+            "CONTEXT EXIT:  location(0,60)",
+            "CONTEXT ENTER: location(0,0)",
+            "clear",
+            "CONTEXT EXIT:  location(0,0)",
+            "CONTEXT ENTER: location(0,59)",
+            "msglog>",
+            "CONTEXT EXIT:  location(0,59)",
+            "CONTEXT ENTER: location(0,60)",
+            "msglog>",
+            "CONTEXT EXIT:  location(0,60)",
+        ])
+
     def test_command_only(self):
         with self.io:
             self.interface.do_command('demo')
-        self.maxDiff = None
         self.assertEqual(self.io.get_lines(), [
             "CONTEXT ENTER: location(0,0)",
             "clear",
@@ -91,7 +111,6 @@ class TestDexterCommands(unittest.TestCase):
     def test_command_with_args(self):
         with self.io:
             self.interface.do_command('demo this that "the other thing"')
-        self.maxDiff = None
         self.assertEqual(self.io.get_lines(), [
             "CONTEXT ENTER: location(0,0)",
             "clear",
