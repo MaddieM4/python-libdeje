@@ -21,9 +21,10 @@ class DexterView(object):
         self.contents  = []
 
     def draw(self):
-        total_lines = self.terminal.height - 1
-        y_pos = 0
-        for line in self.contents[-total_lines:]:
+        max_lines     = self.terminal.height - 1
+        visible_lines = self.contents[-max_lines:]
+        y_pos = max_lines - len(visible_lines) + 1
+        for line in visible_lines:
             with self.terminal.location(0, y_pos):
                 print(line[:self.terminal.width])
             y_pos += 1

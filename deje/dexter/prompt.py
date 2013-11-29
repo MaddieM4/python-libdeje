@@ -15,23 +15,27 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
+import sys
+
 class DexterPrompt(object):
     def __init__(self, interface):
         self.interface = interface
         self.pstring   = '>>: '
-        self.contents  = ''
 
     def draw(self):
         with self.terminal.location(0, self.terminal.height):
-            print(self.pstring, self.contents)
+            print(self.pstring, end='')
+            if hasattr(sys.stdout, 'flush'):
+                sys.stdout.flush()
 
     def wait(self):
-        return input('hello')
+        with self.terminal.location(0, self.terminal.height):
+            try:
+                return sys.stdin.readline().rstrip()
+            except KeyboardInterrupt:
+                return "quit"
 
     @property
     def terminal(self):
         return self.interface.terminal
-
-    @property
-    def display_string(self):
-        return self.pstring + self.contents

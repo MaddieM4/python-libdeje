@@ -15,7 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import signal
 import blessings
@@ -39,13 +39,15 @@ class DexterInterface(object):
         self.redraw()
 
     def redraw(self):
-        self.terminal.clear()
+        with self.terminal.location(0,0):
+            print(self.terminal.clear())
         self.view.draw()
         self.prompt.draw()
 
     def do_command(self, command):
         self.output(self.prompt.pstring + command)
         self.commands.do(command)
+        self.redraw()
 
     def output(self, text, name=None):
         name = name or self.cur_view

@@ -21,3 +21,5 @@ class DexterCommands(object):
 
     def do(self, cmdstr):
         self.interface.output('Did %r' % cmdstr)
+        if cmdstr == 'quit':
+            quit(0)
