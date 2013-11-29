@@ -156,6 +156,32 @@ class TestDexterCommands(unittest.TestCase):
             'blooby :: No such command.',
         ])
 
+    def test_view_list(self):
+        with self.io:
+            self.interface.do_command('view')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> view',
+            'msglog',
+        ])
+
+    def test_view_switch(self):
+        with self.io:
+            self.interface.do_command('view cows')
+            self.interface.do_command('view')
+        self.assertEqual(
+            sorted(list(self.interface.views.keys())),
+            ['cows', 'msglog']
+        )
+        self.assertEqual(self.interface.views['msglog'].contents, [
+            'msglog> view cows',
+        ])
+        self.assertEqual(self.interface.views['cows'].contents, [
+            'Switched to view \'cows\'.',
+            'cows> view',
+            'cows',
+            'msglog',
+        ])
+
     def test_commands(self):
         with self.io:
             self.interface.do_command('commands')
@@ -165,4 +191,5 @@ class TestDexterCommands(unittest.TestCase):
             'demo :: No description available.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
+            'view :: List views, or select one.',
         ])
