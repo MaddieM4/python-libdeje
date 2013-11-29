@@ -132,3 +132,24 @@ class TestDexterCommands(unittest.TestCase):
             self.cb_log.pop(),
             ['this', 'that', 'the other thing']
         )
+
+    def test_help(self):
+        with self.io:
+            self.interface.do_command('help')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> help',
+            'Dexter is a low-level DEJE client.',
+            'It\'s perfect for low-level management of documents.',
+            'Type "commands" to see the list of available commands.',
+        ])
+
+    def test_commands(self):
+        with self.io:
+            self.interface.do_command('commands')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> commands',
+            'commands :: List all available commands.',
+            'demo :: No description available.',
+            'help :: A simple little help message.',
+            'quit :: Exit the program.',
+        ])

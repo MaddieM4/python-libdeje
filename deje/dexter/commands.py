@@ -41,5 +41,39 @@ class DexterCommands(object):
         else:
             return None
 
+    def get_description(self, command):
+        raw = getattr(self, 'do_' + command).__doc__
+        if not raw:
+            return ['No description available.']
+        return [s.strip() for s in raw.strip().split('\n')]
+
     def do_quit(self, args):
+        '''
+        Exit the program.
+
+        Does not save anything, and doesn't ask either.
+        '''
         quit(0)
+
+    def do_help(self, args):
+        '''
+        A simple little help message.
+        '''
+        self.output('Dexter is a low-level DEJE client.')
+        self.output('It\'s perfect for low-level management of documents.')
+        self.output('Type "commands" to see the list of available commands.')
+
+    def do_commands(self, args):
+        '''
+        List all available commands.
+        '''
+        commands = [x[3:] for x in dir(self) if x.startswith('do_')]
+        commands.sort()
+        for command in commands:
+            description = self.get_description(command)
+            oneline     = description[0]
+            self.output('%s :: %s' % (command, oneline))
+
+    @property
+    def output(self):
+        return self.interface.output
