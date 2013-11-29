@@ -20,4 +20,4 @@ class DexterCommands(object):
         self.interface = interface
 
     def do(self, cmdstr):
-        self.interface.print('Did %r' % cmdstr)
+        self.interface.output('Did %r' % cmdstr)

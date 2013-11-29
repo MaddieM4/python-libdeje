@@ -44,10 +44,10 @@ class DexterInterface(object):
         self.prompt.draw()
 
     def do_command(self, command):
-        self.print(self.prompt.pstring + command)
+        self.output(self.prompt.pstring + command)
         self.commands.do(command)
 
-    def print(self, text, name=None):
+    def output(self, text, name=None):
         name = name or self.cur_view
         self.get_view(name).append(text)
 

@@ -29,7 +29,7 @@ class DexterView(object):
             y_pos += 1
 
     def append(self, text):
-        self.contents.append(text.split('\n'))
+        self.contents.extend(text.split('\n'))
 
     @property
     def terminal(self):
