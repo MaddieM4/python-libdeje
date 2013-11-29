@@ -126,13 +126,18 @@ class DexterCommands(object):
             self.output(line)
 
     def _do_list_views(self):
-        views = list(self.interface.views.keys())
-        views.sort()
-        return views
+        lines = []
+        for name, view in self.interface.views.items():
+            if view.desc:
+                lines.append('%s :: %s' % (name, view.desc))
+            else:
+                lines.append(name)
+        lines.sort()
+        return lines
 
     def _do_switch_view(self, to_view):
         self.interface.cur_view = to_view
-        return ['Switched to view %r.' % to_view]
+        return []
 
     @property
     def output(self):

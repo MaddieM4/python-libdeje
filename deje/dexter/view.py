@@ -16,8 +16,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 class DexterView(object):
-    def __init__(self, interface):
+    def __init__(self, interface, desc = None):
         self.interface = interface
+        self.desc      = desc
         self.contents  = []
 
     def draw(self):

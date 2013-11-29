@@ -161,7 +161,7 @@ class TestDexterCommands(unittest.TestCase):
             self.interface.do_command('view')
         self.assertEqual(self.interface.view.contents, [
             'msglog> view',
-            'msglog',
+            'msglog :: Shows all EJTP messages going in or out.',
         ])
 
     def test_view_switch(self):
@@ -176,10 +176,9 @@ class TestDexterCommands(unittest.TestCase):
             'msglog> view cows',
         ])
         self.assertEqual(self.interface.views['cows'].contents, [
-            'Switched to view \'cows\'.',
             'cows> view',
             'cows',
-            'msglog',
+            'msglog :: Shows all EJTP messages going in or out.',
         ])
 
     def test_commands(self):

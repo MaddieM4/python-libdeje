@@ -24,19 +24,30 @@ from deje.dexter.view     import DexterView
 from deje.dexter.commands import DexterCommands
 from deje.dexter.prompt   import DexterPrompt
 
+INITIAL_VIEWS = {
+    'msglog': 'Shows all EJTP messages going in or out.',
+}
+
 class DexterInterface(object):
     def __init__(self, filename = None, terminal = None):
         self.filename = filename
         self.commands = DexterCommands(self)
         self.prompt   = DexterPrompt(self)
-        self.terminal = terminal or blessings.Terminal()
-        self.views    = {}
-        self.cur_view = 'msglog'
+        self.init_views()
+        self.init_terminal(terminal)
 
+    def init_terminal(self, terminal = None):
+        self.terminal = terminal or blessings.Terminal()
         def on_resize(signum, frame):
             self.redraw()
         signal.signal(signal.SIGWINCH, on_resize)
         self.redraw()
+
+    def init_views(self):
+        self.views    = {}
+        self.cur_view = 'msglog'
+        for name, desc in INITIAL_VIEWS.items():
+            self.views[name] = DexterView(self, desc)
 
     def redraw(self):
         with self.terminal.location(0,0):
