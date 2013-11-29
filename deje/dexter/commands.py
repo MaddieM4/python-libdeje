@@ -15,11 +15,29 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import shlex
+
 class DexterCommands(object):
     def __init__(self, interface):
         self.interface = interface
 
     def do(self, cmdstr):
-        self.interface.output('Did %r' % cmdstr)
-        if cmdstr == 'quit':
-            quit(0)
+        args = self.get_args(cmdstr)
+        func = self.get_handler(args[0])
+        if func != None:
+            func(args[1:])
+        else:
+            self.interface.output('No such command: %r' % args[0])
+
+    def get_args(self, cmdstr):
+        return shlex.split(cmdstr)
+
+    def get_handler(self, command):
+        funcname  = 'do_' + command
+        if hasattr(self, funcname):
+            return getattr(self, funcname)
+        else:
+            return None
+
+    def do_quit(self, args):
+        quit(0)

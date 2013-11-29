@@ -107,4 +107,3 @@ class TestDexterView(unittest.TestCase):
             'q' * 80, # Trimmed to terminal width
             'CONTEXT EXIT:  location(0,59)',
         ])
-
