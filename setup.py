@@ -9,11 +9,12 @@ setup(
 	author = 'Philip Horger',
 	author_email = 'philip.horger@gmail.com',
 	url = 'https://github.com/campadrenalin/python-libdeje/',
-    #scripts = [
-    #    'scripts/ejtpd',
-    #],
+    scripts = [
+        'deje/dexter/dexter',
+    ],
 	packages = [
 		'deje',
+		'deje.dexter',
 		'deje.interpreters',
 		'deje.handlers',
 		'deje.tests',
