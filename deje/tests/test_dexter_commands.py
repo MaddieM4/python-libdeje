@@ -141,6 +141,19 @@ class TestDexterCommands(unittest.TestCase):
             'Dexter is a low-level DEJE client.',
             'It\'s perfect for low-level management of documents.',
             'Type "commands" to see the list of available commands.',
+            'Type "help somecommand" to see more about a command.',
+        ])
+
+    def test_help_with_args(self):
+        with self.io:
+            self.interface.do_command('help help commands blooby')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> help help commands blooby',
+            'help :: A simple little help message.',
+            '',
+            'You can also view full descriptions with "help commandname".',
+            'commands :: List all available commands.',
+            'blooby :: No such command.',
         ])
 
     def test_commands(self):

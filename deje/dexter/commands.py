@@ -58,10 +58,34 @@ class DexterCommands(object):
     def do_help(self, args):
         '''
         A simple little help message.
+
+        You can also view full descriptions with "help commandname".
         '''
-        self.output('Dexter is a low-level DEJE client.')
-        self.output('It\'s perfect for low-level management of documents.')
-        self.output('Type "commands" to see the list of available commands.')
+        if len(args):
+            lines = self._do_help_with_args(args)
+        else:
+            lines = self._do_help_no_args()
+        for line in lines:
+            self.output(line)
+
+    def _do_help_with_args(self, args):
+        lines = []
+        for command in args:
+            try:
+                desc = self.get_description(command)
+            except:
+                desc = ['No such command.']
+            desc[0] = command + " :: " + desc[0]
+            lines.extend(desc)
+        return lines
+
+    def _do_help_no_args(self):
+        return [
+            'Dexter is a low-level DEJE client.',
+            'It\'s perfect for low-level management of documents.',
+            'Type "commands" to see the list of available commands.',
+            'Type "help somecommand" to see more about a command.',
+        ]
 
     def do_commands(self, args):
         '''
