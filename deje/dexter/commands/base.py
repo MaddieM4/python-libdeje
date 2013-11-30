@@ -15,88 +15,48 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import absolute_import
+
 import shlex
+
+from deje.dexter.commands.basic import DexterCommandsBasic
 
 class DexterCommands(object):
     def __init__(self, interface):
         self.interface = interface
+        self.groups    = set([
+            self,
+            DexterCommandsBasic(self),
+        ])
 
     def do(self, cmdstr):
         args = self.get_args(cmdstr)
         if not len(args):
             return
-        func = self.get_handler(args[0])
-        if func != None:
-            func(args[1:])
-        else:
+        try:
+            func = self.get_handler(args[0])
+        except KeyError:
             self.interface.output('No such command: %r' % args[0])
+            return
+
+        func(args[1:])
 
     def get_args(self, cmdstr):
         return shlex.split(cmdstr)
 
     def get_handler(self, command):
         funcname  = 'do_' + command
-        if hasattr(self, funcname):
-            return getattr(self, funcname)
-        else:
-            return None
+        for group in self.groups:
+            if hasattr(group, funcname):
+                return getattr(group, funcname)
+        raise KeyError("No such command", command)
 
     def get_description(self, command):
-        raw = getattr(self, 'do_' + command).__doc__
-        if not raw:
+        func = self.get_handler(command)
+        raw  = func.__doc__
+        if not (func and raw):
             return ['No description available.']
         return [s.strip() for s in raw.strip().split('\n')]
-
-    def do_quit(self, args):
-        '''
-        Exit the program.
-
-        Does not save anything, and doesn't ask either.
-        '''
-        quit(0)
-
-    def do_help(self, args):
-        '''
-        A simple little help message.
-
-        You can also view full descriptions with "help commandname".
-        '''
-        if len(args):
-            lines = self._do_help_with_args(args)
-        else:
-            lines = self._do_help_no_args()
-        for line in lines:
-            self.output(line)
-
-    def _do_help_with_args(self, args):
-        lines = []
-        for command in args:
-            try:
-                desc = self.get_description(command)
-            except:
-                desc = ['No such command.']
-            desc[0] = command + " :: " + desc[0]
-            lines.extend(desc)
-        return lines
-
-    def _do_help_no_args(self):
-        return [
-            'Dexter is a low-level DEJE client.',
-            'It\'s perfect for low-level management of documents.',
-            'Type "commands" to see the list of available commands.',
-            'Type "help somecommand" to see more about a command.',
-        ]
-
-    def do_commands(self, args):
-        '''
-        List all available commands.
-        '''
-        commands = [x[3:] for x in dir(self) if x.startswith('do_')]
-        commands.sort()
-        for command in commands:
-            description = self.get_description(command)
-            oneline     = description[0]
-            self.output('%s :: %s' % (command, oneline))
 
     def do_view(self, args):
         '''

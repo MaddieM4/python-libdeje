@@ -15,6 +15,7 @@ setup(
 	packages = [
 		'deje',
 		'deje.dexter',
+		'deje.dexter.commands',
 		'deje.interpreters',
 		'deje.handlers',
 		'deje.tests',
