@@ -139,6 +139,34 @@ class DexterCommands(object):
         self.interface.cur_view = to_view
         return []
 
+    def do_fwrite(self, args):
+        '''
+        Write contents of a view to a file.
+
+        This command takes 1-2 arguments. The first argument, the
+        file name, is mandatory. The second argument, the view name,
+        is optional - by default, the current view will be written
+        to the file.
+        '''
+        if len(args) < 1 or len(args) > 2:
+            self.output("fwrite takes 1-2 args, got %d" % len(args))
+            return
+
+        filename = args[0]
+        if len(args) == 1:
+            viewname = self.interface.cur_view
+        else:
+            viewname = args[1]
+
+        try:
+            with open(filename, 'w') as thefile:
+                view = self.interface.get_view(viewname)
+                thefile.write('\n'.join(view.contents))
+        except IOError as e:
+            self.output('IOError %d: %s' % (e.errno, e.strerror))
+            return
+        self.output("Wrote view %s to file %s" % (viewname, filename))
+
     @property
     def output(self):
         return self.interface.output

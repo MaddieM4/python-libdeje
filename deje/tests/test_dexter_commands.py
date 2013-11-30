@@ -17,6 +17,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function
 
+import os
+import tempfile
+
 from ejtp.util.compat        import unittest
 from ejtp.tests.test_scripts import IOMock
 
@@ -181,6 +184,51 @@ class TestDexterCommands(unittest.TestCase):
             'msglog :: Shows all EJTP messages going in or out.',
         ])
 
+    def test_fwrite_current_view(self):
+        _, fname = tempfile.mkstemp()
+        try:
+            with self.io:
+                self.interface.do_command('view cows')
+                self.interface.do_command('notacommand')
+                self.interface.do_command('fwrite '+ fname)
+            written = open(fname, 'r').read()
+            self.assertEqual(written.split('\n'), [
+                'cows> notacommand',
+                'No such command: \'notacommand\'',
+                'cows> fwrite ' + fname,
+            ])
+        finally:
+            os.remove(fname)
+
+    def test_fwrite_other_view(self):
+        _, fname = tempfile.mkstemp()
+        cmd = 'fwrite %s cows' % fname
+        try:
+            with self.io:
+                self.interface.do_command('view cows')
+                self.interface.do_command('notacommand')
+                self.interface.do_command('view msglog')
+                self.interface.do_command(cmd)
+            written = open(fname, 'r').read()
+            self.assertEqual(written.split('\n'), [
+                'cows> notacommand',
+                'No such command: \'notacommand\'',
+                'cows> view msglog',
+            ])
+        finally:
+            os.remove(fname)
+
+    def test_fwrite_wrong_num_args(self):
+        with self.io:
+            self.interface.do_command('fwrite')
+            self.interface.do_command('fwrite blah blah blah')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> fwrite',
+            'fwrite takes 1-2 args, got 0',
+            'msglog> fwrite blah blah blah',
+            'fwrite takes 1-2 args, got 3',
+        ])
+
     def test_commands(self):
         with self.io:
             self.interface.do_command('commands')
@@ -188,6 +236,7 @@ class TestDexterCommands(unittest.TestCase):
             'msglog> commands',
             'commands :: List all available commands.',
             'demo :: No description available.',
+            'fwrite :: Write contents of a view to a file.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
             'view :: List views, or select one.',
