@@ -27,7 +27,6 @@ class DexterCommands(object):
     def __init__(self, interface):
         self.interface = interface
         self.groups    = set([
-            self,
             DexterCommandsBasic(self),
             DexterCommandsViews(self),
             DexterCommandsFiles(self),
