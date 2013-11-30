@@ -15,38 +15,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 import os
 import tempfile
 
-from ejtp.util.compat        import unittest
-from ejtp.tests.test_scripts import IOMock
+from deje.tests.dexter_commands import DexterCommandTester
 
-from deje.dexter.interface   import DexterInterface
-from deje.tests.blessings    import DummyBlessingsTerminal
-
-class DexterDemoGroup(object):
-    def __init__(self):
-        self.log_obj = []
-
-    def do_demo(self, args):
-        self.log_obj.append(args)
-
-class TestDexterCommands(unittest.TestCase):
-    def setUp(self):
-        self.io = IOMock()
-        with self.io:
-            self.terminal  = DummyBlessingsTerminal()
-            self.interface = DexterInterface(terminal = self.terminal)
-            self.commands  = self.interface.commands
-
-        self.demo_group = DexterDemoGroup()
-        self.commands.groups.add(self.demo_group)
-
-    @property
-    def demo_log(self):
-        return self.demo_group.log_obj
+class TestDexterCommands(DexterCommandTester):
 
     def test_get_args_one_word(self):
         result = self.commands.get_args('demo')
