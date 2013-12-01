@@ -51,6 +51,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'msglog> commands',
             'commands :: List all available commands.',
             'demo :: No description available.',
+            'fread :: Read contents of a file as a series of commands.',
             'fwrite :: Write contents of a view to a file.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
