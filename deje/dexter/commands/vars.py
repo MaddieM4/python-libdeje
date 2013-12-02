@@ -102,8 +102,10 @@ class DexterCommandsVars(DexterCommandGroup):
             self.output("Not enough arguments, expected at least 1.")
         traverse_chain = args[:-2]
         traverse_last  = args[-2:-1]
-        new_value = json.loads(args[-1])
-
+        try:
+            new_value = json.loads(args[-1])
+        except:
+            return self.output('Could not decode last parameter as JSON.')
         try:
             obj = self.traverse(traverse_chain)
         except TraversalError as e:

@@ -159,6 +159,15 @@ class TestDexterVarsGroup(DexterCommandTester):
             }
         )
 
+    def test_set_bad_json(self):
+        cmd = 'set hello world'
+        with self.io:
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+            'Could not decode last parameter as JSON.',
+        ])
+
     def test_set_multi_traversal(self):
         with self.io:
             self.interface.do_command('set a {}')
