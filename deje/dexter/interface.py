@@ -31,6 +31,7 @@ INITIAL_VIEWS = {
 class DexterInterface(object):
     def __init__(self, filename = None, terminal = None):
         self.filename = filename
+        self.data     = {}
         self.commands = DexterCommands(self)
         self.prompt   = DexterPrompt(self)
         self.init_views()

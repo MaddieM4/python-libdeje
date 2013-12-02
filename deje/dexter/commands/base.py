@@ -22,6 +22,7 @@ import shlex
 from deje.dexter.commands.basic import DexterCommandsBasic
 from deje.dexter.commands.views import DexterCommandsViews
 from deje.dexter.commands.files import DexterCommandsFiles
+from deje.dexter.commands.vars  import DexterCommandsVars
 
 class DexterCommands(object):
     def __init__(self, interface):
@@ -30,6 +31,7 @@ class DexterCommands(object):
             DexterCommandsBasic(self),
             DexterCommandsViews(self),
             DexterCommandsFiles(self),
+            DexterCommandsVars(self),
         ])
 
     def do(self, cmdstr):

@@ -53,6 +53,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'demo :: No description available.',
             'fread :: Read contents of a file as a series of commands.',
             'fwrite :: Write contents of a view to a file.',
+            'get :: Print a value in variable storage.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
             'view :: List views, or select one.',
