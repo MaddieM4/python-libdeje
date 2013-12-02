@@ -27,7 +27,16 @@ class TestDexterVarsGroup(DexterCommandTester):
             self.interface.do_command('get hello')
         self.assertEqual(self.interface.view.contents, [
             'msglog> get hello',
-            'Failed to find key \'hello\'',
+            'Failed to find key: \'hello\'',
+        ])
+
+    def test_get_untraversable(self):
+        self.interface.data = { "hello": True }
+        with self.io:
+            self.interface.do_command('get hello world')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> get hello world',
+            'Cannot inspect properties of object: True',
         ])
 
     def test_get_dict(self):
@@ -60,7 +69,7 @@ class TestDexterVarsGroup(DexterCommandTester):
             self.interface.do_command('get example 0')
         self.assertEqual(self.interface.view.contents, [
             'msglog> get example 0',
-            'Failed to find key 0',
+            'Failed to find key: 0',
         ])
 
     def test_get_array(self):
@@ -105,3 +114,75 @@ class TestDexterVarsGroup(DexterCommandTester):
             '  }',
             ']',
         ])
+
+    def test_set_bad_traversal(self):
+        with self.io:
+            self.interface.do_command('set a b c 0')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> set a b c 0',
+            'Failed to find key: \'a\'',
+        ])
+
+    def test_set_untraversable(self):
+        self.interface.data = { "hello": True }
+        with self.io:
+            self.interface.do_command('set hello world 0')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> set hello world 0',
+            'Cannot inspect properties of object: True',
+        ])
+
+    def test_set_simple(self):
+        with self.io:
+            self.interface.do_command('set a {}')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> set a {}',
+        ])
+        self.assertEqual(
+            self.interface.data,
+            { 'a': {} }
+        )
+
+    def test_set_complex(self):
+        cmd = 'set a \'[4, true, null, {"no":false}]\''
+        with self.io:
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'a': [
+                    4, True, None, { "no": False }
+                ]
+            }
+        )
+
+    def test_set_multi_traversal(self):
+        with self.io:
+            self.interface.do_command('set a {}')
+            self.interface.do_command('set a b 3')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> set a {}',
+            'msglog> set a b 3',
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'a': { 'b': 3 }
+            }
+        )
+
+    def test_set_root(self):
+        with self.io:
+            self.interface.do_command('set \'{"hello":"world"}\'')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> set \'{"hello":"world"}\'',
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'hello':'world'
+            }
+        )

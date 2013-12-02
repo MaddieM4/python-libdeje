@@ -21,7 +21,36 @@ import json
 
 from deje.dexter.commands.group import DexterCommandGroup
 
+class TraversalError(KeyError):
+    def __str__(self):
+        return "%s: %r" % self.args
+
+def normalize_key(obj, key):
+    '''
+    If necessary, cast the key to the correct type for indexing obj,
+    and return the correctly-typed key.
+    '''
+    if isinstance(obj, list) or isinstance(obj, tuple):
+        # Doesn't catch everything fancy, but good enough.
+        # Generally, real-world data will be loaded from JSON
+        # files anyways, which is a reasonable sanitary thing.
+        return int(key)
+    elif isinstance(obj, dict):
+        return str(key)
+    else:
+        raise TraversalError('Cannot inspect properties of object', obj)
+
 class DexterCommandsVars(DexterCommandGroup):
+    def traverse(self, keys):
+        obj = self.interface.data
+        for key in keys:
+            key = normalize_key(obj, key)
+            try:
+                obj = obj[key]
+            except (KeyError, IndexError):
+                raise TraversalError('Failed to find key', key)
+        return obj
+
     def do_get(self, args):
         '''
         Print a value in variable storage.
@@ -42,16 +71,50 @@ class DexterCommandsVars(DexterCommandGroup):
         accessing array elements - map elements may only be
         accessed with string keys.
         '''
-        obj = self.interface.data
-        for key in args:
-            if isinstance(obj, list) or isinstance(obj, tuple):
-                # Doesn't catch everything fancy, but good enough.
-                # Generally, real-world data will be loaded from JSON
-                # files anyways, which is a reasonable sanitary thing.
-                key = int(key)
-            try:
-                obj = obj[key]
-            except (KeyError, IndexError):
-                self.output('Failed to find key %r' % key)
-                return
+        try:
+            obj = self.traverse(args)
+        except TraversalError as e:
+            return self.output(str(e))
         self.output(json.dumps(obj, indent = 2, sort_keys=True))
+
+    def do_set(self, args):
+        '''
+        Set a value in variable storage.
+
+        Dexter has a storage area for JSON-compatible data.
+        The 'set' command stores an object there, based on
+        the given path and contents.
+
+        For example, 
+
+        msglog> set music {}
+
+        is a bit like doing 
+
+        >>> data["music"] = {}
+
+        in Python. Arguments are only cast to ints when
+        accessing array elements - map elements may only be
+        accessed with string keys. The final argument is parsed
+        as JSON.
+        '''
+        if len(args) < 1:
+            self.output("Not enough arguments, expected at least 1.")
+        traverse_chain = args[:-2]
+        traverse_last  = args[-2:-1]
+        new_value = json.loads(args[-1])
+
+        try:
+            obj = self.traverse(traverse_chain)
+        except TraversalError as e:
+            return self.output(str(e))
+
+        if len(traverse_last):
+            try:
+                last = normalize_key(obj, traverse_last[0])
+            except TraversalError as e:
+                return self.output(str(e))
+            obj[last] = new_value
+        else:
+            # Setting the root data object
+            self.interface.data = new_value

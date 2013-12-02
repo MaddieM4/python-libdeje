@@ -56,5 +56,6 @@ class TestDexterBasicGroup(DexterCommandTester):
             'get :: Print a value in variable storage.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
+            'set :: Set a value in variable storage.',
             'view :: List views, or select one.',
         ])
