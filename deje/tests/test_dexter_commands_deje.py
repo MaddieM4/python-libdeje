@@ -17,7 +17,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from deje.owner import Owner
+from ejtp.client import Client
+from deje.owner  import Owner
 
 from deje.tests.dexter_commands import DexterCommandTester
 
@@ -89,3 +90,43 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.owner.identity,
             self.interface.owner.identities.find_by_location(location)
         )
+
+    def test_on_ejtp(self):
+        self.interface.data = {
+            'identity': ["local", None, "jackson"],
+            'idcache' : {
+                '["local",null,"jackson"]': {
+                    'location': ["local", None, "jackson"],
+                    'name': 'daniel@sgc.gov',
+                    'encryptor': ['rotate', 4],
+                },
+                '["local",null,"tealc"]': {
+                    'location': ["local", None, "tealc"],
+                    'name': 'tealc@sgc.gov',
+                    'encryptor': ['rotate', 5],
+                },
+            },
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+            router = self.interface.owner.router
+            client = Client(
+                router,
+                ["local", None, "tealc"],
+                self.interface.owner.identities
+            )
+            self.assertEqual(
+                client.encryptor_cache,
+                self.interface.owner.client.encryptor_cache
+            )
+
+            client.write_json(
+                ["local", None, "jackson"],
+                {'type': 'example'}
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"tealc"] : example',
+            '["local",null,"jackson"] (ME) : deje-error',
+        ])

@@ -21,6 +21,7 @@ from persei import String
 from random import randint
 
 import ejtp.client
+import ejtp.router
 from ejtp import identity
 from deje import protocol
 from deje import errors
@@ -36,10 +37,26 @@ class Owner(object):
         self.identities.update_ident(self_ident)
         self.identity = self_ident
 
+        self.router    = router or ejtp.router.Router()
         self.documents = {}
         self.protocol  = protocol.ProtocolToplevel(self)
-        self.client = ejtp.client.Client(router, self.identity.location, self.identities, make_jack)
+        self.client    = ejtp.client.Client(
+            self.router,
+            self.identity.location,
+            self.identities,
+            make_jack
+        )
         self.client.rcv_callback = self.on_ejtp
+
+    @property
+    def identities(self):
+        return self._identities
+
+    @identities.setter
+    def identities(self, newcache):
+        self._identities = newcache
+        if hasattr(self, "client"):
+            self.client.encryptor_cache = newcache
 
     def own_document(self, document):
         document._owner = self

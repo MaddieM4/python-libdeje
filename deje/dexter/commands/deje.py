@@ -31,9 +31,22 @@ class DexterCommandsDEJE(DexterCommandGroup):
         except:
             msg_type = "<could not parse>"
 
-        logline = "New message: " + msg_type
+        logline = "%s : %s" % (strict(msg.sender).export(), msg_type)
         self.interface.output(logline, 'msglog')
         self.interface.owner.on_ejtp(msg, client)
+
+    def write_json_wrapped(self, addr, data, wrap_sender = True):
+        if type(data) == dict and 'type' in data:
+            msg_type = data['type']
+        else:
+            msg_type = "<msg type not provided>"
+
+        logline = '%s (ME) : %s' % (
+            self.interface.owner.identity.key.export(),
+            msg_type
+        )
+        self.interface.output(logline, 'msglog')
+        self.write_json(addr, data, wrap_sender)
 
     def get_params(self, *params):
         result = {}
@@ -79,5 +92,8 @@ class DexterCommandsDEJE(DexterCommandGroup):
         owner = Owner(ident)
         owner.identities = cache
         owner.client.rcv_callback = self.on_ejtp
+
+        self.write_json = owner.client.write_json
+        owner.client.write_json = self.write_json_wrapped
         self.interface.owner = owner
         self.output('DEJE initialized')
