@@ -91,17 +91,24 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.owner.identities.find_by_location(location)
         )
 
-    def test_on_ejtp(self):
+class TestDexterDEJEGroupInitialized(DexterCommandTester):
+
+    def setUp(self):
+        # Reuse setup, without being subclass and pulling in tests
+        DexterCommandTester.setUp(self)
+
+        self.j_loc = ["local", None, "jackson"]
+        self.t_loc = ["local", None, "tealc"]
         self.interface.data = {
-            'identity': ["local", None, "jackson"],
+            'identity': self.j_loc,
             'idcache' : {
                 '["local",null,"jackson"]': {
-                    'location': ["local", None, "jackson"],
+                    'location': self.j_loc,
                     'name': 'daniel@sgc.gov',
                     'encryptor': ['rotate', 4],
                 },
                 '["local",null,"tealc"]': {
-                    'location': ["local", None, "tealc"],
+                    'location': self.t_loc,
                     'name': 'tealc@sgc.gov',
                     'encryptor': ['rotate', 5],
                 },
@@ -109,19 +116,37 @@ class TestDexterDEJEGroup(DexterCommandTester):
         }
         with self.io:
             self.interface.do_command('dinit')
-            router = self.interface.owner.router
-            client = Client(
-                router,
-                ["local", None, "tealc"],
-                self.interface.owner.identities
-            )
-            self.assertEqual(
-                client.encryptor_cache,
-                self.interface.owner.client.encryptor_cache
-            )
+        self.router = self.interface.owner.router
+        self.tealc  = Client(
+            self.router,
+            self.t_loc,
+            self.interface.owner.identities
+        )
+        self.daniel = self.interface.owner.client
 
-            client.write_json(
-                ["local", None, "jackson"],
+    def test_basic_assertions(self):
+        self.assertEqual(
+            self.tealc.encryptor_cache,
+            self.daniel.encryptor_cache
+        )
+
+    def test_msg_external_str(self):
+        with self.io:
+            self.tealc.write_json(
+                self.j_loc,
+                'Hello, world'
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"tealc"] : <could not parse>',
+            '["local",null,"jackson"] (ME) : deje-error',
+        ])
+
+    def test_msg_external_map(self):
+        with self.io:
+            self.tealc.write_json(
+                self.j_loc,
                 {'type': 'example'}
             )
         self.assertEqual(self.interface.view.contents, [
@@ -129,4 +154,63 @@ class TestDexterDEJEGroup(DexterCommandTester):
             'DEJE initialized',
             '["local",null,"tealc"] : example',
             '["local",null,"jackson"] (ME) : deje-error',
+        ])
+
+    def test_msg_external_valid(self):
+        rcvd = []
+        self.tealc.rcv_callback = lambda msg, client: rcvd.append(msg)
+        with self.io:
+            self.tealc.write_json(
+                self.j_loc,
+                {'type': 'deje-sub-list-query', 'qid':5}
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"tealc"] : deje-sub-list-query',
+            '["local",null,"jackson"] (ME) : deje-sub-list-response',
+        ])
+        self.assertEqual(
+            rcvd.pop().unpack(),
+            {
+                'type': 'deje-sub-list-response',
+                'qid' : 5,
+                'subs': {},
+            }
+        )
+
+    def test_msg_sent_str(self):
+        with self.io:
+            self.interface.owner.client.write_json(
+                self.t_loc,
+                "Not even a mapping"
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"jackson"] (ME) : <msg type not provided>',
+        ])
+
+    def test_msg_sent_map(self):
+        with self.io:
+            self.interface.owner.client.write_json(
+                self.t_loc,
+                {"Does not have": "a type key"}
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"jackson"] (ME) : <msg type not provided>',
+        ])
+
+    def test_msg_sent_valid(self):
+        with self.io:
+            self.interface.owner.client.write_json(
+                self.t_loc,
+                {"type": "example"}
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"jackson"] (ME) : example',
         ])
