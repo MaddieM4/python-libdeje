@@ -23,15 +23,18 @@ from deje.dexter.commands.basic import DexterCommandsBasic
 from deje.dexter.commands.views import DexterCommandsViews
 from deje.dexter.commands.files import DexterCommandsFiles
 from deje.dexter.commands.vars  import DexterCommandsVars
+from deje.dexter.commands.deje  import DexterCommandsDEJE
 
 class DexterCommands(object):
     def __init__(self, interface):
         self.interface = interface
+        self.owner     = None
         self.groups    = set([
             DexterCommandsBasic(self),
             DexterCommandsViews(self),
             DexterCommandsFiles(self),
             DexterCommandsVars(self),
+            DexterCommandsDEJE(self),
         ])
 
     def do(self, cmdstr):
