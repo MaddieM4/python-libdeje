@@ -15,7 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 from persei import String
 from random import randint

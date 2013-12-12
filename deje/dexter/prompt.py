@@ -17,23 +17,66 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 import sys
+import curses
+
+DIRECTION_KEYS = (
+    curses.KEY_LEFT,
+    curses.KEY_RIGHT,
+    curses.KEY_UP,
+    curses.KEY_DOWN,
+    curses.KEY_SF,
+    curses.KEY_SR,
+    curses.KEY_NPAGE,
+    curses.KEY_PPAGE,
+    curses.KEY_MOVE,
+)
+
+IGNORE_KEYS = (
+    curses.KEY_RESIZE,
+)
 
 class DexterPrompt(object):
     def __init__(self, interface):
         self.interface = interface
+        self.current   = ""
+        self.history   = []
 
     def draw(self):
-        with self.terminal.location(0, self.terminal.height):
-            print(self.pstring, end='')
-            if hasattr(sys.stdout, 'flush'):
-                sys.stdout.flush()
+        self.terminal.prompt_win.erase()
+        outstr = self.pstring + self.current
+        self.terminal.prompt_win.insstr(0,0, outstr)
+        self.terminal.prompt_win.move(
+            0,
+            min(len(outstr), self.terminal.width-1)
+        )
+        self.terminal.prompt_win.cursyncup()
+        self.terminal.prompt_win.refresh()
+
+    def _wait(self):
+        while 1:
+            c = self.terminal.getch()
+            if c == ord('\n'):
+                self.history.append(self.current)
+                self.current = ""
+                return self.history[-1]
+            elif c == curses.KEY_BACKSPACE:
+                self.current = self.current[:-1]
+            elif c in DIRECTION_KEYS:
+                pass
+            elif c in IGNORE_KEYS:
+                pass
+            else:
+                try:
+                    self.current += chr(c)
+                except ValueError:
+                    pass
+            self.interface.redraw()
 
     def wait(self):
-        with self.terminal.location(0, self.terminal.height):
-            try:
-                return sys.stdin.readline().rstrip()
-            except KeyboardInterrupt:
-                return "quit"
+        try:
+            return self._wait()
+        except KeyboardInterrupt:
+            return "quit"
 
     @property
     def terminal(self):

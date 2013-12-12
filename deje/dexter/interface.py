@@ -18,8 +18,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import, print_function
 
 import signal
-import blessings
 
+from deje.dexter.terminal import Terminal
 from deje.dexter.view     import DexterView
 from deje.dexter.commands import DexterCommands
 from deje.dexter.prompt   import DexterPrompt
@@ -38,10 +38,8 @@ class DexterInterface(object):
         self.init_terminal(terminal)
 
     def init_terminal(self, terminal = None):
-        self.terminal = terminal or blessings.Terminal()
-        def on_resize(signum, frame):
-            self.redraw()
-        signal.signal(signal.SIGWINCH, on_resize)
+        self.terminal = terminal or Terminal()
+        signal.signal(signal.SIGWINCH, self.on_resize)
         self.redraw()
 
     def init_views(self):
@@ -50,11 +48,14 @@ class DexterInterface(object):
         for name, desc in INITIAL_VIEWS.items():
             self.views[name] = DexterView(self, desc)
 
+    def on_resize(self, *args):
+        self.terminal.on_resize()
+        self.redraw()
+
     def redraw(self):
-        with self.terminal.location(0,0):
-            print(self.terminal.clear())
         self.view.draw()
         self.prompt.draw()
+        self.terminal.stdscr.refresh()
 
     def do_command(self, command):
         self.output(self.prompt.pstring + command)
@@ -66,9 +67,10 @@ class DexterInterface(object):
         self.get_view(name).append(text)
 
     def repl(self):
-        while True:
-            cmd = self.prompt.wait()
-            self.do_command(cmd)
+        with self.terminal:
+            while True:
+                cmd = self.prompt.wait()
+                self.do_command(cmd)
 
     def get_view(self, name):
         if not name in self.views:
