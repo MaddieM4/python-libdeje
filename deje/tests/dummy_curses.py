@@ -32,7 +32,7 @@ class DummyContext(object):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         stderr("CONTEXT EXIT:  " + self.label)
 
-class DummyBlessingsTerminal(object):
+class DummyCursesTerminal(object):
     '''
     Class used for mocking/tests. Assumes that IO is being caught by an
     IOMock object, such that we can just print to stderr.

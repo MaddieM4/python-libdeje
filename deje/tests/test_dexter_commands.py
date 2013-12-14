@@ -28,67 +28,24 @@ class TestDexterCommands(DexterCommandTester):
     def test_missing(self):
         with self.io:
             self.interface.do_command("notacommand")
-        self.assertEqual(self.io.get_lines(), [
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,58)",
+        self.maxDiff = None
+        self.assertEqual(self.interface.view.contents, [
             "msglog> notacommand",
-            "CONTEXT EXIT:  location(0,58)",
-            "CONTEXT ENTER: location(0,59)",
             "No such command: 'notacommand'",
-            "CONTEXT EXIT:  location(0,59)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
         ])
 
     def test_blank(self):
         with self.io:
             self.interface.do_command('')
-        self.assertEqual(self.io.get_lines(), [
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,59)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,59)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
+        self.assertEqual(self.interface.view.contents, [
+            "msglog> ",
         ])
 
     def test_command_only(self):
         with self.io:
             self.interface.do_command('demo')
-        self.assertEqual(self.io.get_lines(), [
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,59)",
+        self.assertEqual(self.interface.view.contents, [
             "msglog> demo",
-            "CONTEXT EXIT:  location(0,59)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
         ])
         self.assertEqual(
             self.demo_log.pop(),
@@ -98,22 +55,8 @@ class TestDexterCommands(DexterCommandTester):
     def test_command_with_args(self):
         with self.io:
             self.interface.do_command('demo this that "the other thing"')
-        self.assertEqual(self.io.get_lines(), [
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
-            "CONTEXT ENTER: location(0,0)",
-            "clear",
-            "CONTEXT EXIT:  location(0,0)",
-            "CONTEXT ENTER: location(0,59)",
+        self.assertEqual(self.interface.view.contents, [
             'msglog> demo this that "the other thing"',
-            "CONTEXT EXIT:  location(0,59)",
-            "CONTEXT ENTER: location(0,60)",
-            "msglog>",
-            "CONTEXT EXIT:  location(0,60)",
         ])
         self.assertEqual(
             self.demo_log.pop(),

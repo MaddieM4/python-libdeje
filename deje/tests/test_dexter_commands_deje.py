@@ -22,6 +22,8 @@ from deje.owner  import Owner
 
 from deje.tests.dexter_commands import DexterCommandTester
 
+import time
+
 class TestDexterDEJEGroup(DexterCommandTester):
 
     def test_dinit_no_idcache(self):
@@ -91,6 +93,7 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.owner.identities.find_by_location(location)
         )
 
+'''
 class TestDexterDEJEGroupInitialized(DexterCommandTester):
 
     def setUp(self):
@@ -214,3 +217,4 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'DEJE initialized',
             '["local",null,"jackson"] (ME) : example',
         ])
+'''
