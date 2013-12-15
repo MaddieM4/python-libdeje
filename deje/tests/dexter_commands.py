@@ -21,7 +21,6 @@ from ejtp.util.compat        import unittest
 from ejtp.tests.test_scripts import IOMock
 
 from deje.dexter.interface   import DexterInterface
-#from deje.tests.dummy_curses import DummyCursesTerminal
 
 class DexterDemoGroup(object):
     def __init__(self):
@@ -42,28 +41,7 @@ class DexterCommandTester(unittest.TestCase):
         self.commands.groups.add(self.demo_group)
 
     def tearDown(self):
-        with self.terminal:
-            pass
-
-    def get_line(self, y):
-        width  = self.terminal.width
-        return ''.join(
-            chr(self.terminal.stdscr.inch(y, x))
-            for x in range(width)
-        )
-        
-    def get_lines(self):
-        height = self.terminal.height
-        return [
-            self.get_line(y) for y in range(height)
-        ]
-
-    def blank_lines(self, n):
-        return [self.blank_line] * n
-
-    @property
-    def blank_line(self):
-        return ' ' * self.terminal.width
+        self.terminal.stop()
 
     @property
     def demo_log(self):

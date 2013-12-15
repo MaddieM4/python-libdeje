@@ -22,15 +22,17 @@ class DexterView(object):
         self.contents  = []
 
     def draw(self):
-        self.terminal.view_win.erase()
         y_pos = self.terminal.height - 2
         x_max = self.terminal.width
-        for line in reversed(self.contents):
-            self.terminal.view_win.addstr(y_pos, 0, line[:x_max])
+        lines = list(self.contents)
+        while y_pos >= 0:
+            if len(lines):
+                line = lines.pop()
+            else:
+                line = ''
+            outstr = line[:x_max].ljust(x_max)
+            self.terminal.stdscr.addstr(y_pos, 0, outstr)
             y_pos -= 1
-            if y_pos < 0:
-                break
-        self.terminal.view_win.refresh()
 
     def append(self, text):
         self.contents.extend(text.split('\n'))

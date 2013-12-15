@@ -24,10 +24,10 @@ class Terminal(object):
         self.setup()
 
     def setup(self):
-        self.stdscr     = curses.initscr()
-        height, width   = self.stdscr.getmaxyx()
-        self.view_win   = self.stdscr.subwin(0, 0)
-        self.prompt_win = self.stdscr.subwin(height-1, 0)
+        self.stdscr = curses.initscr()
+
+    def stop(self):
+        curses.endwin()
 
     def __enter__(self):
         curses.noecho()
@@ -37,13 +37,13 @@ class Terminal(object):
         return self
 
     def __exit__(self, *args):
-        curses.endwin()
+        self.stop()
 
     def getch(self):
         return self.stdscr.getch()
 
     def on_resize(self):
-        curses.endwin()
+        self.stop()
         self.setup()
 
     @property

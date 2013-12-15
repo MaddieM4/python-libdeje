@@ -93,7 +93,6 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.owner.identities.find_by_location(location)
         )
 
-'''
 class TestDexterDEJEGroupInitialized(DexterCommandTester):
 
     def setUp(self):
@@ -217,4 +216,3 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'DEJE initialized',
             '["local",null,"jackson"] (ME) : example',
         ])
-'''

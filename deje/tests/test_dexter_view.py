@@ -30,7 +30,7 @@ class TestDexterView(unittest.TestCase):
         self.io = IOMock()
         with self.io:
             self.interface = DexterInterface()
-            self.view      = DexterView(self.interface)
+            self.view      = self.interface.view
             self.terminal  = self.interface.terminal
 
     def tearDown(self):
@@ -38,11 +38,13 @@ class TestDexterView(unittest.TestCase):
             pass
 
     def get_line(self, y):
-        return String(self.terminal.stdscr.instr(y,0)).export()
+        return ''.join(
+            chr(self.terminal.stdscr.inch(y,x))
+            for x in range(self.terminal.width)
+        )
         
     def get_lines(self):
         height = self.terminal.height
-        self.terminal.stdscr.putwin(open("hello", "wb"))
         return [
             self.get_line(y) for y in range(height)
         ]
@@ -67,63 +69,44 @@ class TestDexterView(unittest.TestCase):
         self.view.append("Line 2\nLine 3")
         self.assertEqual(self.view.contents, ["Line 1","Line 2","Line 3"])
 
-    '''
+    def assertLines(self, lines):
+        width    =  self.terminal.width
+        expected =  self.blank_lines(self.terminal.height-len(lines))
+        expected += [ line.ljust(width) for line in lines ]
+        self.assertEqual(self.get_lines(), expected)
+
     def test_draw_empty(self):
         with self.io:
-            self.view.draw()
-        self.assertEqual(self.get_lines(), [
-            'CONTEXT ENTER: location(0,0)',
-            'clear',
-            'CONTEXT EXIT:  location(0,0)',
-            'CONTEXT ENTER: location(0,60)',
+            self.interface.redraw()
+        self.assertLines([
             'msglog>',
-            'CONTEXT EXIT:  location(0,60)',
         ])
 
     def test_draw_one_line(self):
         with self.io:
             self.view.append("Hello")
-            self.view.draw()
-        self.assertEqual(self.get_lines(), [
-            'CONTEXT ENTER: location(0,0)',
-            'clear',
-            'CONTEXT EXIT:  location(0,0)',
-            'CONTEXT ENTER: location(0,60)',
-            'msglog>',
-            'CONTEXT EXIT:  location(0,60)',
-            'CONTEXT ENTER: location(0,59)',
+            self.interface.redraw()
+        self.assertLines([
             'Hello',
-            'CONTEXT EXIT:  location(0,59)',
+            'msglog>',
         ])
-    '''
 
     def test_draw_two_lines(self):
         with self.io:
             self.view.append("Hello\nworld")
             self.interface.redraw()
-            width = self.terminal.width
-        self.maxDiff = None
-        self.assertEqual(self.get_lines(), 
-            self.blank_lines(self.terminal.height-2) + [
-            'Hello'.ljust(width),
-            'world'.ljust(width),
-            'msglog>'.ljust(width),
+        self.assertLines([
+            'Hello',
+            'world',
+            'msglog>',
         ])
 
-    '''
     def test_draw_long_line(self):
         with self.io:
-            self.view.append("q" * 85)
-            self.view.draw()
-        self.assertEqual(self.get_lines(), [
-            'CONTEXT ENTER: location(0,0)',
-            'clear',
-            'CONTEXT EXIT:  location(0,0)',
-            'CONTEXT ENTER: location(0,60)',
+            width = self.terminal.width
+            self.view.append("q" * (width + 5))
+            self.interface.redraw()
+        self.assertLines([
+            'q' * width, # Trimmed to terminal width
             'msglog>',
-            'CONTEXT EXIT:  location(0,60)',
-            'CONTEXT ENTER: location(0,59)',
-            'q' * 80, # Trimmed to terminal width
-            'CONTEXT EXIT:  location(0,59)',
         ])
-    '''

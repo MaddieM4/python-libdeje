@@ -42,15 +42,16 @@ class DexterPrompt(object):
         self.history   = []
 
     def draw(self):
-        self.terminal.prompt_win.erase()
+        width  = self.terminal.width
+        height = self.terminal.height
         outstr = self.pstring + self.current
-        self.terminal.prompt_win.insstr(0,0, outstr)
-        self.terminal.prompt_win.move(
-            0,
-            min(len(outstr), self.terminal.width-1)
-        )
-        self.terminal.prompt_win.cursyncup()
-        self.terminal.prompt_win.refresh()
+
+        y = height - 1
+        x = min(len(outstr), width-1)
+
+        self.terminal.stdscr.insstr(y,0, outstr.ljust(width))
+        self.terminal.stdscr.move(y, x)
+        self.terminal.stdscr.cursyncup()
 
     def _wait(self):
         while 1:
