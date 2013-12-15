@@ -38,14 +38,22 @@ class DexterCommands(object):
         ])
 
     def do(self, cmdstr):
-        args = self.get_args(cmdstr)
+        try:
+            args = self.get_args(cmdstr)
+        except ValueError as e:
+            if len(e.args) == 0:
+                msg = 'Unknown error'
+            else:
+                msg = ', '.join(str(arg) for arg in e.args)
+            return self.output('Command parse error: ' + msg)
+
         if not len(args):
             return
+
         try:
             func = self.get_handler(args[0])
         except KeyError:
-            self.output('No such command: %r' % args[0])
-            return
+            return self.output('No such command: %r' % args[0])
 
         func(args[1:])
 

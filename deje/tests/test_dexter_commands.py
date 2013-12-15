@@ -62,3 +62,14 @@ class TestDexterCommands(DexterCommandTester):
             self.demo_log.pop(),
             ['this', 'that', 'the other thing']
         )
+
+    def test_command_with_bad_args(self):
+        '''
+        Induce a failure in shlex.split.
+        '''
+        with self.io:
+            self.interface.do_command('demo "there is no end quote')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> demo "there is no end quote',
+            'Command parse error: No closing quotation',
+        ])
