@@ -54,9 +54,9 @@ class TestDexterBasicGroup(DexterCommandTester):
             'dinit :: Initialize DEJE interactivity.',
             'fread :: Read contents of a file as a series of commands.',
             'fwrite :: Write contents of a view to a file.',
-            'get :: Print a value in variable storage.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
-            'set :: Set a value in variable storage.',
+            'vget :: Print a value in variable storage.',
             'view :: List views, or select one.',
+            'vset :: Set a value in variable storage.',
         ])

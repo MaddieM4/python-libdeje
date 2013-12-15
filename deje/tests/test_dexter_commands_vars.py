@@ -21,58 +21,58 @@ from deje.tests.dexter_commands import DexterCommandTester
 
 class TestDexterVarsGroup(DexterCommandTester):
 
-    def test_get_missing_dict(self):
+    def test_vget_missing_dict(self):
         # No data already filled in
         with self.io:
-            self.interface.do_command('get hello')
+            self.interface.do_command('vget hello')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get hello',
+            'msglog> vget hello',
             'Failed to find key: \'hello\'',
         ])
 
-    def test_get_untraversable(self):
+    def test_vget_untraversable(self):
         self.interface.data = { "hello": True }
         with self.io:
-            self.interface.do_command('get hello world')
+            self.interface.do_command('vget hello world')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get hello world',
+            'msglog> vget hello world',
             'Cannot inspect properties of object: True',
         ])
 
-    def test_get_dict(self):
+    def test_vget_dict(self):
         self.interface.data['example'] = 'simple'
         with self.io:
-            self.interface.do_command('get example')
+            self.interface.do_command('vget example')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get example',
+            'msglog> vget example',
             '"simple"',
         ])
 
-    def test_get_dict_multilayer(self):
+    def test_vget_dict_multilayer(self):
         self.interface.data = {
             'example': {
                 'inside that' : 'creamy filling'
             }
         }
         with self.io:
-            self.interface.do_command('get example "inside that"')
+            self.interface.do_command('vget example "inside that"')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get example "inside that"',
+            'msglog> vget example "inside that"',
             '"creamy filling"',
         ])
 
-    def test_get_array_missing(self):
+    def test_vget_array_missing(self):
         self.interface.data = {
             'example': []
         }
         with self.io:
-            self.interface.do_command('get example 0')
+            self.interface.do_command('vget example 0')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get example 0',
+            'msglog> vget example 0',
             'Failed to find key: 0',
         ])
 
-    def test_get_array(self):
+    def test_vget_array(self):
         self.interface.data = {
             'example': [
                 'this',
@@ -80,13 +80,13 @@ class TestDexterVarsGroup(DexterCommandTester):
             ]
         }
         with self.io:
-            self.interface.do_command('get example 1')
+            self.interface.do_command('vget example 1')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get example 1',
+            'msglog> vget example 1',
             '"that"',
         ])
 
-    def test_get_complex(self):
+    def test_vget_complex(self):
         self.interface.data = {
             'example': [
                 'this',
@@ -100,9 +100,9 @@ class TestDexterVarsGroup(DexterCommandTester):
             ]
         }
         with self.io:
-            self.interface.do_command('get example')
+            self.interface.do_command('vget example')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> get example',
+            'msglog> vget example',
             '[',
             '  "this", ',
             '  "that", ',
@@ -115,36 +115,36 @@ class TestDexterVarsGroup(DexterCommandTester):
             ']',
         ])
 
-    def test_set_bad_traversal(self):
+    def test_vset_bad_traversal(self):
         with self.io:
-            self.interface.do_command('set a b c 0')
+            self.interface.do_command('vset a b c 0')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> set a b c 0',
+            'msglog> vset a b c 0',
             'Failed to find key: \'a\'',
         ])
 
-    def test_set_untraversable(self):
+    def test_vset_untraversable(self):
         self.interface.data = { "hello": True }
         with self.io:
-            self.interface.do_command('set hello world 0')
+            self.interface.do_command('vset hello world 0')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> set hello world 0',
+            'msglog> vset hello world 0',
             'Cannot inspect properties of object: True',
         ])
 
-    def test_set_simple(self):
+    def test_vset_simple(self):
         with self.io:
-            self.interface.do_command('set a {}')
+            self.interface.do_command('vset a {}')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> set a {}',
+            'msglog> vset a {}',
         ])
         self.assertEqual(
             self.interface.data,
             { 'a': {} }
         )
 
-    def test_set_complex(self):
-        cmd = 'set a \'[4, true, null, {"no":false}]\''
+    def test_vset_complex(self):
+        cmd = 'vset a \'[4, true, null, {"no":false}]\''
         with self.io:
             self.interface.do_command(cmd)
         self.assertEqual(self.interface.view.contents, [
@@ -159,8 +159,8 @@ class TestDexterVarsGroup(DexterCommandTester):
             }
         )
 
-    def test_set_bad_json(self):
-        cmd = 'set hello world'
+    def test_vset_bad_json(self):
+        cmd = 'vset hello world'
         with self.io:
             self.interface.do_command(cmd)
         self.assertEqual(self.interface.view.contents, [
@@ -168,13 +168,13 @@ class TestDexterVarsGroup(DexterCommandTester):
             'Could not decode last parameter as JSON.',
         ])
 
-    def test_set_multi_traversal(self):
+    def test_vset_multi_traversal(self):
         with self.io:
-            self.interface.do_command('set a {}')
-            self.interface.do_command('set a b 3')
+            self.interface.do_command('vset a {}')
+            self.interface.do_command('vset a b 3')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> set a {}',
-            'msglog> set a b 3',
+            'msglog> vset a {}',
+            'msglog> vset a b 3',
         ])
         self.assertEqual(
             self.interface.data,
@@ -183,11 +183,11 @@ class TestDexterVarsGroup(DexterCommandTester):
             }
         )
 
-    def test_set_root(self):
+    def test_vset_root(self):
         with self.io:
-            self.interface.do_command('set \'{"hello":"world"}\'')
+            self.interface.do_command('vset \'{"hello":"world"}\'')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> set \'{"hello":"world"}\'',
+            'msglog> vset \'{"hello":"world"}\'',
         ])
         self.assertEqual(
             self.interface.data,

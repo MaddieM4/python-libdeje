@@ -51,17 +51,17 @@ class DexterCommandsVars(DexterCommandGroup):
                 raise TraversalError('Failed to find key', key)
         return obj
 
-    def do_get(self, args):
+    def do_vget(self, args):
         '''
         Print a value in variable storage.
 
         Dexter has a storage area for JSON-compatible data.
-        The 'get' command prints an object in storage, based
+        The 'vget' command prints an object in storage, based
         on the given path.
 
         For example, 
 
-        msglog> get music artists "Professor Kliq"
+        msglog> vget music artists "Professor Kliq"
 
         is a bit like doing 
 
@@ -77,17 +77,17 @@ class DexterCommandsVars(DexterCommandGroup):
             return self.output(str(e))
         self.output(json.dumps(obj, indent = 2, sort_keys=True))
 
-    def do_set(self, args):
+    def do_vset(self, args):
         '''
         Set a value in variable storage.
 
         Dexter has a storage area for JSON-compatible data.
-        The 'set' command stores an object there, based on
+        The 'vset' command stores an object there, based on
         the given path and contents.
 
         For example, 
 
-        msglog> set music {}
+        msglog> vset music {}
 
         is a bit like doing 
 
