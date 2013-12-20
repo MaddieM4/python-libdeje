@@ -17,9 +17,11 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from ejtp.client import Client
-from deje.owner  import Owner
+from ejtp.client   import Client
+from deje.owner    import Owner
+from deje.document import Document
 
+from deje.handlers.lua          import handler_document
 from deje.tests.dexter_commands import DexterCommandTester
 
 import time
@@ -45,31 +47,7 @@ class TestDexterDEJEGroup(DexterCommandTester):
             'Need to set variable \'identity\'',
         ])
 
-    def test_dinit_no_such_identity(self):
-        self.interface.data = {
-            'identity': ["local", None, "jackson"],
-            'idcache' : {},
-        }
-        with self.io:
-            self.interface.do_command('dinit')
-        self.assertEqual(self.interface.view.contents, [
-            'msglog> dinit',
-            'No identity in cache for ["local",null,"jackson"]',
-        ])
-
-    def test_dinit_idcache_read_failure(self):
-        self.interface.data = {
-            'identity': ["local", None, "jackson"],
-            'idcache' : {'x':'yz'},
-        }
-        with self.io:
-            self.interface.do_command('dinit')
-        self.assertEqual(self.interface.view.contents, [
-            'msglog> dinit',
-            'Could not deserialize data in idcache',
-        ])
-
-    def test_dinit_success(self):
+    def test_dinit_no_docname(self):
         location = ["local", None, "jackson"]
         self.interface.data = {
             'identity': location,
@@ -85,12 +63,132 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.do_command('dinit')
         self.assertEqual(self.interface.view.contents, [
             'msglog> dinit',
+            'Need to set variable \'docname\'',
+        ])
+
+    def test_dinit_no_docserialized(self):
+        location = ["local", None, "jackson"]
+        self.interface.data = {
+            'identity': location,
+            'idcache' : {
+                '["local",null,"jackson"]': {
+                    'location': location,
+                    'name': 'daniel@sgc.gov',
+                    'encryptor': ['rotate', 4],
+                }
+            },
+            'docname' : 'example',
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'Need to set variable \'docserialized\'',
+        ])
+
+    def test_dinit_no_such_identity(self):
+        self.interface.data = {
+            'identity': ["local", None, "jackson"],
+            'idcache' : {},
+            'docname' : None,
+            'docserialized' : None,
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'No identity in cache for ["local",null,"jackson"]',
+        ])
+
+    def test_dinit_idcache_read_failure(self):
+        self.interface.data = {
+            'identity': ["local", None, "jackson"],
+            'idcache' : {'x':'yz'},
+            'docname' : None,
+            'docserialized' : None,
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'Could not deserialize data in idcache',
+        ])
+
+    def test_dinit_bad_docname(self):
+        location = ["local", None, "jackson"]
+        self.interface.data = {
+            'identity': ["local", None, "jackson"],
+            'idcache' : {
+                '["local",null,"jackson"]': {
+                    'location': location,
+                    'name': 'daniel@sgc.gov',
+                    'encryptor': ['rotate', 4],
+                }
+            },
+            'docname' : None,
+            'docserialized' : None,
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'Not a valid docname: null',
+        ])
+
+    def test_dinit_bad_docserialized(self):
+        location = ["local", None, "jackson"]
+        self.interface.data = {
+            'identity': ["local", None, "jackson"],
+            'idcache' : {
+                '["local",null,"jackson"]': {
+                    'location': location,
+                    'name': 'daniel@sgc.gov',
+                    'encryptor': ['rotate', 4],
+                }
+            },
+            'docname' : 'example',
+            'docserialized' : None,
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'Failed to deserialize data:',
+            'TypeError("\'NoneType\' object is not subscriptable",)',
+        ])
+
+
+    def test_dinit_success(self):
+        location  = ["local", None, "jackson"]
+        docserial = handler_document('echo_chamber').serialize()
+        self.interface.data = {
+            'identity': location,
+            'idcache' : {
+                '["local",null,"jackson"]': {
+                    'location': location,
+                    'name': 'daniel@sgc.gov',
+                    'encryptor': ['rotate', 4],
+                }
+            },
+            'docname': 'example',
+            'docserialized': docserial
+        }
+        with self.io:
+            self.interface.do_command('dinit')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
             'DEJE initialized',
         ])
         self.assertIsInstance(self.interface.owner, Owner)
         self.assertEqual(
             self.interface.owner.identity,
             self.interface.owner.identities.find_by_location(location)
+        )
+        self.assertIsInstance(self.interface.document, Document)
+        self.assertEqual(self.interface.document.name, 'example')
+        self.assertEqual(
+            self.interface.document.serialize(),
+            docserial
         )
 
 class TestDexterDEJEGroupInitialized(DexterCommandTester):
@@ -101,6 +199,7 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
 
         self.j_loc = ["local", None, "jackson"]
         self.t_loc = ["local", None, "tealc"]
+
         self.interface.data = {
             'identity': self.j_loc,
             'idcache' : {
@@ -115,6 +214,8 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
                     'encryptor': ['rotate', 5],
                 },
             },
+            'docname': 'example',
+            'docserialized': handler_document('echo_chamber').serialize()
         }
         with self.io:
             self.interface.do_command('dinit')

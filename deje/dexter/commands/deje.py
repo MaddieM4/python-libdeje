@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from ejtp.util.hasher import strict
 from ejtp.identity    import IdentityCache
 from deje.owner       import Owner
+from deje.document    import Document
 
 from deje.dexter.commands.group import DexterCommandGroup
 
@@ -64,6 +65,8 @@ class DexterCommandsDEJE(DexterCommandGroup):
 
         * idcache - EJTP identity cache
         * identity - location of EJTP identity in cache
+        * docname - Name of the document for network sync
+        * docserialized - serialized version of document
 
         The dinit command can be run more than once, but it's
         a bit of a reset, and may cause data loss in the
@@ -73,7 +76,12 @@ class DexterCommandsDEJE(DexterCommandGroup):
         initialization will have no effect.
         '''
         try:
-            params = self.get_params('idcache', 'identity')
+            params = self.get_params(
+                'idcache',
+                'identity',
+                'docname',
+                'docserialized'
+            )
         except KeyError as e:
             return self.output('Need to set variable %r' % e.args[0])
         
@@ -96,4 +104,17 @@ class DexterCommandsDEJE(DexterCommandGroup):
         self.write_json = owner.client.write_json
         owner.client.write_json = self.write_json_wrapped
         self.interface.owner = owner
+
+        if type(params['docname']) != str:
+            json_str = strict(params['docname']).export()
+            return self.output('Not a valid docname: ' + json_str)
+
+        doc = Document(params['docname'], owner=owner)
+        self.interface.document = doc
+
+        try:
+            doc.deserialize(params['docserialized'])
+        except Exception as e:
+            return self.output('Failed to deserialize data:\n%r' % e)
+
         self.output('DEJE initialized')
