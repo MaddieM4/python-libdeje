@@ -22,9 +22,10 @@ from deje.owner    import Owner
 from deje.document import Document
 
 from deje.handlers.lua          import handler_document
-from deje.tests.dexter_commands import DexterCommandTester
+from deje.tests.dexter_commands import DexterCommandTester, Tempfile
 
 import time
+import json
 
 class TestDexterDEJEGroup(DexterCommandTester):
 
@@ -151,11 +152,16 @@ class TestDexterDEJEGroup(DexterCommandTester):
         }
         with self.io:
             self.interface.do_command('dinit')
-        self.assertEqual(self.interface.view.contents, [
+        expected = [
             'msglog> dinit',
             'Failed to deserialize data:',
-            'TypeError("\'NoneType\' object is not subscriptable",)',
-        ])
+        ]
+        # Get Python-version-specific error repr
+        try:
+            None[5]
+        except TypeError as e:
+            expected.append(repr(e))
+        self.assertEqual(self.interface.view.contents, expected)
 
 
     def test_dinit_success(self):
@@ -190,6 +196,15 @@ class TestDexterDEJEGroup(DexterCommandTester):
             self.interface.document.serialize(),
             docserial
         )
+
+
+    def test_dexport_no_init(self):
+        with self.io:
+            self.interface.do_command('dexport')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dexport',
+            'DEJE not initialized, see dinit command',
+        ])
 
 class TestDexterDEJEGroupInitialized(DexterCommandTester):
 
@@ -316,4 +331,33 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'msglog> dinit',
             'DEJE initialized',
             '["local",null,"jackson"] (ME) : example',
+        ])
+
+    def test_dexport_wrong_num_args(self):
+        with self.io:
+            self.interface.do_command('dexport')
+            self.interface.do_command('dexport a b')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> dexport',
+            'dexport command takes one argument (filename)',
+            'msglog> dexport a b',
+            'dexport command takes one argument (filename)',
+        ])
+
+    def test_dexport(self):
+        with Tempfile() as fname:
+            cmd = 'dexport ' + fname
+            with self.io:
+                self.interface.do_command(cmd)
+            written = open(fname, 'r').read()
+        self.assertEqual(
+            json.loads(written),
+            self.interface.document.serialize()
+        )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> ' + cmd,
         ])

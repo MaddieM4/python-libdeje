@@ -17,18 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-import os
-import tempfile
-
-from deje.tests.dexter_commands import DexterCommandTester
-
-class Tempfile(str):
-    def __enter__(self):
-        _, self.path = tempfile.mkstemp()
-        return self.path
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        os.remove(self.path)
+from deje.tests.dexter_commands import DexterCommandTester, Tempfile
 
 class TestDexterBasicGroup(DexterCommandTester):
 

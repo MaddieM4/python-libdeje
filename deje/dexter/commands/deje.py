@@ -17,6 +17,8 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
+import json
+
 from ejtp.util.hasher import strict
 from ejtp.identity    import IdentityCache
 from deje.owner       import Owner
@@ -117,4 +119,30 @@ class DexterCommandsDEJE(DexterCommandGroup):
         except Exception as e:
             return self.output('Failed to deserialize data:\n%r' % e)
 
+        self.interface.deje_initialized = True
+
         self.output('DEJE initialized')
+
+    @property
+    def initialized(self):
+        return hasattr(self.interface, 'deje_initialized')
+
+    def do_dexport(self, args):
+        '''
+        Serialize the current document to disk.
+
+        Takes one command-line arg, for the filename.
+
+        Will fail if DEJE has not already been initialized
+        with the dinit command.
+        '''
+        if not self.initialized:
+            return self.output('DEJE not initialized, see dinit command')
+
+        if len(args) != 1:
+            return self.output('dexport command takes one argument (filename)')
+        fname = args[0]
+
+        # TODO: Defend against failures in serialization and io
+        with open(fname, 'w') as f:
+            json.dump(self.interface.document.serialize(), f)

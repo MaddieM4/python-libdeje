@@ -51,6 +51,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'msglog> commands',
             'commands :: List all available commands.',
             'demo :: No description available.',
+            'dexport :: Serialize the current document to disk.',
             'dinit :: Initialize DEJE interactivity.',
             'fread :: Read contents of a file as a series of commands.',
             'fwrite :: Write contents of a view to a file.',

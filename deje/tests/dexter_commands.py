@@ -17,6 +17,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
+import os
+import tempfile
+
 from ejtp.util.compat        import unittest
 from ejtp.tests.test_scripts import IOMock
 
@@ -46,3 +49,11 @@ class DexterCommandTester(unittest.TestCase):
     @property
     def demo_log(self):
         return self.demo_group.log_obj
+
+class Tempfile(str):
+    def __enter__(self):
+        _, self.path = tempfile.mkstemp()
+        return self.path
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        os.remove(self.path)
