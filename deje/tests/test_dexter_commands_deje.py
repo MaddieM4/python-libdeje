@@ -341,9 +341,9 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'msglog> dinit',
             'DEJE initialized',
             'msglog> dexport',
-            'dexport command takes one argument (filename)',
+            'dexport takes exactly 1 arg(s), got 0',
             'msglog> dexport a b',
-            'dexport command takes one argument (filename)',
+            'dexport takes exactly 1 arg(s), got 2',
         ])
 
     def test_dexport(self):

@@ -19,6 +19,7 @@ from __future__ import absolute_import
 
 import shlex
 
+from deje.dexter.commands.group import DexterVisibleError
 from deje.dexter.commands.basic import DexterCommandsBasic
 from deje.dexter.commands.views import DexterCommandsViews
 from deje.dexter.commands.files import DexterCommandsFiles
@@ -55,7 +56,10 @@ class DexterCommands(object):
         except KeyError:
             return self.output('No such command: %r' % args[0])
 
-        func(args[1:])
+        try:
+            func(args[1:])
+        except DexterVisibleError as e:
+            self.output(str(e))
 
     def get_args(self, cmdstr):
         return shlex.split(cmdstr)

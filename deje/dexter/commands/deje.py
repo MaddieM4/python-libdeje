@@ -51,12 +51,6 @@ class DexterCommandsDEJE(DexterCommandGroup):
         self.interface.output(logline, 'msglog')
         self.write_json(addr, data, wrap_sender)
 
-    def get_params(self, *params):
-        result = {}
-        for pname in params:
-            result[pname] = self.interface.data[pname]
-        return result
-
     def do_dinit(self, args):
         '''
         Initialize DEJE interactivity.
@@ -78,26 +72,26 @@ class DexterCommandsDEJE(DexterCommandGroup):
         initialization will have no effect.
         '''
         try:
-            params = self.get_params(
+            params = self.get_vars(
                 'idcache',
                 'identity',
                 'docname',
                 'docserialized'
             )
         except KeyError as e:
-            return self.output('Need to set variable %r' % e.args[0])
+            self.fail('Need to set variable %r' % e.args[0])
         
         cache = IdentityCache()
         try:
             cache.deserialize(params['idcache'])
         except:
-            return self.output('Could not deserialize data in idcache')
+            self.fail('Could not deserialize data in idcache')
 
         try:
             ident = cache.find_by_location(params['identity'])
         except KeyError:
             loc_string = strict(params['identity']).export()
-            return self.output('No identity in cache for ' + loc_string)
+            self.fail('No identity in cache for ' + loc_string)
 
         owner = Owner(ident)
         owner.identities = cache
@@ -109,7 +103,7 @@ class DexterCommandsDEJE(DexterCommandGroup):
 
         if type(params['docname']) != str:
             json_str = strict(params['docname']).export()
-            return self.output('Not a valid docname: ' + json_str)
+            self.fail('Not a valid docname: ' + json_str)
 
         doc = Document(params['docname'], owner=owner)
         self.interface.document = doc
@@ -117,7 +111,7 @@ class DexterCommandsDEJE(DexterCommandGroup):
         try:
             doc.deserialize(params['docserialized'])
         except Exception as e:
-            return self.output('Failed to deserialize data:\n%r' % e)
+            self.fail('Failed to deserialize data:\n%r' % e)
 
         self.interface.deje_initialized = True
 
@@ -137,12 +131,11 @@ class DexterCommandsDEJE(DexterCommandGroup):
         with the dinit command.
         '''
         if not self.initialized:
-            return self.output('DEJE not initialized, see dinit command')
+            self.fail('DEJE not initialized, see dinit command')
+        self.verify_num_args('dexport', len(args), 1, 1)
 
-        if len(args) != 1:
-            return self.output('dexport command takes one argument (filename)')
         fname = args[0]
-
-        # TODO: Defend against failures in serialization and io
-        with open(fname, 'w') as f:
-            json.dump(self.interface.document.serialize(), f)
+        self.fwrite(
+            fname,
+            json.dumps(self.interface.document.serialize())
+        )

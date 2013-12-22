@@ -23,8 +23,7 @@ class DexterCommandsFiles(DexterCommandGroup):
 
     def verify_args(self, args, name):
         if len(args) < 1 or len(args) > 2:
-            self.output("%s takes 1-2 args, got %d" % (name, len(args)) )
-            return (None, None)
+            self.fail("%s takes 1-2 args, got %d" % (name, len(args)) )
 
         filename = args[0]
         if len(args) == 1:
@@ -44,15 +43,8 @@ class DexterCommandsFiles(DexterCommandGroup):
         to the file.
         '''
         filename, viewname = self.verify_args(args, 'fwrite')
-        if not filename:
-            return
-        try:
-            with open(filename, 'w') as thefile:
-                view = self.interface.get_view(viewname)
-                thefile.write('\n'.join(view.contents))
-        except IOError as e:
-            self.output('IOError %d: %s' % (e.errno, e.strerror))
-            return
+        view = self.interface.get_view(viewname)
+        self.fwrite(filename, '\n'.join(view.contents))
         self.output("Wrote view %s to file %s" % (viewname, filename))
 
     def do_fread(self, args):
@@ -68,18 +60,7 @@ class DexterCommandsFiles(DexterCommandGroup):
         view before executing the commands.
         '''
         filename, viewname = self.verify_args(args, 'fread')
-        if not filename:
-            return
-
-        try:
-            thefile = open(filename, 'r')
-        except IOError as e:
-            self.output('IOError %d: %s' % (e.errno, e.strerror))
-            return
-
+        lines = self.fread(filename).split('\n')
         self.interface.cur_view = viewname
-        try:
-            for line in thefile:
-                self.interface.do_command(line.strip())
-        finally:
-            thefile.close()
+        for line in lines:
+            self.interface.do_command(line.strip())
