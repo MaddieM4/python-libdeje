@@ -99,27 +99,26 @@ class DexterCommandsDEJE(DexterCommandGroup):
 
         self.write_json = owner.client.write_json
         owner.client.write_json = self.write_json_wrapped
-        self.interface.owner = owner
 
         if type(params['docname']) != str:
             json_str = strict(params['docname']).export()
             self.fail('Not a valid docname: ' + json_str)
 
         doc = Document(params['docname'], owner=owner)
-        self.interface.document = doc
 
         try:
             doc.deserialize(params['docserialized'])
         except Exception as e:
             self.fail('Failed to deserialize data:\n%r' % e)
 
-        self.interface.deje_initialized = True
-
+        # Wait until everything that could fail has gone right
+        self.interface.owner = owner
+        self.interface.document = doc
         self.output('DEJE initialized')
 
     @property
     def initialized(self):
-        return hasattr(self.interface, 'deje_initialized')
+        return hasattr(self.interface, 'document')
 
     def do_dexport(self, args):
         '''

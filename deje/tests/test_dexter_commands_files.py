@@ -56,9 +56,9 @@ class TestDexterBasicGroup(DexterCommandTester):
             self.interface.do_command('fwrite blah blah blah')
         self.assertEqual(self.interface.view.contents, [
             'msglog> fwrite',
-            'fwrite takes 1-2 args, got 0',
+            'fwrite takes 1-2 arg(s), got 0',
             'msglog> fwrite blah blah blah',
-            'fwrite takes 1-2 args, got 3',
+            'fwrite takes 1-2 arg(s), got 3',
         ])
 
     def test_fread_current_view(self):
@@ -107,7 +107,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             self.interface.do_command('fread blah blah blah')
         self.assertEqual(self.interface.view.contents, [
             'msglog> fread',
-            'fread takes 1-2 args, got 0',
+            'fread takes 1-2 arg(s), got 0',
             'msglog> fread blah blah blah',
-            'fread takes 1-2 args, got 3',
+            'fread takes 1-2 arg(s), got 3',
         ])

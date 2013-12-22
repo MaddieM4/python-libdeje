@@ -22,8 +22,7 @@ from deje.dexter.commands.group import DexterCommandGroup
 class DexterCommandsFiles(DexterCommandGroup):
 
     def verify_args(self, args, name):
-        if len(args) < 1 or len(args) > 2:
-            self.fail("%s takes 1-2 args, got %d" % (name, len(args)) )
+        self.verify_num_args(name, len(args), 1, 2)
 
         filename = args[0]
         if len(args) == 1:
