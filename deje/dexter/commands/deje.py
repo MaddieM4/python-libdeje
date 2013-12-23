@@ -120,6 +120,27 @@ class DexterCommandsDEJE(DexterCommandGroup):
     def initialized(self):
         return hasattr(self.interface, 'document')
 
+    def req_init(self):
+        if not self.initialized:
+            self.fail('DEJE not initialized, see dinit command')
+
+    def do_dvexport(self, args):
+        '''
+        Serialize the current document to variable storage.
+
+        Takes one command-line arg, for the var name.
+        Cannot store deep into the variable tree.
+
+        Will fail if DEJE has not already been initialized
+        with the dinit command.
+        '''
+        self.req_init()
+        self.verify_num_args('dvexport', len(args), 1, 1)
+
+        vname  = args[0]
+        serial = self.interface.document.serialize()
+        self.interface.data[vname] = serial
+
     def do_dexport(self, args):
         '''
         Serialize the current document to disk.
@@ -129,8 +150,7 @@ class DexterCommandsDEJE(DexterCommandGroup):
         Will fail if DEJE has not already been initialized
         with the dinit command.
         '''
-        if not self.initialized:
-            self.fail('DEJE not initialized, see dinit command')
+        self.req_init()
         self.verify_num_args('dexport', len(args), 1, 1)
 
         fname = args[0]

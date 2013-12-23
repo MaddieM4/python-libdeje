@@ -53,6 +53,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'demo :: No description available.',
             'dexport :: Serialize the current document to disk.',
             'dinit :: Initialize DEJE interactivity.',
+            'dvexport :: Serialize the current document to variable storage.',
             'fread :: Read contents of a file as a series of commands.',
             'fwrite :: Write contents of a view to a file.',
             'help :: A simple little help message.',

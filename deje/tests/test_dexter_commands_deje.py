@@ -198,11 +198,14 @@ class TestDexterDEJEGroup(DexterCommandTester):
         )
 
 
-    def test_dexport_no_init(self):
+    def test_other_no_init(self):
         with self.io:
             self.interface.do_command('dexport')
+            self.interface.do_command('dvexport')
         self.assertEqual(self.interface.view.contents, [
             'msglog> dexport',
+            'DEJE not initialized, see dinit command',
+            'msglog> dvexport',
             'DEJE not initialized, see dinit command',
         ])
 
@@ -332,6 +335,32 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'DEJE initialized',
             '["local",null,"jackson"] (ME) : example',
         ])
+
+    def test_dvexport_wrong_num_args(self):
+        with self.io:
+            self.interface.do_command('dvexport')
+            self.interface.do_command('dvexport a b')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> dvexport',
+            'dvexport takes exactly 1 arg(s), got 0',
+            'msglog> dvexport a b',
+            'dvexport takes exactly 1 arg(s), got 2',
+        ])
+
+    def test_dvexport(self):
+        with self.io:
+            self.interface.do_command('dvexport x')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> dvexport x',
+        ])
+        self.assertEqual(
+            self.interface.data['x'],
+            self.interface.document.serialize()
+        )
 
     def test_dexport_wrong_num_args(self):
         with self.io:
