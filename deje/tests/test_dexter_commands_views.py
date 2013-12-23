@@ -26,6 +26,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             self.interface.do_command('view')
         self.assertEqual(self.interface.view.contents, [
             'msglog> view',
+            'doc :: Document-level events and messages.',
             'msglog :: Shows all EJTP messages going in or out.',
         ])
 
@@ -35,7 +36,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             self.interface.do_command('view')
         self.assertEqual(
             sorted(list(self.interface.views.keys())),
-            ['cows', 'msglog']
+            ['cows', 'doc', 'msglog']
         )
         self.assertEqual(self.interface.views['msglog'].contents, [
             'msglog> view cows',
@@ -43,5 +44,6 @@ class TestDexterBasicGroup(DexterCommandTester):
         self.assertEqual(self.interface.views['cows'].contents, [
             'cows> view',
             'cows',
+            'doc :: Document-level events and messages.',
             'msglog :: Shows all EJTP messages going in or out.',
         ])
