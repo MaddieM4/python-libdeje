@@ -24,6 +24,9 @@ from ejtp.identity    import IdentityCache
 from deje.owner       import Owner
 from deje.document    import Document
 
+from deje.event       import Event
+from deje.read        import ReadRequest
+
 from deje.dexter.commands.group import DexterCommandGroup
 
 class DexterCommandsDEJE(DexterCommandGroup):
@@ -123,6 +126,53 @@ class DexterCommandsDEJE(DexterCommandGroup):
     def req_init(self):
         if not self.initialized:
             self.fail('DEJE not initialized, see dinit command')
+
+    def do_devent(self, args):
+        '''
+        Propose a change to the document.
+
+        Sends an Event action to the participants in
+        this document, and prints progress, success,
+        and failure to the 'doc' view as such updates
+        are received.
+
+        Takes one argument, the name of the variable
+        containing the event contents. This must be a
+        top-level variable.
+
+        Will fail if DEJE has not already been initialized
+        with the dinit command.
+        '''
+        self.req_init()
+        self.verify_num_args('devent', len(args), 1, 1)
+
+        vname  = args[0]
+        if not vname in self.interface.data:
+            self.fail("No such variable %r" % vname)
+        content = self.interface.data[vname]
+
+        author  = self.interface.owner.identity
+        version = self.interface.document.version
+        action  = Event(content, author, version)
+
+        # TODO: Send action
+
+    def do_dget_latest(self, args):
+        '''
+        Get the latest version number of the doc.
+
+        This puts in a Read action to the participants
+        in the document, and will print the result to
+        the 'doc' view.
+
+        Will fail if DEJE has not already been initialized
+        with the dinit command.
+        '''
+        self.req_init()
+        author = self.interface.owner.identity
+        action = ReadRequest(author)
+
+        # TODO: Send action
 
     def do_dvexport(self, args):
         '''

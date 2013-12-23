@@ -200,12 +200,18 @@ class TestDexterDEJEGroup(DexterCommandTester):
 
     def test_other_no_init(self):
         with self.io:
-            self.interface.do_command('dexport')
+            self.interface.do_command('devent')
+            self.interface.do_command('dget_latest')
             self.interface.do_command('dvexport')
+            self.interface.do_command('dexport')
         self.assertEqual(self.interface.view.contents, [
-            'msglog> dexport',
+            'msglog> devent',
+            'DEJE not initialized, see dinit command',
+            'msglog> dget_latest',
             'DEJE not initialized, see dinit command',
             'msglog> dvexport',
+            'DEJE not initialized, see dinit command',
+            'msglog> dexport',
             'DEJE not initialized, see dinit command',
         ])
 
