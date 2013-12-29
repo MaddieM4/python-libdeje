@@ -35,9 +35,13 @@ class SRFlag(object):
         self.valid = False
 
 class API(object):
-    def __init__(self, document):
-        self.document = document
+    def __init__(self, interpreter):
+        self.interpreter = interpreter
         self.queue = []
+
+    @property
+    def document(self):
+        return self.interpreter.document
 
     def process_queue(self):
         while self.queue:

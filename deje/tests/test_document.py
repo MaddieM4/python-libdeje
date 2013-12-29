@@ -87,6 +87,7 @@ class TestDocumentSimple(unittest.TestCase):
 
         self.assertEqual(list(newdoc.resources.keys()), ['/example'])
         self.assertIsInstance(newdoc.resources['/example'], Resource)
+        self.assertEqual(newdoc.resources['/example'].document, newdoc)
 
         initial_resources = newdoc._initial.resources
         self.assertEqual(list(initial_resources.keys()), ['/example'])

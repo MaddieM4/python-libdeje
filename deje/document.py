@@ -29,8 +29,8 @@ class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
         self._name = name
         self._owner = owner
-        self._initial = HistoryState()
-        self._current = HistoryState("current", resources, handler_path)
+        self._initial = HistoryState(doc = self)
+        self._current = HistoryState("current", resources, handler_path, self)
         self._history = History([self._initial, self._current])
         self._qs = quorumspace.QuorumSpace(self)
         self.signals = {
@@ -80,7 +80,7 @@ class Document(object):
         }
 
     def deserialize(self, serial):
-        self._current = HistoryState()
+        self._current = HistoryState(doc=self)
         self._current.deserialize(serial['original'])
         self.freeze()
 

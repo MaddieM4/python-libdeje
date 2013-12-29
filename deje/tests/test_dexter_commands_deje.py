@@ -342,6 +342,17 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             '["local",null,"jackson"] (ME) : example',
         ])
 
+    def test_dget_latest(self):
+        with self.io:
+            self.interface.do_command('dget_latest')
+        self.assertEqual(self.interface.get_view('msglog').contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> dget_latest',
+        ])
+        self.assertEqual(self.interface.get_view('doc').contents, [
+        ])
+
     def test_dvexport_wrong_num_args(self):
         with self.io:
             self.interface.do_command('dvexport')

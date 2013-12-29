@@ -37,6 +37,7 @@ def handler_resource(handler_name):
 def handler_document(handler_name):
     doc = document.Document(handler_name)
     doc.add_resource(handler_resource(handler_name), False)
+    doc.freeze()
     return doc
 
 # Prebaked handlers for Lua interpreter

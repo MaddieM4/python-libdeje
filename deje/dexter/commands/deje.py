@@ -149,13 +149,9 @@ class DexterCommandsDEJE(DexterCommandGroup):
         vname  = args[0]
         if not vname in self.interface.data:
             self.fail("No such variable %r" % vname)
+
         content = self.interface.data[vname]
-
-        author  = self.interface.owner.identity
-        version = self.interface.document.version
-        action  = Event(content, author, version)
-
-        # TODO: Send action
+        self.interface.document.event(content)
 
     def do_dget_latest(self, args):
         '''
@@ -169,10 +165,9 @@ class DexterCommandsDEJE(DexterCommandGroup):
         with the dinit command.
         '''
         self.req_init()
-        author = self.interface.owner.identity
-        action = ReadRequest(author)
-
-        # TODO: Send action
+        def callback(version):
+            self.output("Document latest version is %r" % version)
+        self.interface.document.get_version(callback)
 
     def do_dvexport(self, args):
         '''

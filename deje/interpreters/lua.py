@@ -60,7 +60,7 @@ class LuaInterpreter(object):
         '''
         self.resource = resource
         self.runtime = lupa.LuaRuntime()
-        self.api = api.API(self.document)
+        self.api = api.API(self)
 
         # Provide the deje module
         bootstrapfunc = self.runtime.execute(BOOTSTRAP)
