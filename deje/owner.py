@@ -96,8 +96,7 @@ class Owner(object):
                 except KeyError:
                     print("No known address for %r, skipping" % target)
                     break
-            if address != self.identity.location:
-                self.client.write_json(address, message)
+            self.client.write_json(address, message)
         return targets
 
     def reply(self, document, mtype, properties, target):

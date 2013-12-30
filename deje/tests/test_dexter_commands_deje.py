@@ -342,6 +342,24 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             '["local",null,"jackson"] (ME) : example',
         ])
 
+    def test_msg_solo_transmit(self):
+        with self.io:
+            self.interface.owner.transmit(
+                self.interface.document,
+                "example",
+                {},
+                participants = True,
+                subscribers  = False,
+            )
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            '["local",null,"jackson"] (ME) : example',
+            '["local",null,"jackson"] : example',
+            '["local",null,"jackson"] (ME) : deje-error',
+            '["local",null,"jackson"] : deje-error',
+        ])
+
     def test_dget_latest(self):
         with self.io:
             self.interface.do_command('dget_latest')
@@ -349,8 +367,17 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             'msglog> dinit',
             'DEJE initialized',
             'msglog> dget_latest',
+            '["local",null,"jackson"] (ME) : deje-paxos-accept',
+            '["local",null,"jackson"] : deje-paxos-accept',
+            '["local",null,"jackson"] (ME) : deje-paxos-accepted',
+            '["local",null,"jackson"] : deje-paxos-accepted',
+            '["local",null,"jackson"] (ME) : deje-paxos-complete',
+            '["local",null,"jackson"] : deje-paxos-complete',
+            '["local",null,"jackson"] (ME) : deje-action-completion',
+            '["local",null,"jackson"] : deje-action-completion',
         ])
         self.assertEqual(self.interface.get_view('doc').contents, [
+            'Document latest version is \'current\'',
         ])
 
     def test_dvexport_wrong_num_args(self):

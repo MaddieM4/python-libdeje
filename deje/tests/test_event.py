@@ -20,6 +20,7 @@ from persei import String
 
 from ejtp.util.compat import unittest
 from ejtp.identity.core import Identity
+from ejtp.tests.test_scripts import IOMock
 
 from deje.event import Event
 from deje.quorum import Quorum
@@ -36,6 +37,7 @@ class TestEvent(unittest.TestCase):
         self.quorum = Quorum(self.ev, self.doc._qs)
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
+        self.io = IOMock()
 
     def test_init(self):
         self.assertEqual(self.ev.version, 'stormageddon')
@@ -84,3 +86,9 @@ class TestEvent(unittest.TestCase):
                 'version': 'stormageddon',
             }
         )
+
+    def test_enact(self):
+        self.assertEqual(self.ev.is_done(self.doc), False)
+        with self.io:
+            self.ev.enact(self.quorum, self.doc)
+        self.assertEqual(self.ev.is_done(self.doc), True)

@@ -95,7 +95,6 @@ class PaxosHandler(ProtocolHandler):
         '''
         quorum = doc._qs.get_quorum(action)
         if quorum.ready(doc):
-            action.enact(quorum, doc)
             self.send_complete(doc, action)
 
     def propose(self, doc, action):
@@ -138,4 +137,4 @@ class PaxosHandler(ProtocolHandler):
             sender = self.owner.identities.find_by_location(signer)
             sig = RawData(sigs[signer])
             quorum.sign(sender, sig)
-        self.check_quorum(doc, action)
+        action.enact(quorum, doc)

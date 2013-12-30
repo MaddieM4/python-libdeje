@@ -166,8 +166,10 @@ class DexterCommandsDEJE(DexterCommandGroup):
         '''
         self.req_init()
         def callback(version):
-            self.output("Document latest version is %r" % version)
-        self.interface.document.get_version(callback)
+            self.output('Document latest version is %r' % version, 'doc')
+
+        doc = self.interface.document
+        action = doc.get_version(callback)
 
     def do_dvexport(self, args):
         '''

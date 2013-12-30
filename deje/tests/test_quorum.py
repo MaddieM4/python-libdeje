@@ -37,6 +37,7 @@ class TestQuorum(StreamTest):
         self.ident = identity()
         self.owner = Owner(self.ident, make_jack=False)
         self.owner.own_document(self.doc)
+        self.owner.identities.update_ident(self.ev.author)
 
     def test_clear(self):
         self.quorum.sign(self.ident)
@@ -61,10 +62,7 @@ class TestQuorum(StreamTest):
         self.assertFalse(self.quorum.outdated)
 
         self.owner.protocol.paxos.check_quorum(self.doc, self.ev)
-        self.assertOutput(
-            "Event '{'x': 'y'}' achieved.\n" +
-            "No known address for String('[\"local\",null,\"atlas\"]'), skipping\n"
-        )
+        self.assertOutput("Event '{'x': 'y'}' achieved.\n")
 
         self.assertEqual(self.doc.version, self.ev.hash())
         self.assertEqual(self.quorum.version, 'current')
