@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
+from persei        import String
 from ejtp.client   import Client
 from deje.owner    import Owner
 from deje.document import Document
@@ -257,6 +258,18 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             self.daniel.encryptor_cache
         )
 
+    def test_enact_event_signal(self):
+        class DemoActionIshThing(object):
+            def hash(self):
+                return String("123456789ABCDEFG")
+        with self.io:
+            signal = self.interface.document.signals['enact-event']
+            signal.send(DemoActionIshThing())
+        self.assertEqual(self.interface.get_view('doc').contents, [
+            'Applied event (hash 123456789A...)',
+        ])
+
+
     def test_msg_external_str(self):
         with self.io:
             self.tealc.write_json(
@@ -360,6 +373,52 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             '["local",null,"jackson"] : deje-error',
         ])
 
+    def test_devent_wrong_num_args(self):
+        with self.io:
+            self.interface.do_command('devent')
+            self.interface.do_command('devent a b')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> devent',
+            'devent takes exactly 1 arg(s), got 0',
+            'msglog> devent a b',
+            'devent takes exactly 1 arg(s), got 2',
+        ])
+
+    def test_devent_no_such_var(self):
+        with self.io:
+            self.interface.do_command('devent eventstuff')
+        self.assertEqual(self.interface.get_view('msglog').contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> devent eventstuff',
+            'No such variable \'eventstuff\'',
+        ])
+
+    def test_devent(self):
+        with self.io:
+            self.interface.data['eventstuff'] = "example"
+            self.interface.do_command('devent eventstuff')
+        self.assertEqual(self.interface.get_view('msglog').contents, [
+            'msglog> dinit',
+            'DEJE initialized',
+            'msglog> devent eventstuff',
+            '["local",null,"jackson"] (ME) : deje-paxos-accept',
+            '["local",null,"jackson"] : deje-paxos-accept',
+            '["local",null,"jackson"] (ME) : deje-paxos-accepted',
+            '["local",null,"jackson"] : deje-paxos-accepted',
+            '["local",null,"jackson"] (ME) : deje-paxos-complete',
+            '["local",null,"jackson"] : deje-paxos-complete',
+            '["local",null,"jackson"] (ME) : deje-action-completion',
+            '["local",null,"jackson"] : deje-action-completion',
+            '["local",null,"jackson"] (ME) : deje-paxos-accepted',
+            '["local",null,"jackson"] : deje-paxos-accepted',
+        ])
+        self.assertEqual(self.interface.get_view('doc').contents, [
+            'Applied event (hash 56c9a782dc...)',
+        ])
+
     def test_dget_latest(self):
         with self.io:
             self.interface.do_command('dget_latest')
@@ -375,6 +434,8 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             '["local",null,"jackson"] : deje-paxos-complete',
             '["local",null,"jackson"] (ME) : deje-action-completion',
             '["local",null,"jackson"] : deje-action-completion',
+            '["local",null,"jackson"] (ME) : deje-paxos-accepted',
+            '["local",null,"jackson"] : deje-paxos-accepted',
         ])
         self.assertEqual(self.interface.get_view('doc').contents, [
             'Document latest version is \'current\'',

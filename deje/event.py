@@ -55,6 +55,7 @@ class Event(Action):
         Apply Event to the head of the document's history.
         '''
         document._history.add_event(self)
+        document.signals['enact-event'].send(self)
         self.apply(document._current)
 
     def apply(self, state):

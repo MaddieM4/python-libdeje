@@ -54,6 +54,14 @@ class DexterCommandsDEJE(DexterCommandGroup):
         self.interface.output(logline, 'msglog')
         self.write_json(addr, data, wrap_sender)
 
+    def on_event(self, **kwargs):
+        event   = kwargs['sender']
+        hashstr = event.hash().export()
+        if len(hashstr) > 10:
+            hashstr = hashstr[:10] + '...'
+        logline = 'Applied event (hash %s)' % hashstr
+        self.output(logline, 'doc')
+
     def do_dinit(self, args):
         '''
         Initialize DEJE interactivity.
@@ -113,6 +121,8 @@ class DexterCommandsDEJE(DexterCommandGroup):
             doc.deserialize(params['docserialized'])
         except Exception as e:
             self.fail('Failed to deserialize data:\n%r' % e)
+
+        doc.signals['enact-event'].connect(self.on_event)
 
         # Wait until everything that could fail has gone right
         self.interface.owner = owner

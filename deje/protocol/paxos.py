@@ -103,7 +103,6 @@ class PaxosHandler(ProtocolHandler):
         '''
         self.start_action(doc, action)
         self.send_accepted(doc, action)
-        self.check_quorum(doc, action)
 
     def _on_accept(self, message):
         doc    = message.doc

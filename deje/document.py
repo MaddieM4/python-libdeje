@@ -28,12 +28,15 @@ from deje.quorum import Quorum
 class Document(object):
     def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
         self._name = name
-        self._owner = owner
+        self._owner = None
+        if owner:
+            owner.own_document(self)
         self._initial = HistoryState(doc = self)
         self._current = HistoryState("current", resources, handler_path, self)
         self._history = History([self._initial, self._current])
         self._qs = quorumspace.QuorumSpace(self)
         self.signals = {
+            'enact-event': dispatch.Signal(),
             'recv-events': dispatch.Signal(
                 providing_args=['qid','events']),
             'recv-state':dispatch.Signal(
