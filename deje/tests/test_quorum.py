@@ -62,7 +62,12 @@ class TestQuorum(StreamTest):
         self.assertFalse(self.quorum.outdated)
 
         self.owner.protocol.paxos.check_quorum(self.doc, self.ev)
-        self.assertOutput("Event '{'x': 'y'}' achieved.\n")
+        # Stupid Python 2 makes this the easiest way to put up with string crap
+        output = self.getOutput()
+        self.assertIn(output, [
+            "Event '{'x': 'y'}' achieved.\n",
+            "Event '{u'x': u'y'}' achieved.\n",
+        ])
 
         self.assertEqual(self.doc.version, self.ev.hash())
         self.assertEqual(self.quorum.version, 'current')

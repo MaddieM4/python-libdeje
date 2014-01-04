@@ -437,8 +437,12 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
             '["local",null,"jackson"] (ME) : deje-paxos-accepted',
             '["local",null,"jackson"] : deje-paxos-accepted',
         ])
-        self.assertEqual(self.interface.get_view('doc').contents, [
+        # Nnreaaagghhh Python 2
+        doc_contents = self.interface.get_view('doc').contents
+        self.assertEqual(len(doc_contents), 1)
+        self.assertIn(doc_contents.pop(), [
             'Document latest version is \'current\'',
+            'Document latest version is u\'current\'',
         ])
 
     def test_dvexport_wrong_num_args(self):
