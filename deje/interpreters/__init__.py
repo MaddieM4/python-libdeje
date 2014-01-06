@@ -17,7 +17,5 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = [
     'api',
-    'core',
-    'js',
     'lua',
 ]

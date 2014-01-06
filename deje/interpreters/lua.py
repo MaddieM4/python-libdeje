@@ -166,9 +166,6 @@ class LuaInterpreter(object):
             'request_protocols': False,
         }
 
-    def debug(self, response):
-        print(response)
-
     @property
     def document(self):
         return self.resource.document
