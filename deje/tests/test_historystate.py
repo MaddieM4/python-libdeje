@@ -16,7 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from ejtp.util.compat    import unittest
-from deje.handlers.lua   import handler_resource
+from deje.handlers       import handler_resource
 from deje.tests.identity import identity
 
 from deje.historystate   import HistoryState

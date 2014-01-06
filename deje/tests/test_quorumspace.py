@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from ejtp.util.compat    import unittest
 
 from deje.event          import Event
-from deje.handlers.lua   import handler_document
+from deje.handlers       import handler_document
 from deje.tests.identity import identity
 from deje.owner          import Owner
 from deje.quorum         import Quorum

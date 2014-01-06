@@ -22,7 +22,7 @@ from deje.tests.stream     import StreamTest
 from ejtp.identity.core    import Identity
 from deje.owner            import Owner
 from deje.resource         import Resource
-from deje.handlers.lua     import handler_document
+from deje.handlers         import handler_document
 from deje.interpreters.lua import HandlerReturnError
 
 class TestLuaHandler(StreamTest):

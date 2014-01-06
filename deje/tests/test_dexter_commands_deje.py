@@ -22,7 +22,7 @@ from ejtp.client   import Client
 from deje.owner    import Owner
 from deje.document import Document
 
-from deje.handlers.lua          import handler_document
+from deje.handlers              import handler_document
 from deje.tests.dexter_commands import DexterCommandTester, Tempfile
 
 import time

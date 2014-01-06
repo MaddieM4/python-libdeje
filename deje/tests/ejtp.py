@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from deje.tests.stream   import StreamTest
 from ejtp.router         import Router
 from deje.owner          import Owner
-from deje.handlers.lua   import handler_document
+from deje.handlers       import handler_document
 from deje.tests.identity import identity
 
 class TestEJTP(StreamTest):

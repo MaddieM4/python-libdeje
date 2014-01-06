@@ -15,7 +15,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
 from deje import document, resource
 
 def handler_text(handler_name):

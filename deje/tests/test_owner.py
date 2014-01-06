@@ -27,7 +27,7 @@ from deje.tests.ejtp     import TestEJTP
 
 from deje.owner          import Owner
 from deje.tests.identity import identity
-from deje.handlers.lua   import handler_document, handler_text
+from deje.handlers       import handler_document, handler_text
 from deje.resource       import Resource
 
 try:

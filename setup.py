@@ -17,7 +17,6 @@ setup(
 		'deje.dexter',
 		'deje.dexter.commands',
 		'deje.interpreters',
-		'deje.handlers',
 		'deje.protocol',
 		'deje.tests',
 	],

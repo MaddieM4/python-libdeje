@@ -21,7 +21,7 @@ from deje.tests.stream   import StreamTest
 
 from deje.event          import Event
 from deje.quorum         import Quorum
-from deje.handlers.lua   import handler_document
+from deje.handlers       import handler_document
 from deje.tests.identity import identity
 from deje.owner          import Owner
 
