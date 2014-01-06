@@ -418,6 +418,9 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
         self.assertEqual(self.interface.get_view('doc').contents, [
             'Applied event (hash 56c9a782dc...)',
         ])
+        self.assertEqual(self.interface.get_view('dbg').contents, [
+            'Event \'example\' achieved.',
+        ])
 
     def test_dget_latest(self):
         with self.io:
@@ -443,6 +446,8 @@ class TestDexterDEJEGroupInitialized(DexterCommandTester):
         self.assertIn(doc_contents.pop(), [
             'Document latest version is \'current\'',
             'Document latest version is u\'current\'',
+        ])
+        self.assertEqual(self.interface.get_view('dbg').contents, [
         ])
 
     def test_dvexport_wrong_num_args(self):

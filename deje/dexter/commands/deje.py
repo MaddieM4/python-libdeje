@@ -62,6 +62,9 @@ class DexterCommandsDEJE(DexterCommandGroup):
         logline = 'Applied event (hash %s)' % hashstr
         self.output(logline, 'doc')
 
+    def debug(self, lines):
+        self.interface.get_view('dbg').contents.extend(lines)
+
     def do_dinit(self, args):
         '''
         Initialize DEJE interactivity.
@@ -123,6 +126,7 @@ class DexterCommandsDEJE(DexterCommandGroup):
             self.fail('Failed to deserialize data:\n%r' % e)
 
         doc.signals['enact-event'].connect(self.on_event)
+        doc.debug = self.debug
 
         # Wait until everything that could fail has gone right
         self.interface.owner = owner

@@ -15,9 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
 from persei import *
-
 from deje.resource import Resource
 
 exported_functions = (
@@ -60,8 +58,7 @@ class API(object):
         self.queue.append(lambda: self.document.event(ev))
 
     def debug(self, *args):
-        for arg in args:
-            print(arg)
+        self.document.debug(args)
 
     # set_resource
 

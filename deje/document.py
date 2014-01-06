@@ -110,6 +110,10 @@ class Document(object):
         '''
         return self.interpreter.execute(value)
 
+    def debug(self, lines):
+        for line in lines:
+            print(line)
+
     # Host requests
 
     def request(self, callback, *args):

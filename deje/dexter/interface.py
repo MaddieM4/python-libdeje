@@ -25,6 +25,7 @@ from deje.dexter.commands import DexterCommands
 from deje.dexter.prompt   import DexterPrompt
 
 INITIAL_VIEWS = {
+    'dbg'   : 'Debug lines printed by handler scripts.',
     'doc'   : 'Document-level events and messages.',
     'msglog': 'Shows all EJTP messages going in or out.',
 }
