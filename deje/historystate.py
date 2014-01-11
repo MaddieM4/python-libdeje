@@ -29,10 +29,9 @@ class HistoryState(object):
     hash is the same as the hash of the associated Event. All Events have a
     hash.
     '''
-    def __init__(self, hash = None, resources = [], handler_path="/handler.lua", doc = None):
+    def __init__(self, hash = None, resources = [], doc = None):
         self.doc  = doc
         self.hash = hash
-        self.handler_path = handler_path
         self.resources = {}
         for r in resources:
             self.add_resource(r)
@@ -63,7 +62,6 @@ class HistoryState(object):
         return HistoryState(
             self.hash,
             [r.clone() for r in self.resources.values()],
-            self.handler_path,
             self.doc
         )
 
@@ -77,12 +75,10 @@ class HistoryState(object):
         return {
             "hash" : self.hash,
             "resources" : self.serialize_resources(),
-            "handler" : self.handler_path,
         }
 
     def deserialize(self, serial):
         self.hash         = serial['hash']
-        self.handler_path = serial['handler']
 
         for r_serial in serial['resources'].values():
             r_real = Resource()
@@ -91,7 +87,7 @@ class HistoryState(object):
 
     @property
     def handler(self):
-        return self.resources[self.handler_path]
+        return self.resources['/handler']
 
     def create_interpreter(self):
         return self.handler.interpreter()

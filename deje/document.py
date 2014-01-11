@@ -26,13 +26,13 @@ from deje.history import History
 from deje.quorum import Quorum
 
 class Document(object):
-    def __init__(self, name, handler_path="/handler.lua", resources=[], owner = None):
+    def __init__(self, name, resources=[], owner = None):
         self._name = name
         self._owner = None
         if owner:
             owner.own_document(self)
         self._initial = HistoryState(doc = self)
-        self._current = HistoryState("current", resources, handler_path, self)
+        self._current = HistoryState("current", resources, self)
         self._history = History([self._initial, self._current])
         self._qs = quorumspace.QuorumSpace(self)
         self.signals = {
@@ -189,10 +189,7 @@ class Document(object):
 
     @property
     def handler(self):
-        return self.get_resource(self._current.handler_path)
-
-    def set_handler(self, path):
-        self._current.handler_path = path
+        return self.get_resource('/handler')
 
     # Other accessors
 

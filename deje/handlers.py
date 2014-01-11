@@ -27,7 +27,7 @@ def handler_text(handler_name):
 
 def handler_resource(handler_name):
     return resource.Resource(
-        '/handler.lua',
+        '/handler',
          handler_text(handler_name),
          handler_name,
          'text/lua'

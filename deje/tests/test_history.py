@@ -35,7 +35,7 @@ class TestHistory(unittest.TestCase):
         self.ev_default  = Event({'hello':'world'}, self.mitzi)
         self.ev_tt       = Event(
             {
-                'path' : '/handler.lua',
+                'path' : '/handler',
                 'property' : 'comment',
                 'value' : 'An arbitrary comment',
             },

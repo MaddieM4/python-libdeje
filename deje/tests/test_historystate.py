@@ -58,7 +58,7 @@ class TestHistoryState(unittest.TestCase):
         hs = HistoryState("example", [res])
         ev = Event(
             {
-                'path' : '/handler.lua',
+                'path' : '/handler',
                 'property' : 'comment',
                 'value' : 'An arbitrary comment',
             },
@@ -70,7 +70,7 @@ class TestHistoryState(unittest.TestCase):
         self.assertEqual(hs.hash, ev.hash())
 
     def test_clone(self):
-        hs1 = HistoryState("example", [self.resource], "/stanley_gibbons.lua")
+        hs1 = HistoryState("example", [self.resource])
         hs2 = hs1.clone()
 
         # Each resource compared by ref, not value. Use serialization for that.
@@ -93,11 +93,10 @@ class TestHistoryState(unittest.TestCase):
         self.assertEqual(hs.serialize(), {
             "hash" : "example",
             "resources" : hs.serialize_resources(),
-            "handler" : "/handler.lua",
         })
 
     def test_deserialize(self):
-        hs1 = HistoryState("example", [self.resource], "/stanley_gibbons.lua")
+        hs1 = HistoryState("example", [self.resource])
         hs2 = HistoryState()
 
         hs2.deserialize(hs1.serialize())

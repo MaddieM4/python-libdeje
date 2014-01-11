@@ -39,7 +39,6 @@ class TestDocumentSimple(unittest.TestCase):
 
     def test_serialize(self):
         expected_original = {
-            'handler' : '/handler.lua',
             'hash' : None,
             'resources': {},
         }
@@ -61,7 +60,6 @@ class TestDocumentSimple(unittest.TestCase):
         self.assertEqual(
             self.doc.serialize()['original'],
             {
-                'handler': '/handler.lua',
                 'hash': 'current',
                 'resources': {
                     '/example': {
