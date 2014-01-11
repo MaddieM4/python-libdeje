@@ -45,6 +45,23 @@ def tableIsDict(table):
     # Returns true even for list, as any valid list is a valid dict
     return isinstance(table, TABLE_CLASS)
 
+def castFromLua(value, expected_type):
+    if expected_type == list and tableIsList(value):
+        return tableToList(value)
+    elif expected_type == dict and tableIsDict(value):
+        return tableToDict(value)
+    elif isinstance(value, expected_type):
+        return value
+    # If value was valid, we would have returned already
+    raise HandlerReturnError(
+        'Could not cast %r to %r' % (value, expected_type)
+    )
+
+def set_runtime_globals(runtime, variables):
+    lua_g = runtime.eval('_G')
+    for key in variables:
+        lua_g[key] = variables[key]
+
 class LuaInterpreter(object):
     def __init__(self, resource):
         '''
@@ -56,15 +73,30 @@ class LuaInterpreter(object):
     # Callbacks
 
     def on_resource_update(self, path, propname, oldpath=None):
-        self.call("on_resource_update", path, propname, oldpath)
+        self.call(
+            "on_resource_update",
+            path=path,
+            propname=propname,
+            oldpath=oldpath
+        )
 
     def on_event_achieve(self, ev, author, state=None):
         set_resource, sr_flag = self.api.set_resource(state)
-        self.call("on_event_achieve", set_resource, ev, author)
+        self.call(
+            "on_event_achieve",
+            set_resource=set_resource,
+            ev=ev,
+            author=author
+        )
         sr_flag.revoke()
 
     def event_test(self, ev, author):
-        return self.call("event_test", ev, author, returntype = bool)
+        return self.call(
+            "event_test",
+            ev=ev,
+            author=author,
+            returntype = bool
+        )
 
     def quorum_participants(self):
         return self.normalize_idents(
@@ -75,53 +107,54 @@ class LuaInterpreter(object):
         return self.call("quorum_thresholds", returntype = dict)
 
     def can_read(self, ident):
-        return self.call("can_read", ident.name, returntype = bool)
+        return self.call(
+            "can_read",
+            name=ident.name,
+            returntype = bool
+        )
 
     def can_write(self, ident):
-        return self.call("can_write", ident.name, returntype = bool)
+        return self.call(
+            "can_write",
+            name=ident.name,
+            returntype = bool
+        )
 
     def request_protocols(self):
         return self.call("request_protocols", returntype = list)
 
     def host_request(self, callback, params):
-        self.call("on_host_request", callback, params)
+        self.call(
+            "on_host_request",
+            callback=callback,
+            params=params
+        )
 
     # Misc
 
     def setup_runtime(self, **global_vars):
         runtime = lupa.LuaRuntime()
-        lua_g = runtime.eval('_G')
-        for key in global_vars:
-            lua_g[key] = global_vars[key]
+        set_runtime_globals(runtime, global_vars)
         return runtime
 
-    def call(self, event, *args, **kwargs):
+    def call(self, event, **kwargs):
+        if 'returntype' in kwargs:
+            returntype = kwargs['returntype']
+            del kwargs['returntype']
+        else:
+            returntype = object
+
         runtime = self.setup_runtime(deje = self.deje_module)
-        returntype = ("returntype" in kwargs and kwargs["returntype"]) or object
-        funcbody = self.resource.content[event]
-        runtime.execute(funcbody)
-        function = runtime.eval(event)
+        set_runtime_globals(runtime, kwargs)
 
-        if not (function and callable(function)):
-            raise TypeError("Cannot call object %r", function)
+        if event in self.resource.content:
+            funcbody = self.resource.content[event]
+            result = runtime.execute(funcbody)
+            self.api.process_queue()
+        else:
+            result = None
 
-        result = function(*args)
-        self.api.process_queue()
-        if returntype == list and tableIsList(result):
-            return tableToList(result)
-        elif returntype == dict and tableIsDict(result):
-            return tableToDict(result)
-        elif isinstance(result, returntype):
-            return result
-        # If value was valid, we would have returned already
-        raise HandlerReturnError(
-            '%s(%s) returned %r, %r expected' % (
-                event,
-                ",".join(repr(x) for x in args),
-                result,
-                returntype
-            )
-        )
+        return castFromLua(result, returntype)
 
     def normalize_idents(self, identlist):
         results = []

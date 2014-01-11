@@ -47,73 +47,53 @@ def echo_chamber():
     '''
     return {
         'on_resource_update' : '''
-        function on_resource_update(path, propname, oldpath)
             deje.debug('on_resource_update ' .. path .. " " .. propname)
             if propname == 'path' then
                 deje.debug(oldpath .. " was moved to " .. path)
             end
-        end
         ''',
 
         'trigger_event' : '''
-        function trigger_event(value)
             deje.event(value)
-        end
         ''',
 
         'event_test' : '''
-        function event_test(ev, author)
             if ev == "example" then
                 return true
             else
                 return false
             end
-        end
         ''',
 
         'on_event_achieve' : '''
-        function on_event_achieve(set_resource, ev, author)
             deje.debug("Event '" .. tostring(ev) .. "' achieved.")
-        end
         ''',
 
         'quorum_participants' : '''
-        function quorum_participants()
             return { deje.get_ident() }
-        end
         ''',
 
         'quorum_thresholds' : '''
-        function quorum_thresholds()
             return {read=1, write=1}
-        end
         ''',
 
         'can_read' : '''
-        function can_read()
             return true
-        end
         ''',
 
         'can_write' : '''
-        function can_write()
             return true
-        end
         ''',
 
         'request_protocols' : '''
-        function request_protocols()
             return { "echo-chamber-1" }
-        end
         ''',
 
         'on_host_request' : '''
-        function on_host_request(callback, params)
             local rtype = params[0]
             if rtype == "hello-world" then
                 callback("Request protocol mechanism says hello.")
             end
-        end
         ''',
     }
 
@@ -123,29 +103,18 @@ def tag_team():
     '''
     return {
         'event_test': '''
-        function event_test(ev, author)
             return true
-        end
         ''',
 
         'on_event_achieve': '''
-        function on_event_achieve(set_resource, ev, author)
             set_resource(ev.path, ev.property, ev.value)
-        end
-        ''',
-
-        'on_resource_update': '''
-        function on_resource_update()
-        end
         ''',
 
         'quorum_participants': '''
-        function quorum_participants()
             return { 
                 "mitzi@lackadaisy.com",
                 "atlas@lackadaisy.com"
             }
-        end
         ''',
 
         'readers' : [
@@ -159,7 +128,6 @@ def tag_team():
         ],
 
         'can_read': '''
-        function can_read(name)
             raw = deje.get_resource('/handler').content.readers
             readers = deje.clone_table(raw, {})
 
@@ -169,11 +137,9 @@ def tag_team():
                 end
             end
             return false
-        end
         ''',
 
         'can_write': '''
-        function can_write(name)
             raw = deje.get_resource('/handler').content.writers
             writers = deje.clone_table(raw, {})
 
@@ -183,13 +149,10 @@ def tag_team():
                 end
             end
             return false
-        end
         ''',
 
         'quorum_thresholds': '''
-        function quorum_thresholds()
             return {read=2, write=2}
-        end
         ''',
     }
 
@@ -199,56 +162,38 @@ def psycho_ward():
     '''
     return {
         'on_resource_update': '''
-        function on_resource_update(path, propname, oldpath)
             return "pumpernickel"
-        end
         ''',
 
         'event_test': '''
-        function event_test(ev, author)
             return "perfidia"
-        end
         ''',
 
         'on_event_achieve': '''
-        function on_event_achieve(set_resource, ev, author)
             return nil
-        end
         ''',
 
         'quorum_participants': '''
-        function quorum_participants()
             return 7
-        end
         ''',
 
         'quorum_thresholds': '''
-        function quorum_thresholds()
             return "shoestring"
-        end
         ''',
 
         'can_read': '''
-        function can_read()
             return {}
-        end
         ''',
 
         'can_write': '''
-        function can_write()
             return "blue"
-        end
         ''',
 
         'request_protocols': '''
-        function request_protocols()
             return 9
-        end
         ''',
 
         'on_host_request': '''
-        function on_host_request(callback, params)
             return "Nurok turoth"
-        end
         ''',
     }

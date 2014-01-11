@@ -65,13 +65,13 @@ class TestLuaHandlerEchoChamber(TestLuaHandler):
         )
 
     def test_event(self):
-        self.doc.interpreter.call("trigger_event", "example")
+        self.doc.interpreter.call("trigger_event", value="example")
         self.assertOutput("Event 'example' achieved.\n")
 
         self.assertRaises(
             ValueError,
             self.doc.interpreter.call,
-            "trigger_event", "no dice"
+            "trigger_event", value="no dice"
         )
 
     def test_document_properties(self):
@@ -132,11 +132,7 @@ class TestLuaHandlerPsychoWard(TestLuaHandler):
 
     def test_event(self):
         # Lobotomize can_write() into always returning true
-        self.doc.handler.content['can_write'] = '''
-            function can_write()
-                return true
-            end
-        '''
+        self.doc.handler.content['can_write'] = 'return true'
 
         self.assertRaises(
             HandlerReturnError,
