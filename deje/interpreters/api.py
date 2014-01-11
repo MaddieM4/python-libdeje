@@ -21,6 +21,7 @@ from deje.resource import Resource
 exported_functions = (
     'get_resource',
     'get_ident',
+    'clone_table',
     'event',
     'debug',
 )
@@ -48,11 +49,25 @@ class API(object):
     # Exported functions
 
     def get_resource(self, path):
-        return self.document.get_resource(path)
+        if self.document:
+            return self.document.get_resource(path)
+        elif path == self.interpreter.resource.path:
+            return self.interpreter.resource
+        else:
+            raise KeyError("Resource could not be found by DEJE API")
 
     def get_ident(self):
         ident = self.document.identity
         return ident.name
+
+    def clone_table(self, source, dest):
+        if isinstance(source, list):
+            for i in range(len(source)):
+                dest[i] = source[i]
+        else:
+            for key in source:
+                dest[key] = source[key]
+        return dest
 
     def event(self, ev):
         self.queue.append(lambda: self.document.event(ev))

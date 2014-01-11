@@ -98,18 +98,6 @@ class Document(object):
         self._initial = self._current.clone()
         self._history.events = []
 
-    def eval(self, value):
-        '''
-        Evaluate code in handler context, returning result
-        '''
-        return self.interpreter.eval(value)
-
-    def execute(self, value):
-        '''
-        Execute code in handler context
-        '''
-        return self.interpreter.execute(value)
-
     def debug(self, lines):
         for line in lines:
             print(line)

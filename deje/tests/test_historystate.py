@@ -124,6 +124,7 @@ class TestHistoryState(unittest.TestCase):
         res = handler_resource("tag_team")
         hs = HistoryState("example", [res])
         interp = hs.interpreter
+
         self.assertEqual(interp.can_read(identity('mitzi')), True)
         self.assertEqual(interp.can_write(identity('victor')), False)
 

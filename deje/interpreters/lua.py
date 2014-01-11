@@ -25,14 +25,6 @@ if not "callable" in globals():
     def callable(obj):
         return isinstance(obj, collections.Callable)
 
-BOOTSTRAP = '''
-deje = {}
-function load_deje(module)
-    deje = module
-end
-return load_deje
-'''
-
 TABLE_CLASS = lupa._lupa._LuaTable
 
 def tableToList(table):
@@ -59,21 +51,12 @@ class LuaInterpreter(object):
             Lua-based interpreter for handler files.
         '''
         self.resource = resource
-        self.runtime = lupa.LuaRuntime()
         self.api = api.API(self)
-
-        # Provide the deje module
-        bootstrapfunc = self.runtime.execute(BOOTSTRAP)
-        bootstrapfunc(self.api.export())
-        self.runtime.execute('load_deje = nil')
-
-        self.reload()
 
     # Callbacks
 
     def on_resource_update(self, path, propname, oldpath=None):
         self.call("on_resource_update", path, propname, oldpath)
-        self.reload()
 
     def on_event_achieve(self, ev, author, state=None):
         set_resource, sr_flag = self.api.set_resource(state)
@@ -84,17 +67,12 @@ class LuaInterpreter(object):
         return self.call("event_test", ev, author, returntype = bool)
 
     def quorum_participants(self):
-        temp = []
-        temp = self.cache['quorum_participants'] or \
+        return self.normalize_idents(
             self.call("quorum_participants", returntype = list)
-        self.cache['quorum_participants'] = self.normalize_idents(temp)
-        return self.cache['quorum_participants']
+        )
 
     def quorum_thresholds(self):
-        if not self.cache['quorum_thresholds']:
-            self.cache['quorum_thresholds'] = \
-                self.call("quorum_thresholds", returntype = dict)
-        return self.cache['quorum_thresholds']
+        return self.call("quorum_thresholds", returntype = dict)
 
     def can_read(self, ident):
         return self.call("can_read", ident.name, returntype = bool)
@@ -103,40 +81,47 @@ class LuaInterpreter(object):
         return self.call("can_write", ident.name, returntype = bool)
 
     def request_protocols(self):
-        if not self.cache['request_protocols']:
-            self.cache['request_protocols'] = \
-                self.call("request_protocols", returntype = list)
-        return self.cache['request_protocols']
+        return self.call("request_protocols", returntype = list)
 
     def host_request(self, callback, params):
         self.call("on_host_request", callback, params)
 
     # Misc
 
+    def setup_runtime(self, **global_vars):
+        runtime = lupa.LuaRuntime()
+        lua_g = runtime.eval('_G')
+        for key in global_vars:
+            lua_g[key] = global_vars[key]
+        return runtime
+
     def call(self, event, *args, **kwargs):
+        runtime = self.setup_runtime(deje = self.deje_module)
         returntype = ("returntype" in kwargs and kwargs["returntype"]) or object
-        callback = self.runtime.eval(event)
-        if callback and callable(callback):
-            result = callback(*args)
-            self.api.process_queue()
-            self.reset_cache()
-            if returntype == list and tableIsList(result):
-                return tableToList(result)
-            elif returntype == dict and tableIsDict(result):
-                return tableToDict(result)
-            elif isinstance(result, returntype):
-                return result
-            # If value was valid, we would have returned already
-            raise HandlerReturnError(
-                '%s(%s) returned %r, %r expected' % (
-                    event,
-                    ",".join(repr(x) for x in args),
-                    result,
-                    returntype
-                )
+        funcbody = self.resource.content[event]
+        runtime.execute(funcbody)
+        function = runtime.eval(event)
+
+        if not (function and callable(function)):
+            raise TypeError("Cannot call object %r", function)
+
+        result = function(*args)
+        self.api.process_queue()
+        if returntype == list and tableIsList(result):
+            return tableToList(result)
+        elif returntype == dict and tableIsDict(result):
+            return tableToDict(result)
+        elif isinstance(result, returntype):
+            return result
+        # If value was valid, we would have returned already
+        raise HandlerReturnError(
+            '%s(%s) returned %r, %r expected' % (
+                event,
+                ",".join(repr(x) for x in args),
+                result,
+                returntype
             )
-        else:
-            raise TypeError("Cannot call object %r", callback)
+        )
 
     def normalize_idents(self, identlist):
         results = []
@@ -149,22 +134,9 @@ class LuaInterpreter(object):
                 results.append(self.owner.identities.find_by_name(ident))
         return results
 
-    def eval(self, value):
-        return self.runtime.eval(value)
-
-    def execute(self, value):
-        return self.runtime.execute(value)
-
-    def reload(self):
-        self.reset_cache()
-        self.runtime.execute(self.resource.content)
-
-    def reset_cache(self):
-        self.cache = {
-            'quorum_participants': False,
-            'quorum_thresholds': False,
-            'request_protocols': False,
-        }
+    @property
+    def deje_module(self):
+        return self.api.export()
 
     @property
     def document(self):

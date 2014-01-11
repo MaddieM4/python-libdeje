@@ -132,11 +132,11 @@ class TestLuaHandlerPsychoWard(TestLuaHandler):
 
     def test_event(self):
         # Lobotomize can_write() into always returning true
-        self.doc.execute("""
+        self.doc.handler.content['can_write'] = '''
             function can_write()
                 return true
             end
-        """)
+        '''
 
         self.assertRaises(
             HandlerReturnError,
