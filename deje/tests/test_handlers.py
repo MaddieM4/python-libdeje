@@ -17,13 +17,13 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from deje.tests.stream     import StreamTest
+from deje.tests.stream  import StreamTest
 
-from ejtp.identity.core    import Identity
-from deje.owner            import Owner
-from deje.resource         import Resource
-from deje.handlers         import handler_document
-from deje.interpreters.lua import HandlerReturnError
+from ejtp.identity.core import Identity
+from deje.owner         import Owner
+from deje.resource      import Resource
+from deje.handlers      import handler_document
+from deje.interpreter   import HandlerReturnError
 
 class TestLuaHandler(StreamTest):
     def setUp(self):

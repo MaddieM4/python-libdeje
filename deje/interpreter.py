@@ -16,7 +16,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from ejtp.identity.core import Identity
-from deje.interpreters import api
+from deje.api import API
 from deje.lua import Runtime, LuaObject, LuaCastError
 
 class LuaInterpreter(object):
@@ -25,7 +25,7 @@ class LuaInterpreter(object):
             Lua-based interpreter for handler files.
         '''
         self.resource = resource
-        self.api = api.API(self)
+        self.api = API(self)
 
     # Callbacks
 

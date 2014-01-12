@@ -98,8 +98,8 @@ class Resource(object):
     def interpreter(self):
         "Produce an interpreter object based on resource type."
         if self.type == "direct/json":
-            from deje.interpreters import lua
-            return lua.LuaInterpreter(self)
+            from deje.interpreter import LuaInterpreter
+            return LuaInterpreter(self)
         else:
             raise TypeError("No interpreter for resource type " + str(self.type))
 
