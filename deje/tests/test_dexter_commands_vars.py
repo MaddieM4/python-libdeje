@@ -195,3 +195,83 @@ class TestDexterVarsGroup(DexterCommandTester):
                 'hello':'world'
             }
         )
+
+    def test_vdel_root(self):
+        self.interface.data = { "hello": True }
+        with self.io:
+            self.interface.do_command('vdel')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel',
+        ])
+        self.assertEqual(self.interface.data, {})
+
+    def test_vdel_single(self):
+        self.interface.data = { "hello": True, "world": False }
+        with self.io:
+            self.interface.do_command('vdel hello')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel hello',
+        ])
+        self.assertEqual(self.interface.data, { "world": False })
+
+    def test_vdel_deep(self):
+        self.interface.data = {
+            'example': [
+                'this',
+                'that',
+                {
+                    'yes'   : True,
+                    'no'    : False,
+                    'maybe' : None,
+                    'number': -29,
+                }
+            ]
+        }
+        with self.io:
+            self.interface.do_command('vdel example 2 maybe')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel example 2 maybe',
+        ])
+        self.assertEqual(self.interface.data, {
+            'example': [
+                'this',
+                'that',
+                {
+                    'yes'   : True,
+                    'no'    : False,
+                    'number': -29,
+                }
+            ]
+        })
+        with self.io:
+            self.interface.do_command('vdel example 2')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel example 2 maybe',
+            'msglog> vdel example 2',
+        ])
+        self.assertEqual(self.interface.data, {
+            'example': [
+                'this',
+                'that',
+            ]
+        })
+
+    def test_vdel_missing(self):
+        self.interface.data = { "hello": True }
+        with self.io:
+            self.interface.do_command('vdel beans')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel beans',
+            'Failed to find key: \'beans\'',
+        ])
+        self.assertEqual(self.interface.data, { "hello": True })
+
+    def test_vdel_untraversable(self):
+        self.interface.data = { "hello": True }
+        with self.io:
+            self.interface.do_command('vdel hello farmer')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vdel hello farmer',
+            'Cannot inspect properties of object: True',
+        ])
+        self.assertEqual(self.interface.data, { "hello": True })

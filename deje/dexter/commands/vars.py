@@ -120,3 +120,42 @@ class DexterCommandsVars(DexterCommandGroup):
         else:
             # Setting the root data object
             self.interface.data = new_value
+
+    def do_vdel(self, args):
+        '''
+        Delete a value from variable storage.
+
+        Dexter has a storage area for JSON-compatible data.
+        The 'vdel' command deletes part of that data, based
+        on the given path.
+
+        For example, 
+
+        msglog> vdel music artists
+
+        is a bit like doing 
+
+        >>> music = data["music"]
+        >>> del temp["artists"]
+
+        in Python. Arguments are only cast to ints when
+        accessing array elements - map elements may only be
+        accessed with string keys. The final argument is parsed
+        as JSON.
+        '''
+        if len(args) < 1:
+            self.interface.data = {}
+            return
+        traverse_chain = args[:-1]
+        delete_key     = args[-1]
+
+        try:
+            obj = self.traverse(traverse_chain)
+            delete_key = normalize_key(obj, delete_key)
+            try:
+                del obj[delete_key]
+            except (KeyError, IndexError):
+                raise TraversalError('Failed to find key', delete_key)
+        except TraversalError as e:
+            return self.output(str(e))
+

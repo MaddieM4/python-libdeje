@@ -60,6 +60,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'fwrite :: Write contents of a view to a file.',
             'help :: A simple little help message.',
             'quit :: Exit the program.',
+            'vdel :: Delete a value from variable storage.',
             'vget :: Print a value in variable storage.',
             'view :: List views, or select one.',
             'vset :: Set a value in variable storage.',
