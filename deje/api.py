@@ -16,7 +16,6 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from persei import *
-from deje.resource import Resource
 
 exported_functions = (
     'get_resource',
@@ -95,6 +94,7 @@ class API(object):
         try:
             res = container.get_resource(path)
         except KeyError:
+            from deje.resource import Resource
             res = Resource(path)
             container.add_resource(res)
         res.set_property(prop, value)

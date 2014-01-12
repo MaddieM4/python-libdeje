@@ -17,6 +17,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 import mimetypes
 from persei import *
+from deje.interpreter import LuaInterpreter
 
 class Resource(object):
 
@@ -98,7 +99,6 @@ class Resource(object):
     def interpreter(self):
         "Produce an interpreter object based on resource type."
         if self.type == "direct/json":
-            from deje.interpreter import LuaInterpreter
             return LuaInterpreter(self)
         else:
             raise TypeError("No interpreter for resource type " + str(self.type))
