@@ -15,52 +15,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
-import lupa
 from ejtp.identity.core import Identity
 from deje.interpreters import api
-
-if not "callable" in globals():
-    import collections
-    def callable(obj):
-        return isinstance(obj, collections.Callable)
-
-TABLE_CLASS = lupa._lupa._LuaTable
-
-def tableToList(table):
-    return [table[i+1] for i in range(max(table.keys()))]
-
-def tableToDict(table):
-    return dict(table)
-
-def tableIsList(table):
-    if not isinstance(table, TABLE_CLASS):
-        return False
-    for key in table.keys():
-        if not isinstance(key, int):
-            return False
-    return True
-
-def tableIsDict(table):
-    # Returns true even for list, as any valid list is a valid dict
-    return isinstance(table, TABLE_CLASS)
-
-def castFromLua(value, expected_type):
-    if expected_type == list and tableIsList(value):
-        return tableToList(value)
-    elif expected_type == dict and tableIsDict(value):
-        return tableToDict(value)
-    elif isinstance(value, expected_type):
-        return value
-    # If value was valid, we would have returned already
-    raise HandlerReturnError(
-        'Could not cast %r to %r' % (value, expected_type)
-    )
-
-def set_runtime_globals(runtime, variables):
-    lua_g = runtime.eval('_G')
-    for key in variables:
-        lua_g[key] = variables[key]
+from deje.lua import Runtime, LuaObject, LuaCastError
 
 class LuaInterpreter(object):
     def __init__(self, resource):
@@ -132,11 +89,6 @@ class LuaInterpreter(object):
 
     # Misc
 
-    def setup_runtime(self, **global_vars):
-        runtime = lupa.LuaRuntime()
-        set_runtime_globals(runtime, global_vars)
-        return runtime
-
     def call(self, event, **kwargs):
         if 'returntype' in kwargs:
             returntype = kwargs['returntype']
@@ -144,23 +96,26 @@ class LuaInterpreter(object):
         else:
             returntype = object
 
-        runtime = self.setup_runtime(deje = self.deje_module)
-        set_runtime_globals(runtime, kwargs)
+        runtime = Runtime(deje = self.deje_module)
+        runtime.set_globals(kwargs)
 
         if event in self.resource.content:
             funcbody = self.resource.content[event]
             result = runtime.execute(funcbody)
             self.api.process_queue()
         else:
-            result = None
+            result = LuaObject(None)
 
-        return castFromLua(result, returntype)
+        try:
+            return result.cast(returntype)
+        except LuaCastError as e:
+            raise HandlerReturnError("Handler returned unexpected type", e)
 
     def normalize_idents(self, identlist):
         results = []
         for ident in identlist:
-            if tableIsList(ident):
-                ident = tableToList(ident)
+            if LuaObject(ident).is_list:
+                ident = LuaObject(ident).to_list()
             if isinstance(ident, Identity):
                 results.append(ident)
             else:
