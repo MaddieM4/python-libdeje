@@ -278,6 +278,152 @@ class TestDexterVarsGroup(DexterCommandTester):
         ])
         self.assertEqual(self.interface.data, { "hello": True })
 
+    def test_vclone_wrong_num_args(self):
+        with self.io:
+            self.interface.do_command('vclone')
+            self.interface.do_command('vclone just_one')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vclone',
+            'vclone takes at least 2 arg(s), got 0',
+            'msglog> vclone just_one',
+            'vclone takes at least 2 arg(s), got 1',
+        ])
+
+    def test_vclone_bad_flag(self):
+        with self.io:
+            self.interface.do_command('vclone pumpernickel horseradish')
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> vclone pumpernickel horseradish',
+            'Expected first argument to be -f or -b.',
+        ])
+
+    def test_vclone_forwards_bad_tl(self):
+        with self.io:
+            cmd = 'vclone -f x y'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+            'Failed to find key: \'x\'',
+        ])
+
+    def test_vclone_forwards_bad_traversal(self):
+        self.interface.data = {
+            'hello': 'world',
+        }
+        with self.io:
+            cmd = 'vclone -f hello a b c'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+            'Failed to find key: \'a\'',
+        ])
+
+    def test_vclone_forwards_root(self):
+        self.interface.data = {
+            'hello': {'x':['y','z']},
+        }
+        with self.io:
+            cmd = 'vclone -f hello'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'x': ['y', 'z'],
+            }
+        )
+
+    def test_vclone_forwards_deep(self):
+        self.interface.data = {
+            'hello': {'x':['y','z']},
+            'world': {
+                'balloons': 5,
+            }
+        }
+        with self.io:
+            cmd = 'vclone -f hello world balloons'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'hello': {'x':['y','z']},
+                'world': {
+                    'balloons': {'x':['y','z']},
+                }
+            }
+        )
+
+    def test_vclone_backwards_bad_traversal(self):
+        self.interface.data = {
+            'hello': {'x':['y','z']},
+            'world': {
+                'balloons': 5,
+            }
+        }
+        with self.io:
+            cmd = 'vclone -b hello world balloons cake'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+            'Cannot inspect properties of object: 5',
+        ])
+
+    def test_vclone_backwards_root(self):
+        self.interface.data = {
+            'hello': {'x':['y','z']},
+            'world': {
+                'balloons': 5,
+            }
+        }
+        with self.io:
+            cmd = 'vclone -b hello'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'hello': {
+                    'hello': {'x':['y','z']},
+                    'world': {
+                        'balloons': 5,
+                    }
+                },
+                'world': {
+                    'balloons': 5,
+                }
+            }
+        )
+
+    def test_vclone_backwards_deep(self):
+        self.interface.data = {
+            'hello': {'x':['y','z']},
+            'world': {
+                'balloons': 5,
+            }
+        }
+        with self.io:
+            cmd = 'vclone -b hello world balloons'
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+        ])
+        self.assertEqual(
+            self.interface.data,
+            {
+                'hello': 5,
+                'world': {
+                    'balloons': 5,
+                }
+            }
+        )
+
     def test_vsave_root(self):
         self.interface.data = {
             'hello': 'world',

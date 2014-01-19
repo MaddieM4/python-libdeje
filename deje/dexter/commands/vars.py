@@ -18,6 +18,7 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
 
 import json
+import copy
 
 from deje.dexter.commands.group import DexterCommandGroup
 
@@ -77,6 +78,19 @@ class DexterCommandsVars(DexterCommandGroup):
             return self.output(str(e))
         self.output(json.dumps(obj, indent = 2, sort_keys=True))
 
+    def vset(self, chain, value):
+        traverse_chain = chain[:-1]
+        traverse_last  = chain[-1:]
+
+        obj = self.traverse(traverse_chain)
+
+        if len(traverse_last):
+            last = normalize_key(obj, traverse_last[0])
+            obj[last] = value
+        else:
+            # Setting the root data object
+            self.interface.data = value
+
     def do_vset(self, args):
         '''
         Set a value in variable storage.
@@ -100,26 +114,16 @@ class DexterCommandsVars(DexterCommandGroup):
         '''
         if len(args) < 1:
             self.output("Not enough arguments, expected at least 1.")
-        traverse_chain = args[:-2]
-        traverse_last  = args[-2:-1]
+
+        chain = args[:-1]
         try:
             new_value = json.loads(args[-1])
         except:
             return self.output('Could not decode last parameter as JSON.')
         try:
-            obj = self.traverse(traverse_chain)
+            self.vset(chain, new_value)
         except TraversalError as e:
             return self.output(str(e))
-
-        if len(traverse_last):
-            try:
-                last = normalize_key(obj, traverse_last[0])
-            except TraversalError as e:
-                return self.output(str(e))
-            obj[last] = new_value
-        else:
-            # Setting the root data object
-            self.interface.data = new_value
 
     def do_vdel(self, args):
         '''
@@ -158,6 +162,52 @@ class DexterCommandsVars(DexterCommandGroup):
                 raise TraversalError('Failed to find key', delete_key)
         except TraversalError as e:
             return self.output(str(e))
+
+    def do_vclone(self, args):
+        '''
+        Copy variable data from one location to another.
+
+        vclone always takes the following arguments:
+
+        * -f or -b (forward or backward)
+        * top-level variable name
+        * deep-path variable (0 or more arguments)
+
+        This is because it's difficult to express two deep
+        paths in a single command, without bending over
+        backwards to escape things. You are always cloning
+        between a top-level location and a deep-path location.
+
+        To copy between two deep-paths, you want to use a
+        top-level location as an intermediate copy, and then
+        vdel the top-level location afterwards to clean it
+        up.
+
+        Cloning forwards means copying from top-level to
+        deep-path. Cloning backwards means copying from
+        deep-path to top-level. The naming comes from the
+        fact that the top-level location always comes first
+        in the arguments.
+        '''
+        self.verify_num_args('vclone', len(args), 2, None)
+
+        direction, tl_key = args[:2]
+        dp_chain = args[2:]
+
+        if not (direction in ('-f', '-b')):
+            return self.output('Expected first argument to be -f or -b.')
+
+        try:
+            if direction == '-f':
+                return self.clone([tl_key], dp_chain)
+            else:
+                return self.clone(dp_chain, [tl_key])
+        except TraversalError as e:
+            return self.output(str(e))
+
+    def clone(self, source_chain, dest_chain):
+        value = self.traverse(source_chain)
+        self.vset(dest_chain, copy.deepcopy(value))
 
     def do_vsave(self, args):
         '''
