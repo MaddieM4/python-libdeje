@@ -168,7 +168,7 @@ class DexterCommandsVars(DexterCommandGroup):
         the entire variable storage area is serialized to the
         file.
 
-        Can only serialize top-level values.
+        Can only serialize top-level values or root.
         '''
         self.verify_num_args('vsave', len(args), 1, 2)
 
@@ -186,3 +186,30 @@ class DexterCommandsVars(DexterCommandGroup):
             return self.output("JSON serialization error")
 
         self.fwrite(filename, outstr)
+
+    def do_vload(self, args):
+        '''
+        Load a variable value from disk.
+
+        This command takes 1-2 arguments... a filename, and an
+        optional variable name (if no variable name is given,
+        the entire variable storage area is deserialized from
+        the file.
+
+        Can only deserialize to top-level values or root.
+        '''
+        self.verify_num_args('vload', len(args), 1, 2)
+
+        filename = args[0]
+        newobj = self.fread(filename)
+
+        try:
+            newobj = json.loads(newobj)
+        except:
+            return self.output("JSON serialization error")
+
+        if len(args) == 1:
+            self.interface.data = newobj
+        else:
+            key = args[1]
+            self.interface.data[key] = newobj

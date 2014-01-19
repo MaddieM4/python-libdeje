@@ -63,6 +63,7 @@ class TestDexterBasicGroup(DexterCommandTester):
             'vdel :: Delete a value from variable storage.',
             'vget :: Print a value in variable storage.',
             'view :: List views, or select one.',
+            'vload :: Load a variable value from disk.',
             'vsave :: Save a variable value to disk.',
             'vset :: Set a value in variable storage.',
         ])

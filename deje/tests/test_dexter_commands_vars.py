@@ -326,3 +326,62 @@ class TestDexterVarsGroup(DexterCommandTester):
                 'Failed to find key: \'this_key_does_not_exist\'',
             ])
             self.assertEqual(open(fname).read(), '')
+
+    def test_vload_root(self):
+        original = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        self.interface.data = original
+
+        with Tempfile() as fname:
+            with self.io:
+                self.interface.do_command('vsave ' + fname)
+                self.interface.data = {}
+                self.interface.do_command('vload ' + fname)
+            self.assertEqual(self.interface.view.contents, [
+                'msglog> vsave ' + fname,
+                'msglog> vload ' + fname,
+            ])
+            self.assertEqual(
+                original,
+                self.interface.data
+            )
+
+    def test_vload_subset(self):
+        self.interface.data = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        with Tempfile() as fname:
+            with self.io:
+                self.interface.do_command('vsave %s numbers' % fname)
+                self.interface.data = {}
+                self.interface.do_command('vload %s numbers' % fname)
+            self.assertEqual(self.interface.view.contents, [
+                'msglog> vsave %s numbers' % fname,
+                'msglog> vload %s numbers' % fname,
+            ])
+            self.assertEqual(
+                { 'numbers': [8,9,10,11,12] },
+                self.interface.data
+            )
+
+    def test_vload_no_such_file(self):
+        original = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        self.interface.data = original
+
+        cmd = 'vload this_file_does_not_exist'
+        with self.io:
+            self.interface.do_command(cmd)
+        self.assertEqual(self.interface.view.contents, [
+            'msglog> ' + cmd,
+            'IOError 2: No such file or directory',
+        ])
+        self.assertEqual(
+            original,
+            self.interface.data
+        )
