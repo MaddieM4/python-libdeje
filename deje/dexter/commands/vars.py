@@ -159,3 +159,30 @@ class DexterCommandsVars(DexterCommandGroup):
         except TraversalError as e:
             return self.output(str(e))
 
+    def do_vsave(self, args):
+        '''
+        Save a variable value to disk.
+
+        This command takes 1-2 arguments... a filename, and an
+        optional variable name (if no variable name is given,
+        the entire variable storage area is serialized to the
+        file.
+
+        Can only serialize top-level values.
+        '''
+        self.verify_num_args('vsave', len(args), 1, 2)
+
+        filename = args[0]
+        traverse_chain = args[1:]
+
+        try:
+            obj = self.traverse(traverse_chain)
+        except TraversalError as e:
+            return self.output(str(e))
+
+        try:
+            outstr = json.dumps(obj)
+        except:
+            return self.output("JSON serialization error")
+
+        self.fwrite(filename, outstr)

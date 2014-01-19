@@ -17,7 +17,9 @@ along with python-libdeje.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from deje.tests.dexter_commands import DexterCommandTester
+import json
+import os.path
+from deje.tests.dexter_commands import DexterCommandTester, Tempfile
 
 class TestDexterVarsGroup(DexterCommandTester):
 
@@ -275,3 +277,52 @@ class TestDexterVarsGroup(DexterCommandTester):
             'Cannot inspect properties of object: True',
         ])
         self.assertEqual(self.interface.data, { "hello": True })
+
+    def test_vsave_root(self):
+        self.interface.data = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        with Tempfile() as fname:
+            cmd = 'vsave ' + fname
+            with self.io:
+                self.interface.do_command(cmd)
+            self.assertEqual(self.interface.view.contents, [
+                'msglog> ' + cmd,
+            ])
+            self.assertEqual(
+                json.load(open(fname)),
+                self.interface.data
+            )
+
+    def test_vsave_subset(self):
+        self.interface.data = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        with Tempfile() as fname:
+            cmd = 'vsave %s numbers' % fname
+            with self.io:
+                self.interface.do_command(cmd)
+            self.assertEqual(self.interface.view.contents, [
+                'msglog> ' + cmd,
+            ])
+            self.assertEqual(
+                json.load(open(fname)),
+                self.interface.data['numbers']
+            )
+
+    def test_vsave_bad_traversal(self):
+        self.interface.data = {
+            'hello': 'world',
+            'numbers': [8,9,10,11,12],
+        }
+        with Tempfile() as fname:
+            cmd = 'vsave %s this_key_does_not_exist' % fname
+            with self.io:
+                self.interface.do_command(cmd)
+            self.assertEqual(self.interface.view.contents, [
+                'msglog> ' + cmd,
+                'Failed to find key: \'this_key_does_not_exist\'',
+            ])
+            self.assertEqual(open(fname).read(), '')
