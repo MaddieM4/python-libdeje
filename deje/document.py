@@ -79,7 +79,7 @@ class Document(object):
     def serialize(self):
         return {
             'original': self._initial.serialize(),
-            'events': self._history.events
+            'events': [e.serialize() for e in self._history.events]
         }
 
     def deserialize(self, serial):
