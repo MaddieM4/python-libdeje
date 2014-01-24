@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from persei import *
 
 from deje.protocol.handler import ProtocolHandler
-from deje.action import Action
 
 class PaxosHandler(ProtocolHandler):
     '''

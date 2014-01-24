@@ -126,7 +126,7 @@ class TestOwnerEJTP(TestEJTP):
 
         self.victor.get_events(self.vdoc, on_recv_events, self.mdoc.version, self.mdoc.version)
         result = queue.get(timeout=0.1)
-        self.assertEqual(result, [mev.serialize()])
+        self.assertEqual(result, [mev])
 
     def test_get_state(self):
         queue = Queue()

@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from persei import *
 
 from deje.protocol.handler import ProtocolHandler
+from deje.action import Action
 
 class RetrieveHandler(ProtocolHandler):
 
@@ -28,6 +29,10 @@ class RetrieveHandler(ProtocolHandler):
         self._on_state  = RetrieveStateHandler(self)
 
 class RetrieveEventsHandler(ProtocolHandler):
+
+    def no_such_key_error(self, address, qid, data):
+        msg = "No such event"
+        return self.toplevel.error([address.key], 888, msg, data, qid)
 
     def _on_query(self, message):
         qid    = message.qid
@@ -41,7 +46,7 @@ class RetrieveEventsHandler(ProtocolHandler):
             try:
                 start = doc._history.event_index_by_hash(h)
             except KeyError:
-                return # TODO: Respond with error
+                return self.no_such_key_error(sender, qid, 'start')
         else:
             start = 0
 
@@ -50,7 +55,7 @@ class RetrieveEventsHandler(ProtocolHandler):
             try:
                 end = doc._history.event_index_by_hash(h)
             except KeyError:
-                return # TODO: Respond with error
+                return self.no_such_key_error(sender, qid, 'end')
         else:
             end = len(doc._history.events) - 1
 
@@ -71,7 +76,10 @@ class RetrieveEventsHandler(ProtocolHandler):
         sender = self.owner.identities.find_by_location(message.sender)
         if sender not in doc.get_participants():
             return message.error(errors.PERMISSION_DOCINFO_NOT_PARTICIPANT, data="event")
-        events  = message['events']
+        events = [
+            Action(e, self.owner.identities).specific()
+            for e in message['events']
+        ]
 
         doc.signals['recv-events'].send(
             self,

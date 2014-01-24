@@ -23,12 +23,19 @@ from ejtp.router             import Router
 from deje.owner              import Owner
 from deje.handlers           import handler_document
 from deje.tests.identity     import identity
+from deje.protocol.message   import DEJEMessage
+
+try:
+   from Queue import Queue
+except:
+   from queue import Queue
 
 class TestDocumentSync(unittest.TestCase):
     def setUp(self):
         self.router = Router()
         self.io     = IOMock()
         self.owners = {}
+        self.msgs   = []
         self.save_serialization = False
 
     def setup_client(self, name):
@@ -41,6 +48,11 @@ class TestDocumentSync(unittest.TestCase):
         owner.own_document(doc)
         owner.test_doc  = doc
         owner.test_name = name
+
+        def on_ejtp(msg, client):
+            self.msgs.append(DEJEMessage(msg, client, owner))
+            owner.on_ejtp(msg, client)
+        owner.client.rcv_callback = on_ejtp
 
         self.owners[name] = owner
         return owner
@@ -77,6 +89,16 @@ class TestDocumentSync(unittest.TestCase):
                     msg
                 )
 
+    def format_msg(self, msg):
+        extra = None
+        if msg.type == 'deje-error':
+            extra = msg.content
+
+        if extra == None:
+            return (msg.sender[2], msg.receiver[2], msg.type)
+        else:
+            return (msg.sender[2], msg.receiver[2], msg.type, extra)
+
     def test_min_existing(self):
         # Use mitzi as leader, atlas for consensus
         mitzi = self.setup_client("mitzi")
@@ -92,4 +114,10 @@ class TestDocumentSync(unittest.TestCase):
 
         # Initialization should bring victor up to date
         victor = self.setup_client("victor")
+        waiter = Queue()
+        def on_finished():
+            waiter.put("Finished")
+        with self.io:
+            victor.test_doc.sync(on_finished)
+        waiter.get(timeout=0.5)
         self.assertSameDocState("after sync")

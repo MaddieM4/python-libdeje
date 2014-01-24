@@ -95,6 +95,11 @@ class Action(object):
     def __getitem__(self, k):
         return self.items[k]
 
+    def __eq__(self, other):
+        if not isinstance(other, Action):
+            return False
+        return self.serialize() == other.serialize()
+
     # Action interface
 
     @property

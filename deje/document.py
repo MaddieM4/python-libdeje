@@ -132,6 +132,9 @@ class Document(object):
             raise ValueError("Event %r was not valid" % event.content)
 
     def get_version(self, callback):
+        '''
+        Callback should accept single arg (version).
+        '''
         if not self.can_read():
             raise ValueError("You don't have read permission")
         request = ReadRequest(self.identity)
@@ -140,6 +143,19 @@ class Document(object):
             self.protocol._register(request.unique, callback)
             self.protocol.paxos.propose(self, request)
         return request
+
+    def sync(self, callback):
+        '''
+        Callback takes no arguments.
+        '''
+        def on_events(events):
+            # TODO: Actual security, I mean for christ's sakes...
+            for event in events:
+                event.enact(None, self)
+            callback()
+        def wrapper(version):
+            self.owner.get_events(self, on_events, end=version)
+        self.get_version(wrapper)
         
     def subscribe(self, callback, sources):
         if not self.can_read():
